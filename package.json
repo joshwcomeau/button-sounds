@@ -1,0 +1,24 @@
+{
+  "name": "button-sounds-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.1.4",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "pnpm --filter button-sounds build && pnpm --filter site build",
+    "dev": "run-p dev:pkg dev:site",
+    "dev:pkg": "pnpm --filter button-sounds dev",
+    "dev:site": "pnpm --filter site dev",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint:pkg": "pnpm --filter button-sounds lint:pkg",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "npm-run-all2": "^9.0.3",
+    "prettier": "^3.9.8"
+  }
+}
