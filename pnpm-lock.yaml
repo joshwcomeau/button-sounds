@@ -26,6 +26,9 @@ importers:
       react-dom:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
+      styled-components:
+        specifier: ^6.5.3
+        version: 6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
       '@types/react':
         specifier: ^19.3.0
@@ -35,23 +38,29 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: ^6.1.1
-        version: 6.1.1(vite@8.3.0)
+        version: 6.1.1(vite@8.3.0(@types/node@26.6.2))
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       vite:
         specifier: ^8.3.0
-        version: 8.3.0
+        version: 8.3.0(@types/node@26.6.2)
 
   packages/button-sounds:
     dependencies:
-      use-sound:
-        specifier: ^5.0.0
-        version: 5.0.0(react@19.3.0)
+      howler:
+        specifier: ^2.2.4
+        version: 2.2.4
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@types/howler':
+        specifier: ^2.2.13
+        version: 2.2.13
+      '@types/node':
+        specifier: ^26.6.2
+        version: 26.6.2
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -75,7 +84,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^5.0.1
-        version: 5.0.1(vite@8.3.0)
+        version: 5.0.1(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2))
 
 packages:
 
@@ -97,6 +106,12 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
+
+  '@emotion/is-prop-valid@1.4.0':
+    resolution: {integrity: sha512-QgD4fyscGcbbKwJmqNvUMSE02OsHUa+lAWKdEUIJKgqe5IwRSKd7+KhibEWdaKwgjLj0DRSHA9biAIqGBk05lw==}
+
+  '@emotion/memoize@0.9.0':
+    resolution: {integrity: sha512-30FAj7/EoJ5mwVPOWhAyCX+FPfMDrVecJAM+Iw9NRoSl4BBAQeqj4cApHHUXOVvIPgLVDsCFoz/hGD+5QQD1GQ==}
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -226,6 +241,12 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/howler@2.2.13':
+    resolution: {integrity: sha512-40+EBjqIHHrC4VShlz/7i0lBUsE3QkgzZinQQji74Hd8sBkJZUBaT7LWFLK6rcabsDOOQpoMbEJvtaFQwxOu/g==}
+
+  '@types/node@26.6.2':
+    resolution: {integrity: sha512-X1P21scMv4zGKLYqjdGjaKa7COa0RKVYYZZN/NfvLQ1JegxFhdhpZG/Lyn8AXx6CDUavKAd11v6BvfpkDByK8g==}
 
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
@@ -959,6 +980,25 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
+  styled-components@6.5.3:
+    resolution: {integrity: sha512-vAX79sfpmUerP9fsTTxoTrBDE0RuO4ahjInyWYoohNgqrdg63Ms4q6FJ/o2Fyity82NU3cujOT8Ewl9TThBdwg==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      css-to-react-native: '>= 3.2.0'
+      react: '>= 16.8.0'
+      react-dom: '>= 16.8.0'
+      react-native: '>= 0.68.0'
+    peerDependenciesMeta:
+      css-to-react-native:
+        optional: true
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+
+  stylis@4.3.6:
+    resolution: {integrity: sha512-yQ3rwFWRfwNUY7H5vpU0wfdkNSnvnJinhF9830Swlaxl03zsOjCfmX0ugac+3LtK0lYSgwL/KXc8oYL3mG4YFQ==}
+
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
@@ -1041,14 +1081,12 @@ packages:
   unconfig-core@7.5.0:
     resolution: {integrity: sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w==}
 
+  undici-types@8.9.0:
+    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
+
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
     engines: {node: '>=4'}
-
-  use-sound@5.0.0:
-    resolution: {integrity: sha512-MNHT3FFC5HxNCrgZtrnpIMJI2cw/0D2xismcrtyht8BTuF5FhFhb57xO/jlQr2xJaFrc/0btzRQvGyHQwB7PVA==}
-    peerDependencies:
-      react: '>=16.8'
 
   validate-npm-package-name@5.0.1:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
@@ -1212,6 +1250,12 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
+  '@emotion/is-prop-valid@1.4.0':
+    dependencies:
+      '@emotion/memoize': 0.9.0
+
+  '@emotion/memoize@0.9.0': {}
+
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
@@ -1293,6 +1337,12 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
+  '@types/howler@2.2.13': {}
+
+  '@types/node@26.6.2':
+    dependencies:
+      undici-types: 8.9.0
+
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
       '@types/react': 19.3.0
@@ -1361,19 +1411,19 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@vitejs/plugin-react@6.1.1(vite@8.3.0)':
+  '@vitejs/plugin-react@6.1.1(vite@8.3.0(@types/node@26.6.2))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.3.0
+      vite: 8.3.0(@types/node@26.6.2)
 
-  '@vitest/mocker@5.0.1(vite@8.3.0)':
+  '@vitest/mocker@5.0.1(vite@8.3.0(@types/node@26.6.2))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.1
       estree-walker: 3.0.3
       magic-string: 1.4.1
     optionalDependencies:
-      vite: 8.3.0
+      vite: 8.3.0(@types/node@26.6.2)
 
   '@vitest/spy@5.0.1': {}
 
@@ -1808,6 +1858,17 @@ snapshots:
     dependencies:
       ansi-regex: 5.0.1
 
+  styled-components@6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+    dependencies:
+      '@emotion/is-prop-valid': 1.4.0
+      csstype: 3.2.3
+      react: 19.3.0
+      stylis: 4.3.6
+    optionalDependencies:
+      react-dom: 19.3.0(react@19.3.0)
+
+  stylis@4.3.6: {}
+
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
@@ -1895,18 +1956,15 @@ snapshots:
       '@quansync/fs': 1.1.0
       quansync: 1.0.0
 
-  unicode-emoji-modifier-base@1.0.0: {}
+  undici-types@8.9.0: {}
 
-  use-sound@5.0.0(react@19.3.0):
-    dependencies:
-      howler: 2.2.4
-      react: 19.3.0
+  unicode-emoji-modifier-base@1.0.0: {}
 
   validate-npm-package-name@5.0.1: {}
 
   verkit@0.4.1: {}
 
-  vite@8.3.0:
+  vite@8.3.0(@types/node@26.6.2):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -1914,12 +1972,13 @@ snapshots:
       rolldown: 1.2.9
       tinyglobby: 0.2.17
     optionalDependencies:
+      '@types/node': 26.6.2
       fsevents: 2.3.3
 
-  vitest@5.0.1(vite@8.3.0):
+  vitest@5.0.1(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.1(vite@8.3.0)
+      '@vitest/mocker': 5.0.1(vite@8.3.0(@types/node@26.6.2))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -1930,8 +1989,10 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.3.0
+      vite: 8.3.0(@types/node@26.6.2)
       why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 26.6.2
     transitivePeerDependencies:
       - msw
 

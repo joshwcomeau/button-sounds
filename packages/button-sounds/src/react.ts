@@ -1,49 +1,77 @@
-import { useMemo } from 'react';
-import type { PointerEventHandler } from 'react';
-import useSound from 'use-sound';
-import {
-  PLACEHOLDER_SPRITE_MAP,
-  PLACEHOLDER_SPRITE_SRC,
-} from './assets/placeholder-sprite';
-import type { ButtonSfxOptions } from './core';
+import { useCallback, useEffect, useRef } from 'react';
+import type { RefObject } from 'react';
+import { press, release, wireUp } from './index';
+import type { SoundName, TriggerOptions, WireUpOptions } from './index';
 
-export type { ButtonSfxOptions, SoundVariant } from './core';
+export type { SoundName, SoundVariant, TriggerOptions, WireUpOptions } from './index';
 
-export interface UseButtonSfxResult {
-  /** Spread onto a button (or any element) to wire up press/release SFX. */
-  onPointerDown: PointerEventHandler<HTMLElement>;
-  onPointerUp: PointerEventHandler<HTMLElement>;
+export interface UseButtonSoundsOptions extends WireUpOptions {
+  // When true, listeners are not attached and no sound plays. Wire this to a user “mute” / sound preference. Defaults to false.
+  muted?: boolean;
 }
 
-/**
- * React hook that returns event handlers for playing press/release sounds.
- * Built on [`use-sound`](https://github.com/joshwcomeau/use-sound).
- *
- * @example
- * function MyButton() {
- *   const sfx = useButtonSfx();
- *   return <button {...sfx}>Click me</button>;
- * }
- */
-export function useButtonSfx(
-  options: ButtonSfxOptions = {},
-): UseButtonSfxResult {
-  const { volume = 1, muted = false } = options;
+export interface UseImperativeButtonSoundsOptions extends TriggerOptions {
+  // When true, press() / release() become no-ops. Defaults to false.
+  muted?: boolean;
+}
 
-  // TODO: swap the placeholder sprite for the real recorded audio once the
-  // sprite-distribution strategy is finalized.
-  const [play] = useSound(PLACEHOLDER_SPRITE_SRC, {
-    volume,
-    soundEnabled: !muted,
-    sprite: PLACEHOLDER_SPRITE_MAP,
-    format: ['wav'],
-  });
+export interface UseImperativeButtonSoundsResult {
+  press: () => void;
+  release: () => void;
+}
 
-  return useMemo<UseButtonSfxResult>(
-    () => ({
-      onPointerDown: () => play({ id: 'press' }),
-      onPointerUp: () => play({ id: 'release' }),
-    }),
-    [play],
-  );
+// Attach press/release sounds to a DOM element via a React ref. Wraps `wireUp`, so a press plays on pointerdown and a release plays on the next pointerup (listened for on window, so it still fires if the pointer has moved off the element). Cleans up on unmount or when the sound / options change.
+// Example:
+// function HighLevelExample() {
+//   const buttonRef = React.useRef<HTMLButtonElement>(null);
+//   useButtonSounds(buttonRef, 'uhk-soft', { pitchVariation: 0.25 });
+//   return <button ref={buttonRef} />;
+// }
+export function useButtonSounds<T extends HTMLElement>(
+  ref: RefObject<T | null>,
+  name: SoundName,
+  options: UseButtonSoundsOptions = {},
+): void {
+  const { muted = false, volume, pitchVariation, lofi, lofiOptions } = options;
+  const pitchKey = Array.isArray(pitchVariation)
+    ? pitchVariation.join(',')
+    : pitchVariation;
+  const lofiBits = lofiOptions?.bits;
+  const lofiDownsample = lofiOptions?.downsample;
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || muted) return;
+    return wireUp(element, name, { volume, pitchVariation, lofi, lofiOptions });
+  }, [ref, name, muted, volume, pitchKey, lofi, lofiBits, lofiDownsample]);
+}
+
+// Lower-level hook that returns `press` / `release` callbacks, wrapping the vanilla functions of the same name. Bind them to pointer handlers (or anything else) yourself.
+// Example:
+// function LowLevelExample() {
+//   const { press, release } = useImperativeButtonSounds('uhk-soft', { sampleIndex: 2 });
+//   return <button onPointerDown={press} onPointerUp={release} />;
+// }
+export function useImperativeButtonSounds(
+  name: SoundName,
+  options: UseImperativeButtonSoundsOptions = {},
+): UseImperativeButtonSoundsResult {
+  const latestRef = useRef({ name, options });
+  latestRef.current = { name, options };
+
+  const pressSound = useCallback(() => {
+    const { name: currentName, options: currentOptions } = latestRef.current;
+    const { muted, ...triggerOptions } = currentOptions;
+    if (muted) return;
+    press(currentName, triggerOptions);
+  }, []);
+
+  const releaseSound = useCallback(() => {
+    const { name: currentName, options: currentOptions } = latestRef.current;
+    const { muted, ...triggerOptions } = currentOptions;
+    if (muted) return;
+    release(currentName, triggerOptions);
+  }, []);
+
+  return { press: pressSound, release: releaseSound };
 }

@@ -54,6 +54,31 @@
   font-size: 1.35rem;
 }
 
+.demo-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.control select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font: inherit;
+  cursor: pointer;
+}
+
 .mute-toggle {
   display: inline-flex;
   align-items: center;
