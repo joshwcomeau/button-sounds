@@ -1,76 +1,92 @@
-import { useCallback, useEffect, useRef } from 'react';
+import * as React from 'react';
 import type { RefObject } from 'react';
-import { press, release, wireUp } from './index';
+import { load, press, release, wireUp } from './index';
 import type { SoundName, TriggerOptions, WireUpOptions } from './index';
 
-export type { SoundName, SoundVariant, TriggerOptions, WireUpOptions } from './index';
+export type {
+  SoundName,
+  SoundVariant,
+  TriggerOptions,
+  WireUpOptions,
+} from './index';
 
-export interface UseButtonSoundsOptions extends WireUpOptions {
-  // When true, listeners are not attached and no sound plays. Wire this to a user “mute” / sound preference. Defaults to false.
-  muted?: boolean;
-}
-
-export interface UseImperativeButtonSoundsOptions extends TriggerOptions {
-  // When true, press() / release() become no-ops. Defaults to false.
-  muted?: boolean;
-}
+// Callable as `press({ volume: 0.5 })`, or passed straight to a React pointer handler (`onPointerDown={press}`).
+export type ButtonSoundTrigger = ((options?: TriggerOptions) => void) &
+  React.PointerEventHandler;
 
 export interface UseImperativeButtonSoundsResult {
-  press: () => void;
-  release: () => void;
+  press: ButtonSoundTrigger;
+  release: ButtonSoundTrigger;
 }
 
-// Attach press/release sounds to a DOM element via a React ref. Wraps `wireUp`, so a press plays on pointerdown and a release plays on the next pointerup (listened for on window, so it still fires if the pointer has moved off the element). Cleans up on unmount or when the sound / options change.
-// Example:
-// function HighLevelExample() {
-//   const buttonRef = React.useRef<HTMLButtonElement>(null);
-//   useButtonSounds(buttonRef, 'uhk-soft', { pitchVariation: 0.25 });
-//   return <button ref={buttonRef} />;
-// }
+// This is the main high-level API; it accepts a ref node for a button (or, I guess, any other DOM node) and automatically wires it up for presses and releases. Delegates to the `wireUp` method from the library, which preloads the sound immediately. If `name` changes, the new file is loaded and the element is rewired.
 export function useButtonSounds<T extends HTMLElement>(
   ref: RefObject<T | null>,
   name: SoundName,
-  options: UseButtonSoundsOptions = {},
+  options: WireUpOptions = {},
 ): void {
-  const { muted = false, volume, pitchVariation, lofi, lofiOptions } = options;
+  const { volume, pitchVariation, lofi, lofiOptions } = options;
   const pitchKey = Array.isArray(pitchVariation)
     ? pitchVariation.join(',')
     : pitchVariation;
   const lofiBits = lofiOptions?.bits;
   const lofiDownsample = lofiOptions?.downsample;
 
-  useEffect(() => {
+  React.useEffect(() => {
+    // Preload even when the ref isn’t attached yet. wireUp loads again once the element is available; a given name is only fetched once.
+    load(name);
+
     const element = ref.current;
-    if (!element || muted) return;
-    return wireUp(element, name, { volume, pitchVariation, lofi, lofiOptions });
-  }, [ref, name, muted, volume, pitchKey, lofi, lofiBits, lofiDownsample]);
+    if (!element) {
+      return;
+    }
+
+    return wireUp(element, name, {
+      volume,
+      pitchVariation,
+      lofi,
+      lofiOptions,
+    });
+  }, [ref, name, volume, pitchKey, lofi, lofiBits, lofiDownsample]);
 }
 
-// Lower-level hook that returns `press` / `release` callbacks, wrapping the vanilla functions of the same name. Bind them to pointer handlers (or anything else) yourself.
-// Example:
-// function LowLevelExample() {
-//   const { press, release } = useImperativeButtonSounds('uhk-soft', { sampleIndex: 2 });
-//   return <button onPointerDown={press} onPointerUp={release} />;
-// }
+// Pointer handlers pass an event as the first argument. Ignore that so `onPointerDown={press}` still works, while `press({ volume: 0.5 })` overrides the hook defaults.
+function resolveTriggerOptions(
+  defaults: TriggerOptions,
+  override?: TriggerOptions | React.SyntheticEvent | Event,
+): TriggerOptions {
+  if (
+    override == null ||
+    typeof override !== 'object' ||
+    override instanceof Event ||
+    'nativeEvent' in override
+  ) {
+    return defaults;
+  }
+  return { ...defaults, ...override };
+}
+
+// Alternatively, if the consumer wants more control, there’s also this lower-level API which provides press/release functions. Hook-level TriggerOptions are the defaults; each press/release call can override them.
+// The named sound is preloaded when the component mounts, and a different file is loaded whenever `name` changes.
 export function useImperativeButtonSounds(
   name: SoundName,
-  options: UseImperativeButtonSoundsOptions = {},
+  options: TriggerOptions = {},
 ): UseImperativeButtonSoundsResult {
-  const latestRef = useRef({ name, options });
+  const latestRef = React.useRef({ name, options });
   latestRef.current = { name, options };
 
-  const pressSound = useCallback(() => {
+  React.useEffect(() => {
+    load(name);
+  }, [name]);
+
+  const pressSound = React.useCallback<ButtonSoundTrigger>((override) => {
     const { name: currentName, options: currentOptions } = latestRef.current;
-    const { muted, ...triggerOptions } = currentOptions;
-    if (muted) return;
-    press(currentName, triggerOptions);
+    press(currentName, resolveTriggerOptions(currentOptions, override));
   }, []);
 
-  const releaseSound = useCallback(() => {
+  const releaseSound = React.useCallback<ButtonSoundTrigger>((override) => {
     const { name: currentName, options: currentOptions } = latestRef.current;
-    const { muted, ...triggerOptions } = currentOptions;
-    if (muted) return;
-    release(currentName, triggerOptions);
+    release(currentName, resolveTriggerOptions(currentOptions, override));
   }, []);
 
   return { press: pressSound, release: releaseSound };

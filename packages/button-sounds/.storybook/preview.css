@@ -1,0 +1,14 @@
+.story-button {
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #222;
+  background: #fff;
+  cursor: pointer;
+}
+
+.story-button:active {
+  transform: translateY(1px);
+}

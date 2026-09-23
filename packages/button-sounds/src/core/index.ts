@@ -9,4 +9,4 @@ export type { SoundName } from './sprite-data';
 export { SPRITE_DATA, SOUND_NAMES, DEFAULT_NAME } from './sprite-data';
 export { resolveSoundUrl, DEFAULT_BASE_URL } from './resolve-url';
 export { getVariantIds, pickSampleId } from './variants';
-export { setPath, getPath, trigger } from './player';
+export { setPath, getPath, load, trigger } from './player';

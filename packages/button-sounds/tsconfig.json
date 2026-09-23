@@ -6,5 +6,5 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src", "test", "tsdown.config.ts"]
+  "include": ["src", "test", "stories", ".storybook", "tsdown.config.ts"]
 }

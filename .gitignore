@@ -6,6 +6,8 @@ coverage
 .vite
 .claude
 *.log
+storybook-static
+*storybook.log
 
 # Generated at publish time from the repo-root files (see scripts/package-docs.mjs)
 packages/button-sounds/README.md
@@ -14,3 +16,6 @@ packages/button-sounds/LICENSE
 # Demo sounds copied from the package at dev/build time (see scripts/copy-demo-sounds.mjs)
 apps/site/public/sounds
 
+
+*storybook.log
+storybook-static

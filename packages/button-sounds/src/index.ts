@@ -1,4 +1,4 @@
-import { setPath, trigger } from './core/player';
+import { load, setPath, trigger } from './core/player';
 import type { SoundName } from './core/sprite-data';
 import type { TriggerOptions, WireUpOptions } from './core/types';
 import { random } from './utils';
@@ -12,6 +12,7 @@ export type {
 } from './core';
 export {
   SOUND_NAMES,
+  SPRITE_DATA,
   DEFAULT_NAME,
   DEFAULT_LOFI_OPTIONS,
   resolveSoundUrl,
@@ -42,6 +43,7 @@ function pitchToRate(
 }
 
 // Wire press/release sounds onto an element. Plays a press sound on pointerdown, then plays a release sound on the next pointerup — listening on window (via { once: true }) so the release still fires even if the pointer has moved off the element.
+// The sound’s audio file starts loading immediately, so the first click isn’t waiting on the network.
 // Returns a cleanup function that removes the listeners.
 // Example:
 // const unwire = wireUp(button, 'uhk-soft', { pitchVariation: 0.3 });
@@ -51,7 +53,11 @@ export function wireUp(
   name: SoundName,
   options: WireUpOptions = {},
 ): () => void {
+  load(name);
+
   const { volume, pitchVariation, lofi, lofiOptions } = options;
+  // lofi = true;
+
   const pendingReleases = new Set<() => void>();
 
   const handlePointerDown = (): void => {
@@ -87,8 +93,8 @@ export function wireUp(
 }
 
 // The vanilla API, as a single namespace object.
-const ButtonSounds = { setPath, press, release, wireUp };
+const ButtonSounds = { setPath, load, press, release, wireUp };
 
-// press, release, and wireUp are already exported inline above; setPath is re-exported here from ./core/player.
-export { setPath };
+// press, release, and wireUp are already exported inline above; load and setPath are re-exported here from ./core/player.
+export { load, setPath };
 export default ButtonSounds;

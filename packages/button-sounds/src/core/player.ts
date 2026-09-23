@@ -6,7 +6,7 @@ import type { SoundName } from './sprite-data';
 import type { SoundVariant, TriggerOptions } from './types';
 import { pickSampleId } from './variants';
 
-// Playback engine, built on howler (loaded lazily on first play so this module is safe to import during SSR). Shared by the vanilla API and the React hooks.
+// Playback engine, built on howler (loaded lazily on first use — load(), wireUp(), or playback — so this module is safe to import during SSR). Shared by the vanilla API and the React hooks.
 
 let currentPath: string | undefined;
 
@@ -18,6 +18,18 @@ export function setPath(path: string): void {
 // The current base path, or undefined when using the default CDN.
 export function getPath(): string | undefined {
   return currentPath;
+}
+
+// Start downloading a sound’s audio file so the first press or release isn’t waiting on the network. Safe to call more than once; each name is only fetched once for the current setPath.
+// Example: load('uhk-soft');
+export function load(name: SoundName): void {
+  if (!SPRITE_DATA[name]) {
+    console.warn(`[button-sounds] Unknown sound name: "${name}"`);
+    return;
+  }
+
+  // Sound is progressive enhancement — a failed fetch (offline, CDN hiccup) should not surface as an unhandled rejection.
+  void loadHowl(name).catch(() => {});
 }
 
 const howlCache = new Map<string, Promise<Howl>>();

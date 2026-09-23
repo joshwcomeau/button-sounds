@@ -59,7 +59,9 @@
     "typecheck": "tsc --noEmit",
     "lint:pkg": "pnpm run build && publint && attw --pack --profile node16",
     "prepack": "node ../../scripts/package-docs.mjs copy",
-    "postpack": "node ../../scripts/package-docs.mjs clean"
+    "postpack": "node ../../scripts/package-docs.mjs clean",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "howler": "^2.2.4"
@@ -78,6 +80,8 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
     "@types/howler": "^2.2.13",
     "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
@@ -85,8 +89,10 @@
     "publint": "^0.3.24",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "storybook": "^10.6.0",
     "tsdown": "^0.23.0",
     "typescript": "^7.0.2",
+    "vite": "^8.3.0",
     "vitest": "^5.0.1"
   }
 }

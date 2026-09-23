@@ -16,7 +16,9 @@
     "lint:pkg": "pnpm --filter button-sounds lint:pkg",
     "convert-audio": "node scripts/convert-audio.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "storybook": "pnpm --filter button-sounds storybook",
+    "build-storybook": "pnpm --filter button-sounds build-storybook"
   },
   "devDependencies": {
     "npm-run-all2": "^9.0.3",

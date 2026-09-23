@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ButtonSounds, {
   press,
   release,
+  load,
   wireUp,
   setPath,
   resolveSoundUrl,
@@ -18,8 +19,13 @@ describe('button-sounds vanilla API', () => {
   it('default export exposes the API', () => {
     expect(typeof ButtonSounds.press).toBe('function');
     expect(typeof ButtonSounds.release).toBe('function');
+    expect(typeof ButtonSounds.load).toBe('function');
     expect(typeof ButtonSounds.wireUp).toBe('function');
     expect(typeof ButtonSounds.setPath).toBe('function');
+  });
+
+  it('load does not throw', () => {
+    expect(() => load(DEFAULT_NAME)).not.toThrow();
   });
 
   it('press / release do not throw', () => {
