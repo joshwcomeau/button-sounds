@@ -14,10 +14,41 @@
   --color-gray-900: hsl(210deg 25% 88%);
   --color-gray-1000: hsl(210deg 25% 96%);
   --color-primary: hsl(44deg 100% 50%);
+  --font-default: 'Space Mono', monospace;
+  --font-segment: 'seven-segment', monospace;
+
+  /* Scrollbar colors. We can override these anywhere in the app if we want other scroll container to use different colors. */
+  --scrollbar-size: 14px;
+  --scrollbar-color-thumb: var(--color-gray-200);
+  --scrollbar-color-thumb-hover: var(--color-gray-500);
+  --scrollbar-color-bg: var(--color-background);
+
+  --bezier-overshoot-smooth: cubic-bezier(0.06, 1.1, 0, 1.03);
 
   color-scheme: dark;
   background: var(--color-background);
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-default);
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color-thumb);
+  border-radius: 8px;
+  corner-shape: bevel;
+  /* Border painted in the track color insets the thumb, mimicking a gap. */
+  border: 3px solid var(--scrollbar-color-bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-color-thumb-hover);
+}
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-color-bg);
 }
 
 * {
@@ -30,9 +61,13 @@ body {
 }
 
 body {
-  min-height: 100dvh;
-  background:
-    radial-gradient(1200px 600px at 50% -10%, #241a4d 0%, transparent 60%),
-    var(--bg);
-  color: var(--text);
+  min-height: 100svh;
+}
+
+@font-face {
+  font-family: 'seven-segment';
+  src: url('/fonts/seven-segment.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: fallback;
 }

@@ -3,14 +3,15 @@ import styled from 'styled-components';
 import { SOUND_NAMES, SPRITE_DATA, type SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
-import { SOUND_DATA } from '@/data';
-import { sampleIndex } from '@/utils';
+import { random, sampleIndex } from '@/utils';
 import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
 
-import Sidebar from './Sidebar';
-import { useSoundResourceLoading } from './useSoundResourceLoading';
 import { getSampleIds, pickSampleIndex } from './MainDemo.helpers';
+import SoundSelectSidebar from './SoundSelectSidebar';
+import ExtraParams from './ExtraParams';
+import InfoTable from './InfoTable';
+import { useSoundResourceLoading } from './useSoundResourceLoading';
 
 function MainDemo() {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -29,9 +30,14 @@ function MainDemo() {
   const [selectedUpIndex, setSelectedUpIndex] = React.useState<
     number | undefined
   >();
+  const [usingLofi, setUsingLofi] = React.useState(false);
+  const [pitchVariation, setPitchVariation] = React.useState(0.2);
 
   const name = (selectedSoundName ?? SOUND_NAMES[0]) as SoundName;
-  const { press, release } = useImperativeButtonSounds(name);
+  const { press, release } = useImperativeButtonSounds(name, {
+    lofi: usingLofi,
+    lofiOptions: { bits: 4, downsample: 0.1 },
+  });
   const loadingStatus = useSoundResourceLoading(name);
 
   React.useEffect(() => {
@@ -62,7 +68,6 @@ function MainDemo() {
             return SOUND_NAMES[0];
           }
           const newVal = SOUND_NAMES[SOUND_NAMES.indexOf(currentVal) + 1];
-          console.log(currentVal, SOUND_NAMES.indexOf(currentVal));
           return newVal ? newVal : SOUND_NAMES[0];
         });
       }
@@ -81,20 +86,34 @@ function MainDemo() {
     }
 
     function handlePointerDown() {
-      const index = sampleIndex(getSampleIds(name, 'down'));
-      if (index == null) {
-        return;
+      let index = selectedDownIndex;
+      if (typeof index !== 'number') {
+        index = sampleIndex(getSampleIds(name, 'down')) || 0;
       }
+
+      const playbackRate =
+        1 + random(-pitchVariation, pitchVariation, { rounded: false });
+
+      press({ sampleIndex: index, playbackRate });
+
       setLastDownIndex(index);
-      press({ sampleIndex: index });
 
       function handlePointerUp() {
-        const index = sampleIndex(getSampleIds(name, 'up'));
-        if (index == null) {
-          return;
+        let index = selectedUpIndex;
+        if (typeof index !== 'number') {
+          index = sampleIndex(getSampleIds(name, 'up')) || 0;
         }
+
+        const playbackRate =
+          1 + random(-pitchVariation, pitchVariation, { rounded: false });
+
+        release({ sampleIndex: index, playbackRate });
+
         setLastUpIndex(index);
-        release({ sampleIndex: index });
+        setLastDownIndex(undefined);
+        window.setTimeout(() => {
+          setLastUpIndex(undefined);
+        }, 260);
       }
 
       window.addEventListener('pointerup', handlePointerUp, { once: true });
@@ -105,19 +124,17 @@ function MainDemo() {
     return () => {
       btn.removeEventListener('pointerdown', handlePointerDown);
     };
-  }, [name]);
-
-  const soundData = SOUND_DATA[name];
+  }, [name, selectedDownIndex, selectedUpIndex, pitchVariation]);
 
   return (
     <Border>
       <Wrapper ref={wrapperRef}>
-        <Sidebar
+        <SoundSelectSidebar
           selectedSoundName={selectedSoundName}
           setSelectedSoundName={setSelectedSoundName}
         />
         <Main>
-          <Title>{soundData?.title}</Title>
+          <Title>Sound Playground</Title>
 
           <ButtonArea>
             <FancyButton ref={buttonRef} />
@@ -126,25 +143,30 @@ function MainDemo() {
             )}
           </ButtonArea>
 
-          {soundData?.description}
-
-          <SampleReadout>
-            <SampleSelector
-              label="Press #"
-              numOfSamples={getSampleIds(name, 'down').length}
-              selectedSampleIndex={selectedDownIndex}
-              lastPlayedSampleIndex={lastDownIndex}
-              onSelectSampleManually={setSelectedDownIndex}
-            />
-            <SampleSelector
-              label="Release #"
-              numOfSamples={getSampleIds(name, 'up').length}
-              selectedSampleIndex={selectedUpIndex}
-              lastPlayedSampleIndex={lastUpIndex}
-              onSelectSampleManually={setSelectedUpIndex}
-            />
-          </SampleReadout>
+          <InfoTable name={name} />
         </Main>
+        <ConfigSidebar>
+          <SampleSelector
+            label="Press Sample"
+            numOfSamples={getSampleIds(name, 'down').length}
+            selectedSampleIndex={selectedDownIndex}
+            lastPlayedSampleIndex={lastDownIndex}
+            onSelectSampleManually={setSelectedDownIndex}
+          />
+          <SampleSelector
+            label="Release Sample"
+            numOfSamples={getSampleIds(name, 'up').length}
+            selectedSampleIndex={selectedUpIndex}
+            lastPlayedSampleIndex={lastUpIndex}
+            onSelectSampleManually={setSelectedUpIndex}
+          />
+          <ExtraParams
+            usingLofi={usingLofi}
+            setUsingLofi={setUsingLofi}
+            pitchVariation={pitchVariation}
+            setPitchVariation={setPitchVariation}
+          />
+        </ConfigSidebar>
       </Wrapper>
     </Border>
   );
@@ -153,13 +175,18 @@ function MainDemo() {
 const Border = styled.div`
   background: var(--color-gray-800);
   padding: 2px;
-  border-radius: 4px;
+  border-radius: 8px;
+
+  @supports (corner-shape: squircle) {
+    border-radius: 12px;
+    corner-shape: squircle;
+  }
 `;
 const Wrapper = styled.div`
   display: flex;
   background: var(--color-gray-75);
   padding: 6px;
-  border-radius: 16px;
+  border-radius: 18px;
   corner-shape: bevel;
 `;
 
@@ -195,11 +222,10 @@ const LoadingLabel = styled.p`
   white-space: nowrap;
 `;
 
-const SampleReadout = styled.div`
+const ConfigSidebar = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin: 0;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 export default MainDemo;

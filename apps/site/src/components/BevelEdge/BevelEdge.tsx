@@ -4,8 +4,8 @@ import styled from 'styled-components';
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   side: 'top' | 'bottom';
   color: string;
-  radius: number;
-  borderWidth: number;
+  radius?: number;
+  borderWidth?: number;
 }
 
 function BevelEdge({ side, color, radius = 8, borderWidth = 1 }: Props) {

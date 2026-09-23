@@ -17,7 +17,7 @@ const DURATIONS_BY_ACTION: Record<Action, number> = {
   'releasing-elsewhere': 300,
 };
 
-function FancyButton(props: React.HTMLAttributes<HTMLButtonElement>) {
+function FancyButton(props: React.ComponentProps<'button'>) {
   const wrapperRef = React.useRef<HTMLSpanElement>(null);
   const [action, setAction] = React.useState<Action | null>(null);
   const actionRef = React.useRef<Action | null>(null);
@@ -47,8 +47,6 @@ function FancyButton(props: React.HTMLAttributes<HTMLButtonElement>) {
   }, []);
 
   const transitionDuration = action ? DURATIONS_BY_ACTION[action] : 0;
-
-  console.log(action, transitionDuration);
 
   return (
     <OuterWrapper
