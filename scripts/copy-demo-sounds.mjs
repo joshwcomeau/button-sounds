@@ -5,8 +5,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const assetsDir = join(repoRoot, 'packages/button-sounds/assets');
-const destDir = join(repoRoot, 'apps/site/public/sounds');
+const assetsDir = join(repoRoot, 'package/assets');
+const destDir = join(repoRoot, 'site/public/sounds');
 
 const mp3s = readdirSync(assetsDir).filter((file) =>
   file.toLowerCase().endsWith('.mp3'),

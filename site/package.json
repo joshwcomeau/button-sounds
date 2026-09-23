@@ -1,0 +1,36 @@
+{
+  "name": "site",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "predev": "node ../scripts/copy-demo-sounds.mjs",
+    "dev": "vite",
+    "prebuild": "node ../scripts/copy-demo-sounds.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@floating-ui/react": "^0.27.20",
+    "button-sounds": "workspace:*",
+    "lucide-react": "^1.48.0",
+    "microlighter": "^2.2.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "styled-components": "^6.5.3",
+    "use-sound": "^5.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@rolldown/plugin-babel": "^0.2.4",
+    "@types/babel__core": "^7.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "babel-plugin-styled-components": "^2.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}
