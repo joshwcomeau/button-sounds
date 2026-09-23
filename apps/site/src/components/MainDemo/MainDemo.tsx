@@ -4,35 +4,18 @@ import { SOUND_NAMES, SPRITE_DATA, type SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
 import { SOUND_DATA } from '@/data';
+import { sampleIndex } from '@/utils';
 import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
 
 import Sidebar from './Sidebar';
 import { useSoundResourceLoading } from './useSoundResourceLoading';
-
-function getSampleIds(name: SoundName, prefix: 'down' | 'up'): string[] {
-  const spriteMap = SPRITE_DATA[name];
-  if (!spriteMap) {
-    return [];
-  }
-
-  return Object.keys(spriteMap)
-    .filter((id) => id.startsWith(prefix))
-    .sort(
-      (a, b) =>
-        Number(a.match(/\d+$/)?.[0] ?? 0) - Number(b.match(/\d+$/)?.[0] ?? 0),
-    );
-}
-
-function pickSampleIndex(ids: string[]): number | undefined {
-  if (ids.length === 0) {
-    return undefined;
-  }
-  return Math.floor(Math.random() * ids.length);
-}
+import { getSampleIds, pickSampleIndex } from './MainDemo.helpers';
 
 function MainDemo() {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+
   const [selectedSoundName, setSelectedSoundName] = React.useState<
     string | undefined
   >(SOUND_NAMES[0]);
@@ -90,6 +73,40 @@ function MainDemo() {
     };
   }, [selectedSoundName]);
 
+  React.useEffect(() => {
+    const btn = buttonRef.current;
+
+    if (!btn) {
+      return;
+    }
+
+    function handlePointerDown() {
+      const index = sampleIndex(getSampleIds(name, 'down'));
+      if (index == null) {
+        return;
+      }
+      setLastDownIndex(index);
+      press({ sampleIndex: index });
+
+      function handlePointerUp() {
+        const index = sampleIndex(getSampleIds(name, 'up'));
+        if (index == null) {
+          return;
+        }
+        setLastUpIndex(index);
+        release({ sampleIndex: index });
+      }
+
+      window.addEventListener('pointerup', handlePointerUp, { once: true });
+    }
+
+    btn.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      btn.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [name]);
+
   const soundData = SOUND_DATA[name];
 
   return (
@@ -103,24 +120,7 @@ function MainDemo() {
           <Title>{soundData?.title}</Title>
 
           <ButtonArea>
-            <FancyButton
-              onPointerDown={() => {
-                const index = pickSampleIndex(getSampleIds(name, 'down'));
-                if (index == null) {
-                  return;
-                }
-                setLastDownIndex(index);
-                press({ sampleIndex: index });
-              }}
-              onPointerUp={() => {
-                const index = pickSampleIndex(getSampleIds(name, 'up'));
-                if (index == null) {
-                  return;
-                }
-                setLastUpIndex(index);
-                release({ sampleIndex: index });
-              }}
-            />
+            <FancyButton ref={buttonRef} />
             {loadingStatus === 'loading' && (
               <LoadingLabel>Loading</LoadingLabel>
             )}

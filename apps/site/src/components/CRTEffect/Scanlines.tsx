@@ -1,21 +1,22 @@
 import styled from 'styled-components';
 
+import { normalize } from '@/utils';
+
 interface Props {
+  strength: number;
   lineHeight?: number;
   gapHeight?: number;
 }
 
-function Scanlines({ lineHeight = 1, gapHeight = 1 }: Props) {
+function Scanlines({ strength, lineHeight = 1, gapHeight = 1 }: Props) {
   return (
-    <>
-      <Stripes
-        style={{
-          '--line-height': `${lineHeight}px`,
-          '--gap-height': `${gapHeight}px`,
-        }}
-      />
-      <ColorTweaks />
-    </>
+    <Stripes
+      style={{
+        '--line-height': `${lineHeight}px`,
+        '--gap-height': `${gapHeight}px`,
+        opacity: normalize(strength, 0, 1, 0, 0.2),
+      }}
+    />
   );
 }
 
@@ -31,16 +32,6 @@ const Stripes = styled.div`
       calc(var(--line-height) + var(--gap-height))
   );
   mix-blend-mode: hard-light;
-  opacity: 0.2;
-  pointer-events: none;
-`;
-
-const ColorTweaks = styled.div`
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: saturate(120%) contrast(110%);
   pointer-events: none;
 `;
 

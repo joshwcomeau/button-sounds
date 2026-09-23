@@ -27,6 +27,11 @@ export function sample<T>(arr: Array<T>, len = 1): Array<T> {
   return output;
 }
 
+// Given an array with N elements, picks a random number from 0 to N-1.
+export function sampleIndex<T>(arr: readonly T[]): number {
+  return Math.floor(Math.random() * arr.length);
+}
+
 export const random = (
   min: number,
   max: number,

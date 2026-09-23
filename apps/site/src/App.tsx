@@ -4,7 +4,7 @@ import ButtonSounds, { SOUND_NAMES, DEFAULT_NAME } from 'button-sounds';
 import type { SoundName } from 'button-sounds';
 import { useButtonSounds } from 'button-sounds/react';
 
-import Scanlines from '@/components/Scanlines/Scanlines';
+import CRTEffect from '@/components/CRTEffect/CRTEffect';
 import MainDemo from '@/components/MainDemo/MainDemo';
 import { SOUNDS_PATH } from './constants';
 
@@ -56,7 +56,7 @@ function App() {
           <a href="https://github.com/goldfire/howler.js">howler</a>
         </p>
       </footer>
-      <Scanlines />
+      <CRTEffect />
     </Wrapper>
   );
 }
@@ -65,6 +65,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   max-width: 60rem;
+  padding-block: 3rem;
   margin-inline: auto;
 `;
 

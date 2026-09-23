@@ -1,41 +1,70 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-function FancyButton(props: React.HTMLAttributes<HTMLButtonElement>) {
-  const previousStatusRef = React.useRef<string>('idle');
-  const [currentStatus, setCurrentStatus] = React.useState('idle');
+// prettier-ignore
+type Action =
+  | 'hovering'
+  | 'pressing'
+  | 'releasing'
+  | 'leaving'
+  | 'releasing-elsewhere';
 
-  const hasFreshlyEntered =
-    currentStatus === 'hover' && previousStatusRef.current === 'idle';
+const DURATIONS_BY_ACTION: Record<Action, number> = {
+  hovering: 300,
+  pressing: 0,
+  releasing: 75,
+  leaving: 300,
+  'releasing-elsewhere': 300,
+};
+
+function FancyButton(props: React.HTMLAttributes<HTMLButtonElement>) {
+  const wrapperRef = React.useRef<HTMLSpanElement>(null);
+  const [action, setAction] = React.useState<Action | null>(null);
+  const actionRef = React.useRef<Action | null>(null);
+  actionRef.current = action;
+
+  const handleMouseUp = React.useCallback((ev) => {
+    const releasedWithinButton = wrapperRef.current?.contains(ev.target);
+    setAction(releasedWithinButton ? 'releasing' : 'releasing-elsewhere');
+  }, []);
+
+  const handleMouseEnter = React.useCallback(() => {
+    setAction('hovering');
+
+    window.addEventListener('mouseup', handleMouseUp);
+  }, [handleMouseUp]);
+
+  const handleMouseLeave = React.useCallback(() => {
+    const action = actionRef.current;
+
+    if (action !== 'pressing') {
+      setAction('leaving');
+    }
+  }, []);
+
+  const handleMouseDown = React.useCallback(() => {
+    setAction('pressing');
+  }, []);
+
+  const transitionDuration = action ? DURATIONS_BY_ACTION[action] : 0;
+
+  console.log(action, transitionDuration);
 
   return (
-    <OuterWrapper type="button" {...props}>
+    <OuterWrapper
+      type="button"
+      {...props}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+    >
       <Wrapper
-        data-status={currentStatus}
+        data-action={action}
         style={{
-          '--transition-duration':
-            currentStatus === 'idle' || hasFreshlyEntered
-              ? '300ms'
-              : currentStatus === 'active'
-                ? '0ms'
-                : '75ms',
+          '--transition-duration': transitionDuration + 'ms',
         }}
-        onMouseEnter={() => {
-          previousStatusRef.current = currentStatus;
-          setCurrentStatus('hover');
-        }}
-        onMouseLeave={() => {
-          previousStatusRef.current = currentStatus;
-          setCurrentStatus('idle');
-        }}
-        onMouseDown={() => {
-          previousStatusRef.current = currentStatus;
-          setCurrentStatus('active');
-        }}
-        onMouseUp={() => {
-          previousStatusRef.current = currentStatus;
-          setCurrentStatus('hover');
-        }}
+
+        ref={wrapperRef}
       >
         <Shaft />
         <CastShadow />
@@ -141,10 +170,10 @@ const CastShadow = styled.span`
   transform: translateY(var(--size));
   pointer-events: none;
 
-  ${Wrapper}[data-status="hover"] & {
+  ${Wrapper}[data-action="hovering"] & {
     --size: 16px;
   }
-  ${Wrapper}[data-status="active"] &, ${Wrapper}:active & {
+  ${Wrapper}[data-action="pressing"] & {
     --size: 0px;
   }
 `;
@@ -160,7 +189,7 @@ const Clipper = styled.span`
 `;
 
 const Face = styled.span`
-  --shadow: hsl(350deg 100% 10% / 0.25);
+  --shadow-color: hsl(350deg 100% 10% / 0);
   position: relative;
   margin: var(--gap);
   margin-top: 0;
@@ -181,26 +210,40 @@ const Face = styled.span`
   font-weight: 700;
   text-shadow: 0px 1px 0px hsl(350deg 100% 10% / 0.25);
   overflow: hidden;
-  transition: transform var(--transition-duration);
+  user-select: none;
+  box-shadow:
+    inset 0px 1px 2px var(--shadow-color),
+    inset 0px 2px 4px var(--shadow-color),
+    inset 0px 4px 8px var(--shadow-color),
+    inset 0px 8px 16px var(--shadow-color);
+  transition:
+    color var(--transition-duration),
+    transform var(--transition-duration),
+    text-shadow var(--transition-duration),
+    border var(--transition-duration),
+    --shadow-color var(--transition-duration);
 
-  ${Wrapper}[data-status="hover"] & {
+  @property --shadow-color {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: hsl(350deg 100% 10% / 0);
+  }
+
+  ${Wrapper}[data-action="hovering"] &,
+  ${Wrapper}[data-action="releasing"] & {
     transform: translateY(-4px);
   }
-  ${Wrapper}[data-status="active"] &, ${Wrapper}:active & {
+  ${Wrapper}[data-action="pressing"] & {
+    --shadow-color: hsl(350deg 100% 10% / 0.25);
     transform: translateY(8px);
     background: linear-gradient(
       to top,
       hsl(350deg 100% 47%),
       hsl(350deg 100% 30%)
     );
-    border-top: none;
+    border-top: 2px solid hsl(340deg 50% 26%);
     color: hsl(350deg 100% 90%);
     text-shadow: 0px -1px 0px hsl(350deg 100% 30%);
-    box-shadow:
-      inset 0px 1px 2px var(--shadow),
-      inset 0px 2px 4px var(--shadow),
-      inset 0px 4px 8px var(--shadow),
-      inset 0px 8px 16px var(--shadow);
   }
 `;
 
@@ -224,8 +267,9 @@ const BottomShadow = styled.span`
   filter: blur(12px);
   mix-blend-mode: multiply;
   transition: opacity var(--transition-duration);
+  pointer-events: none;
 
-  ${Wrapper}[data-status="active"] &, ${Wrapper}:active & {
+  ${Wrapper}[data-action="pressing"] & {
     opacity: 1;
   }
 `;

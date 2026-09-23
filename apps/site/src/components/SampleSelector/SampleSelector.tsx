@@ -3,6 +3,8 @@ import styled from 'styled-components';
 
 import { range } from '@/utils';
 
+import BevelEdge from '@/components/BevelEdge';
+
 interface Props {
   label: string;
   numOfSamples: number;
@@ -20,6 +22,8 @@ function SampleSelector({
 }: Props) {
   return (
     <Wrapper>
+      <BevelEdge side="top" color="black" />
+      <BevelEdge side="bottom" color="var(--color-gray-300)" />
       <Label>{label}</Label>
       <Samples>
         {range(numOfSamples).map((index) => {
@@ -40,10 +44,12 @@ function SampleSelector({
 }
 
 const Wrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
   background: var(--color-background);
+  border: 1px solid var(--color-gray-200);
   padding: 16px;
   corner-shape: bevel;
   border-radius: 8px;
