@@ -7,6 +7,7 @@ import { random, sampleIndex } from '@/utils';
 import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
 import Screw from '@/components/Screw';
+import Spinner from '@/components/Spinner/Spinner';
 
 import { getSampleIds, pickSampleIndex } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
@@ -138,10 +139,11 @@ function MainDemo() {
           <Title>Sound Playground</Title>
 
           <ButtonArea>
-            <FancyButton ref={buttonRef} />
-            {loadingStatus === 'loading' && (
-              <LoadingLabel>Loading</LoadingLabel>
-            )}
+            <FancyButton
+              disabled={loadingStatus === 'loading'}
+              ref={buttonRef}
+            />
+            {loadingStatus === 'loading' && <StyledSpinner />}
           </ButtonArea>
 
           <InfoTable name={name} />
@@ -218,7 +220,6 @@ const Main = styled.div`
 `;
 
 const Title = styled.h3`
-  --main-border-adjustment: calc(var(--main-border-width) / 2);
   --height: 3rem;
   --bw: 5px;
   --hh: calc(var(--height) / 2);
@@ -239,16 +240,30 @@ const Title = styled.h3`
   corner-shape: bevel;
   /*
     Ok this is pretty complicated.
+    I want to create a fake shadow using a bottom border; it looks better than real box-shadow since it follows the taper of the beveled edge nicely. The problem is that this nameplate overlaps the pseudo-border created by Border, and the black shadow shouldn't show over that edge.
+    First, we create "Adjusted Radius", --ar, which is 50% of the element's height minus 4.5px. This WOULD produce a 9px flat vertical edge on the left/right.
+    But then, we use the long-form border-radius syntax to change the angle of the bottom bevels. By using 50% of the height (--hh, unadjusted), we both shift the angle so that it still feels like a 90-degree bevel (ignoring the border sliver), and it also causes the plateau to become smaller and higher.
+    Note that otherwise, this element would be 2px too low, since the 'transform: translateY(-50%)' above doesn't adjust to overlap Border's pseudo-border.
   */
-  --nr: calc(var(--hh) - 4.5px);
-  --bottom-radius: calc(var(--nr) + 5px);
-  border-radius: var(--nr) var(--nr) var(--nr) var(--nr) / var(--nr) var(--nr)
-    var(--hh) var(--hh);
+  --ar: calc(var(--hh) - 4.5px);
+  /* prettier-ignore */
+  border-radius:
+    var(--ar) var(--ar) var(--ar) var(--ar) /
+    var(--ar) var(--ar) var(--hh) var(--hh);
 `;
 
 const ButtonArea = styled.div`
   align-self: center;
   position: relative;
+  padding-bottom: 32px;
+`;
+
+const StyledSpinner = styled(Spinner)`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin-inline: auto;
 `;
 
 const LoadingLabel = styled.p`

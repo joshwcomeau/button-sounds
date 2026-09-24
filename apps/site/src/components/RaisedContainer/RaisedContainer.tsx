@@ -60,6 +60,11 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   background: var(--color-background);
+  background: linear-gradient(
+    to bottom,
+    var(--color-gray-100),
+    hsl(210deg 19% 8%) 4rem
+  );
   border: 1px solid var(--color-gray-200);
   border-radius: ${INNER_RADIUS}px;
   corner-shape: inherit;
@@ -90,7 +95,7 @@ const Label = styled.label`
   font-weight: 600;
   padding: 8px 12px;
   margin-inline: 4px;
-  color: var(--color-gray-800);
+  color: var(--color-gray-1000);
   text-align: center;
   text-shadow: 0px 0px 8px var(--color-background);
   font-family: var(--font-segment);
@@ -100,7 +105,7 @@ const Label = styled.label`
 const StyledDivider = styled(Divider)`
   margin-inline: 8px;
   width: auto;
-  color: var(--color-gray-600);
+  color: var(--color-gray-500);
 `;
 
 export default RaisedContainer;

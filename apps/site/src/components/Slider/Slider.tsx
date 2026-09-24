@@ -119,16 +119,16 @@ const Value = styled.span`
 `;
 
 const Track = styled.div`
-  --thumb-width: 12px;
+  --thumb-width: 10px;
   --thumb-height: 28px;
   --track-height: 2px;
   --tick-thickness: 1px;
-  --tick-length: 8px;
+  --tick-length: 5px;
   --tick-gap: 3px;
-  --track-color: var(--color-gray-300);
+  --track-color: var(--color-gray-100);
   --fill-color: var(--color-gray-800);
   --thumb-color: var(--color-gray-900);
-  --tick-color: var(--color-gray-400);
+  --tick-color: var(--color-gray-200);
   /* Same inset the native thumb uses, so the fill meets the thumb’s center instead of the raw value percentage. */
   --fill-end: calc(
     var(--thumb-width) / 2 + var(--ratio) * (100% - var(--thumb-width))

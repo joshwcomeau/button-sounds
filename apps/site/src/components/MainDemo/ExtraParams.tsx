@@ -17,7 +17,7 @@ function ExtraParams({ pitchVariation, setPitchVariation }: Props) {
     <Wrapper title="Config">
       <Slot>
         <Slider
-          label="Pitch variation"
+          label={<>Random Pitch</>}
           value={pitchVariation}
           setValue={setPitchVariation}
           min={0}

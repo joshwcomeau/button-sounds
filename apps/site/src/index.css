@@ -71,3 +71,21 @@ body {
   font-style: normal;
   font-display: fallback;
 }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeFromTransparent {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeToTransparent {
+  to {
+    opacity: 0;
+  }
+}

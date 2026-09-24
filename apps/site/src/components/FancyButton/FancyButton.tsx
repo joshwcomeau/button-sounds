@@ -87,6 +87,11 @@ const OuterWrapper = styled.button`
   corner-shape: bevel;
   border-radius: 16px;
   outline-offset: 2px;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const Wrapper = styled.span`
