@@ -2,6 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import BevelEdge from '@/components/BevelEdge';
+import Divider from '@/components/Divider';
 
 const OUTER_RADIUS = 16;
 const PADDING = 2;
@@ -31,7 +32,12 @@ function RaisedContainer({ title, children, ...props }: Props) {
           color="var(--color-gray-200)"
           radius={INNER_RADIUS}
         />
-        {title && <Label>{title}</Label>}
+        {title && (
+          <>
+            <Label>{title}</Label>
+            <StyledDivider />
+          </>
+        )}
         {children}
       </Wrapper>
     </OuterWrapper>
@@ -84,12 +90,17 @@ const Label = styled.label`
   font-weight: 600;
   padding: 8px 12px;
   margin-inline: 4px;
-  border-bottom: 2px dashed var(--color-gray-800);
   color: var(--color-gray-800);
   text-align: center;
   text-shadow: 0px 0px 8px var(--color-background);
   font-family: var(--font-segment);
   font-weight: 900;
+`;
+
+const StyledDivider = styled(Divider)`
+  margin-inline: 8px;
+  width: auto;
+  color: var(--color-gray-600);
 `;
 
 export default RaisedContainer;

@@ -11,28 +11,6 @@ import { SOUNDS_PATH } from './constants';
 ButtonSounds.setPath(SOUNDS_PATH);
 
 function App() {
-  const [muted, setMuted] = React.useState(false);
-  const [name, setName] = React.useState<SoundName>(DEFAULT_NAME);
-
-  // React hook API.
-  const reactRef = React.useRef<HTMLButtonElement>(null);
-  useButtonSounds(reactRef, name, {
-    pitchVariation: 0.25,
-    volume: muted ? 0 : 1,
-  });
-
-  // Vanilla wireUp API, attached imperatively via a ref.
-  const vanillaRef = React.useRef<HTMLButtonElement>(null);
-
-  React.useEffect(() => {
-    const el = vanillaRef.current;
-    if (!el) return;
-    return ButtonSounds.wireUp(el, name, {
-      pitchVariation: 0.3,
-      volume: muted ? 0 : 1,
-    });
-  }, [name, muted]);
-
   return (
     <Wrapper>
       <header>
