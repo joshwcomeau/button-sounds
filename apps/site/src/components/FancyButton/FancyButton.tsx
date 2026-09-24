@@ -21,7 +21,9 @@ function FancyButton(props: React.ComponentProps<'button'>) {
   const wrapperRef = React.useRef<HTMLSpanElement>(null);
   const [action, setAction] = React.useState<Action | null>(null);
   const actionRef = React.useRef<Action | null>(null);
-  actionRef.current = action;
+  React.useEffect(() => {
+    actionRef.current = action;
+  }, [action]);
 
   const handleMouseUp = React.useCallback((ev) => {
     const releasedWithinButton = wrapperRef.current?.contains(ev.target);

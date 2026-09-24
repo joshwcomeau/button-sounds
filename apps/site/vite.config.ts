@@ -1,11 +1,15 @@
 import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [
     react(),
+    // React Compiler has to run before other Babel plugins so it sees the original source.
+    babel({
+      presets: [reactCompilerPreset()],
+    }),
     babel({
       plugins: [
         [
