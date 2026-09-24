@@ -37,4 +37,4 @@ for (const file of mp3s) {
   copyFileSync(join(assetsDir, file), join(destDir, file));
 }
 
-console.log(`Copied ${mp3s.length} sound file(s) → ${destDir}`);
+console.info(`Copied ${mp3s.length} sound file(s) → ${destDir}`);
