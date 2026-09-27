@@ -24,8 +24,14 @@ function SampleSelector({
   return (
     <Wrapper title={label}>
       <Samples>
-        {range(numOfSamples).map((index) => {
+        {range(8).map((index) => {
           const isLocked = selectedSampleIndex === index;
+          const hasSample = index < numOfSamples;
+
+          if (!hasSample) {
+            return <Placeholder key={index} />;
+          }
+
           return (
             <SampleButton
               key={index}
@@ -103,11 +109,13 @@ const Samples = styled.div`
   padding: 16px;
 `;
 
+const SIZE = 2.5;
+
 const Sample = styled.button`
   --easing: var(--bezier-overshoot-smooth);
   --duration: 1200ms;
   position: relative;
-  width: 2.5rem;
+  width: ${SIZE}rem;
   aspect-ratio: 1 / 1;
   border: none;
   background: transparent;
@@ -163,6 +171,20 @@ const SampleBorder = styled.span`
     outline-color: var(--locked-color);
     transition: outline-color 0ms;
   }
+`;
+
+const Placeholder = styled.div`
+  --stripe-width: 4px;
+  width: ${SIZE}rem;
+  aspect-ratio: 1 / 1;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0px var(--stripe-width),
+    var(--color-gray-75) var(--stripe-width) calc(var(--stripe-width) * 2)
+  );
+  border: 2px solid var(--color-gray-100);
+  border-radius: 6px;
+  corner-shape: bevel;
 `;
 
 const Num = styled.span`

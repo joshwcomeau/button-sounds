@@ -21,7 +21,7 @@
   --scrollbar-size: 14px;
   --scrollbar-color-thumb: var(--color-gray-200);
   --scrollbar-color-thumb-hover: var(--color-gray-500);
-  --scrollbar-color-bg: var(--color-background);
+  --scrollbar-color-bg: var(--color-gray-50);
 
   --bezier-overshoot-smooth: cubic-bezier(0.06, 1.1, 0, 1.03);
 

@@ -1,5 +1,7 @@
 import { SPRITE_DATA, type SoundName } from 'button-sounds';
 
+// Capture all relevant sample IDs for a given sound name.
+// Eg. ['down1', 'down2', 'down3', 'down4']
 export function getSampleIds(name: SoundName, prefix: 'down' | 'up'): string[] {
   const spriteMap = SPRITE_DATA[name];
   if (!spriteMap) {
@@ -12,11 +14,4 @@ export function getSampleIds(name: SoundName, prefix: 'down' | 'up'): string[] {
       (a, b) =>
         Number(a.match(/\d+$/)?.[0] ?? 0) - Number(b.match(/\d+$/)?.[0] ?? 0),
     );
-}
-
-export function pickSampleIndex(ids: string[]): number | undefined {
-  if (ids.length === 0) {
-    return undefined;
-  }
-  return Math.floor(Math.random() * ids.length);
 }

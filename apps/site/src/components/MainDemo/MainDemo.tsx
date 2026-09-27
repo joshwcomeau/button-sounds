@@ -3,16 +3,19 @@ import styled from 'styled-components';
 import { SOUND_NAMES, SPRITE_DATA, type SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
+import useSyncedRef from '@/hooks/use-synced-ref';
+import { SOUND_DATA } from '@/data';
 import { random, sampleIndex } from '@/utils';
+
 import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
 import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
 
-import { getSampleIds, pickSampleIndex } from './MainDemo.helpers';
+import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
 import ExtraParams from './ExtraParams';
-import InfoTable from './InfoTable';
+import SoundInfo from './SoundInfo';
 import { useSoundResourceLoading } from './useSoundResourceLoading';
 
 function MainDemo() {
@@ -22,6 +25,9 @@ function MainDemo() {
   const [selectedSoundName, setSelectedSoundName] = React.useState<
     string | undefined
   >(SOUND_NAMES[0]);
+  const [selectedFilter, setSelectedFilter] = React.useState<string | null>(
+    null,
+  );
   const [lastDownIndex, setLastDownIndex] = React.useState<
     number | undefined
   >();
@@ -35,10 +41,43 @@ function MainDemo() {
   const [usingLofi, setUsingLofi] = React.useState(false);
   const [pitchVariation, setPitchVariation] = React.useState(0.2);
 
+  const relevantSounds = React.useMemo(() => {
+    if (!selectedFilter) {
+      return SOUND_NAMES;
+    }
+    return SOUND_NAMES.filter((name) => {
+      return SOUND_DATA[name].category === selectedFilter;
+    });
+  }, [selectedFilter]);
+
+  const handleFilterClick = React.useCallback(
+    (newFilter: string) => {
+      if (newFilter === selectedFilter) {
+        setSelectedFilter(null);
+        return;
+      }
+      const nextRelevantSounds = SOUND_NAMES.filter((name) => {
+        return SOUND_DATA[name].category === newFilter;
+      });
+
+      // If the currently-selected sound is not part of the newly filtered group, select the first sound in that group
+      const isCurrentSoundInGroup = nextRelevantSounds.some(
+        (soundName) => soundName === selectedSoundName,
+      );
+      if (!isCurrentSoundInGroup) {
+        setSelectedSoundName(nextRelevantSounds[0]);
+      }
+      setSelectedFilter(newFilter);
+    },
+    [selectedSoundName, selectedFilter],
+  );
+
+  const selectedSoundNameRef = useSyncedRef(selectedSoundName);
+
   const name = (selectedSoundName ?? SOUND_NAMES[0]) as SoundName;
   const { press, release } = useImperativeButtonSounds(name, {
     lofi: usingLofi,
-    lofiOptions: { bits: 4, downsample: 0.1 },
+    lofiOptions: { bits: 4, downsample: 0.15 },
   });
   const loadingStatus = useSoundResourceLoading(name);
 
@@ -54,31 +93,39 @@ function MainDemo() {
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setSelectedSoundName((currentVal: any) => {
-          if (!currentVal) {
-            return SOUND_NAMES[0];
-          }
-          const newVal = SOUND_NAMES[SOUND_NAMES.indexOf(currentVal) - 1];
-          return newVal ? newVal : SOUND_NAMES[SOUND_NAMES.length - 1];
-        });
-      } else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setSelectedSoundName((currentVal: any) => {
-          if (!currentVal) {
-            return SOUND_NAMES[0];
-          }
-          const newVal = SOUND_NAMES[SOUND_NAMES.indexOf(currentVal) + 1];
-          return newVal ? newVal : SOUND_NAMES[0];
-        });
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+        return;
       }
+
+      const selectedSoundName =
+        selectedSoundNameRef.current || relevantSounds[0];
+
+      event.preventDefault();
+
+      const direction = event.key === 'ArrowUp' ? -1 : 1;
+      const currentIndex = relevantSounds.indexOf(
+        selectedSoundName as SoundName,
+      );
+      // JS remainder keeps the sign of the dividend, so stepping backward from 0 would otherwise land on -1.
+      const nextIndex =
+        (currentIndex + direction + relevantSounds.length) %
+        relevantSounds.length;
+      const nextSoundName = relevantSounds[nextIndex];
+
+      const btn = document.querySelector<HTMLButtonElement>(
+        `[data-button-id="${nextSoundName}"]`,
+      );
+
+      btn?.focus?.();
+
+      setSelectedSoundName(nextSoundName);
     }
+
     wrapper.addEventListener('keydown', handleKeyDown);
     return () => {
       wrapper.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedSoundName]);
+  }, [relevantSounds, selectedSoundNameRef]);
 
   React.useEffect(() => {
     const btn = buttonRef.current;
@@ -134,19 +181,24 @@ function MainDemo() {
         <SoundSelectSidebar
           selectedSoundName={selectedSoundName}
           setSelectedSoundName={setSelectedSoundName}
+          relevantSounds={relevantSounds}
+          selectedFilter={selectedFilter}
+          handleFilterClick={handleFilterClick}
         />
         <Main>
           <Title>Sound Playground</Title>
 
           <ButtonArea>
-            <FancyButton
-              disabled={loadingStatus === 'loading'}
-              ref={buttonRef}
-            />
+            <ButtonWrapper>
+              <FancyButton
+                disabled={loadingStatus === 'loading'}
+                ref={buttonRef}
+              />
+            </ButtonWrapper>
             {loadingStatus === 'loading' && <StyledSpinner />}
           </ButtonArea>
 
-          <InfoTable name={name} />
+          <SoundInfo name={name} />
         </Main>
         <ConfigSidebar>
           <SampleSelector
@@ -213,10 +265,6 @@ const Main = styled.div`
   gap: 1rem;
   padding: 1rem;
   padding-top: 0;
-
-  p {
-    text-align: center;
-  }
 `;
 
 const Title = styled.h3`
@@ -256,6 +304,32 @@ const ButtonArea = styled.div`
   align-self: center;
   position: relative;
   padding-bottom: 32px;
+`;
+
+const ButtonWrapper = styled.div`
+  position: relative;
+  --stripe-width: 24px;
+  --grad: repeating-linear-gradient(
+    45deg,
+    transparent 0px var(--stripe-width),
+    var(--color-gray-200) var(--stripe-width) calc(var(--stripe-width) * 2)
+  );
+  padding: 64px;
+  /* border: 1px solid var(--color-gray-250); */
+  outline: 2px solid var(--color-gray-250);
+  outline-offset: 2px;
+  border-radius: 40px;
+  corner-shape: bevel;
+  background: var(--grad);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 32px;
+    background: var(--color-gray-75);
+    border-radius: 24px;
+    corner-shape: bevel;
+  }
 `;
 
 const StyledSpinner = styled(Spinner)`

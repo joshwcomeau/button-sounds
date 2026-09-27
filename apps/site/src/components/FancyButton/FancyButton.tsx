@@ -175,7 +175,7 @@ const CastShadow = styled.span`
   transform: translateY(var(--size));
   pointer-events: none;
 
-  ${Wrapper}[data-action="hovering"] & {
+  ${Wrapper}[data-action="hovering"] &, ${Wrapper}[data-action="releasing"] & {
     --size: 16px;
   }
   ${Wrapper}[data-action="pressing"] & {

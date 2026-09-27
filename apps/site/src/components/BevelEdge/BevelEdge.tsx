@@ -6,17 +6,29 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
   color: string;
   radius?: number;
   borderWidth?: number;
+  ignoreSide?: 'left' | 'right';
 }
 
-function BevelEdge({ side, color, radius = 8, borderWidth = 1 }: Props) {
+function BevelEdge({
+  side,
+  color,
+  radius = 8,
+  borderWidth = 1,
+  ignoreSide,
+  style = {},
+  ...rest
+}: Props) {
   const Component = side === 'top' ? TopEdge : BottomEdge;
   return (
     <Component
       style={{
+        ...style,
         '--border-color': color,
         '--bevel-radius': `${radius}px`,
         '--border-width': `${borderWidth}px`,
       }}
+      data-ignore-side={ignoreSide}
+      {...rest}
     />
   );
 }
@@ -56,6 +68,17 @@ const TopEdge = styled.div`
     border-right: var(--border-width) solid var(--border-color);
     transform: translate(100%, calc(var(--border-width) * -1));
   }
+
+  &[data-ignore-side='left'] {
+    &::before {
+      display: none;
+    }
+  }
+  &[data-ignore-side='right'] {
+    &::after {
+      display: none;
+    }
+  }
 `;
 const BottomEdge = styled.div`
   position: absolute;
@@ -90,6 +113,16 @@ const BottomEdge = styled.div`
     border-bottom: var(--border-width) solid var(--border-color);
     border-right: var(--border-width) solid var(--border-color);
     transform: translate(100%, var(--border-width));
+  }
+  &[data-ignore-side='left'] {
+    &::before {
+      display: none;
+    }
+  }
+  &[data-ignore-side='right'] {
+    &::after {
+      display: none;
+    }
   }
 `;
 

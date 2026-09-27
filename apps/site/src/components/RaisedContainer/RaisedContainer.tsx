@@ -54,6 +54,13 @@ const OuterWrapper = styled.div`
 `;
 
 const Wrapper = styled.div`
+  /*
+  NOTE: In SoundSelectSidebar, have a styled(RaisedContainer) that sets 'contain: size', so that it doesn't cause the whole demo wrapper to grow/shrink. In order for the stuff within to fill the available space, I needed to make the styled OuterWrapper a flex column, so I then needed this inner wrapper to have flex: 1.
+  AFAIK there are no other situations where I set the parent OuterWrapper to use Flexbox, but if this winds up causing problems, I'll need to refactor. I can either:
+  1. Add an 'innerWrapperProps' prop that applies styles here
+  2. Add a 'variant' prop that sets 'data-variant' on the parent and, in this chunk of styles, applies the SoundSelectSidebar-specific styles (flex: 1).
+*/
+  flex: 1;
   position: relative;
   /* NOTE: Needed in SoundSelectSidebar to ensure that the list doesn't overflow. */
   max-height: 100%;
