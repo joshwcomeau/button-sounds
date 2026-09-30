@@ -13,18 +13,17 @@ function App() {
   return (
     <SoundSettingsProvider>
       <Wrapper>
-        <header>
-          <h1>
-            Button <span>Sounds</span>
-          </h1>
+        <Header>
+          <h1>Button Sounds</h1>
           <p>
-            Add tactile press &amp; release sound effects to your UI — a tiny
-            vanilla API, or a React hook.
+            A collection of 50+ professionally-recorded multi-sampled clicks and
+            toggles. Easy to use with a JavaScript library as well as React
+            bindings.
           </p>
           <div>
             <code>npm install button-sounds</code>
           </div>
-        </header>
+        </Header>
 
         <MainDemo />
 
@@ -46,6 +45,18 @@ const Wrapper = styled.div`
   max-width: 60rem;
   padding-block: 3rem;
   margin-inline: auto;
+`;
+
+const Header = styled.header`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-block: 4rem;
+
+  h1 {
+    text-align: center;
+    font-size: 4rem;
+  }
 `;
 
 export default App;

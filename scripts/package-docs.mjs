@@ -1,8 +1,8 @@
 // Syncs the repo-root README.md and LICENSE into a package directory so the exact same docs are published to npm as are shown on GitHub. There is only one canonical copy of each file (at the repo root) to maintain; the package copies are generated at publish time (prepack) and removed afterwards (postpack), and are git-ignored.
 //
 // Usage (run from the package directory, e.g. via a prepack script):
-//   node ../../scripts/package-docs.mjs copy
-//   node ../../scripts/package-docs.mjs clean
+//   node ../scripts/package-docs.mjs copy
+//   node ../scripts/package-docs.mjs clean
 
 import { copyFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';

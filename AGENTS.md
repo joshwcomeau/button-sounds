@@ -1,6 +1,6 @@
 # Project context
 
-This project contains an NPM package for playing UI sounds (/packages/button-sounds) as well as a landing page that showcases it (/apps/site).
+This project contains an NPM package for playing UI sounds (/package) as well as a landing page that showcases it (/site).
 
 # Workflow
 

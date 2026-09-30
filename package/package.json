@@ -58,8 +58,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint:pkg": "pnpm run build && publint && attw --pack --profile node16",
-    "prepack": "node ../../scripts/package-docs.mjs copy",
-    "postpack": "node ../../scripts/package-docs.mjs clean",
+    "prepack": "node ../scripts/package-docs.mjs copy",
+    "postpack": "node ../scripts/package-docs.mjs clean",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

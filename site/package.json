@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "node ../../scripts/copy-demo-sounds.mjs",
+    "predev": "node ../scripts/copy-demo-sounds.mjs",
     "dev": "vite",
-    "prebuild": "node ../../scripts/copy-demo-sounds.mjs",
+    "prebuild": "node ../scripts/copy-demo-sounds.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"

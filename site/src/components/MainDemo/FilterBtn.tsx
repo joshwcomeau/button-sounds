@@ -29,7 +29,6 @@ function FilterBtn({
   children,
   ...delegated
 }: Props) {
-  console.log('Icon', Icon);
   const wrapperRef = React.useRef<HTMLButtonElement>(null);
   const { usingLofi } = useSoundSettings();
   useButtonSounds(
