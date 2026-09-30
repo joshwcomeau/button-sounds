@@ -2,13 +2,11 @@ import styled from 'styled-components';
 import type { SoundName } from 'button-sounds';
 import { Keyboard, Mouse, Gamepad, ToggleRight, Shapes } from 'lucide-react';
 
-import { range } from '@/utils';
-
-import BevelEdge from '@/components/BevelEdge';
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
 
 import SoundSelectBtn from './SoundSelectBtn';
 import FilterBtn from './FilterBtn';
+import UpDownBtn from './UpDownBtn';
 
 const FILTER_TYPES = [
   { id: 'keyboard', icon: Keyboard },
@@ -20,10 +18,12 @@ const FILTER_TYPES = [
 
 interface Props {
   selectedSoundName: string | undefined;
-  setSelectedSoundName: (name: string | undefined) => void;
+  setSelectedSoundName: (name: SoundName) => void;
   relevantSounds: SoundName[];
   selectedFilter: string | null;
   handleFilterClick: (filterId: string) => void;
+  handleIncrementSound: () => void;
+  handleDecrementSound: () => void;
 }
 
 function SoundSelectSidebar({
@@ -32,6 +32,8 @@ function SoundSelectSidebar({
   relevantSounds,
   selectedFilter,
   handleFilterClick,
+  handleIncrementSound,
+  handleDecrementSound,
 }: Props) {
   return (
     <Wrapper title="Select Sound">
@@ -49,10 +51,21 @@ function SoundSelectSidebar({
           );
         })}
       </List>
+      <Divider />
+      <BottomHeader>
+        <FilterName>{selectedFilter || 'All Sounds'}</FilterName>
+        <BottomHeaderEdge />
+        <Arrows>
+          <UpDownBtn direction="up" handleClick={handleIncrementSound} />
+          <UpDownBtn direction="down" handleClick={handleDecrementSound} />
+        </Arrows>
+      </BottomHeader>
       <Filters>
-        {FILTER_TYPES.map((filter) => (
+        {FILTER_TYPES.map((filter, index) => (
           <FilterBtn
             key={filter.id}
+            isFirst={index === 0}
+            isLast={index === FILTER_TYPES.length - 1}
             filterId={filter.id}
             Icon={filter.icon}
             isSelected={selectedFilter === filter.id}
@@ -61,6 +74,30 @@ function SoundSelectSidebar({
         ))}
       </Filters>
     </Wrapper>
+  );
+}
+
+function BottomHeaderEdge() {
+  const FILET_X = 6;
+  const FILET_Y = 3;
+  const strokeD = `
+    M 0,0
+    L ${FILET_X},${FILET_Y}
+    L ${32 - FILET_X},${32 - FILET_Y}
+    L 32,32
+  `;
+  const fillD = `
+    ${strokeD}
+    L 0,32
+    Z
+  `;
+  return (
+    <EdgeSvg viewBox="0 0 32 32" preserveAspectRatio="none">
+      {/* There's a weird half-pixel underline that we need to cover */}
+      <rect x={0} y={32} width={32} height={1} fill="var(--color-gray-50)" />
+      <FillPath d={fillD} />
+      <StrokePath d={strokeD} />
+    </EdgeSvg>
   );
 }
 
@@ -80,7 +117,6 @@ const List = styled.ul`
   padding: 4px;
   margin: 0;
   gap: 2px;
-  border-block: 1px solid var(--color-gray-300);
 `;
 
 const ListItem = styled.li`
@@ -92,10 +128,68 @@ const ListItem = styled.li`
   background: black;
 `;
 
+const BottomExtraWrapper = styled.div`
+  /* border-top: 1px solid var(--color-gray-300); */
+`;
+const BottomArea = styled.div`
+  /* border-top: 2px solid var(--color-gray-75); */
+`;
+
+const Divider = styled.div`
+  border-top: 1px solid var(--color-gray-300);
+  background: var(--color-gray-75);
+  height: 2px;
+`;
+
+const BottomHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  text-transform: capitalize;
+  font-weight: 700;
+  font-family: var(--font-segment);
+  background: var(--color-gray-75);
+`;
+const FilterName = styled.span`
+  border-top: 1px solid var(--color-gray-300);
+  padding: 8px;
+  padding-bottom: 0;
+  flex: 1;
+  background: var(--color-gray-50);
+`;
+const Arrows = styled.div`
+  display: flex;
+  align-items: flex-start;
+  height: 2rem;
+  padding-inline: 8px;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-gray-300);
+  background: var(--color-gray-75);
+`;
+
 const Filters = styled.div`
   padding: 8px;
   display: flex;
   gap: 4px;
+`;
+
+const EdgeSvg = styled.svg`
+  display: block;
+  width: 32px;
+  height: 31px;
+  fill: none;
+  overflow: visible;
+`;
+
+const FillPath = styled.path`
+  fill: var(--color-gray-50);
+`;
+const StrokePath = styled.path`
+  stroke: var(--color-gray-300);
+  stroke-width: 1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 `;
 
 export default SoundSelectSidebar;

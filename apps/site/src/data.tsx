@@ -15,8 +15,8 @@ const godinHref = 'https://godinguitars.com/product/concert-cw-clasica-ii/';
 const raddySharedDesc = (
   <p>
     I recently got a shortwave radio (<a href={raddyHref}>Raddy RF320</a>),
-    hoping to find obscure radio content. Turns out there’s not much out there,
-    but at least the buttons sound kinda cool!
+    hoping to find obscure radio content. Turns out there’s not much out there
+    these days. 😅
   </p>
 );
 
@@ -46,12 +46,8 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
         <p>
           If you fall deep enough into the mechanical keyboard rabbit hole,
           you’ll start to hear terms like “creamy” and “thocky”. This keyboard
-          from <a href={hi75Href}>Leobog</a> is supposedly one of the thockiest.
-          I think it sounds neat!
-        </p>
-        <p>
-          It features custom “Reaper” switches, and I pressed the keys
-          especially softly for this recording.
+          from <a href={hi75Href}>Leobog</a> with custom “Reaper” switches is
+          supposedly one of the thockiest.
         </p>
       </>
     ),
@@ -223,9 +219,8 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     description: (
       <p>
         The back trigger buttons (L2/R2) on a Playstation DualSense controller
-        are spring-loaded. For this sound, I pressed the triggers gently and
-        then quickly released them, allowing them to snap back to their normal
-        position.
+        are spring-loaded, and when they’re released quickly, they snap back
+        into place.
       </p>
     ),
   },
@@ -304,7 +299,6 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
           recorded the buttons on a cheap rubber-dome ASUS keyboard, the kind
           that comes included with budget desktop PCs.
         </p>
-        <p>This is a recording of soft keypresses.</p>
       </>
     ),
   },
@@ -312,7 +306,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     title: 'ASUS Keyboard (soft)',
     category: 'keyboard',
     description: (
-      <p>Typical keypresses on a cheap rubber-dome ASUS keyboard.</p>
+      <p>Slightly harder keypresses on a cheap rubber-dome ASUS keyboard.</p>
     ),
   },
   'asus-kbd-hard': {
@@ -321,8 +315,8 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     description: (
       <p>
         I threw caution to the wind and beat the hell out of my cheap
-        rubber-dome ASUS keyboard. I am happy to report thatit survived the
-        ordeal.
+        rubber-dome ASUS keyboard. I am happy to report that the keyboard
+        survived the ordeal.
       </p>
     ),
   },
@@ -424,40 +418,33 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     title: 'Treadmill Remote (sharp)',
     category: 'misc',
     description: (
-      <>
-        <p>
-          The remote control for my walking pad had several buttons, which make
-          a variety of sounds. This one feels sharp and crisp to me.
-        </p>
-        {urevoSharedDesc}
-      </>
+      <p>
+        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+        control with several buttons. They all have a slightly different
+        character, so I recorded all three!
+      </p>
     ),
   },
   'treadmill-pitched': {
     title: 'Treadmill Remote (pitched)',
     category: 'misc',
     description: (
-      <>
-        <p>
-          The remote control for my walking pad had several buttons, which make
-          a variety of sounds. This one has a more resonant/pitched sound than
-          the others.
-        </p>
-        {urevoSharedDesc}
-      </>
+      <p>
+        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+        control with several buttons. They all have a slightly different
+        character, so I recorded all three!
+      </p>
     ),
   },
   'treadmill-flinty': {
     title: 'Treadmill Remote (flinty)',
     category: 'misc',
     description: (
-      <>
-        <p>
-          The remote control for my walking pad had several buttons, which make
-          a variety of sounds. This one is a bit crunchier than the others.
-        </p>
-        {urevoSharedDesc}
-      </>
+      <p>
+        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+        control with several buttons. They all have a slightly different
+        character, so I recorded all three!
+      </p>
     ),
   },
   'camera-latch': {

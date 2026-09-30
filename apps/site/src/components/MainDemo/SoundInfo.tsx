@@ -82,8 +82,10 @@ const StyledOuterCorner = styled(OuterCorner)`
 `;
 
 const Main = styled.div`
+  padding-bottom: 16px;
   p {
     padding: 16px;
+    padding-bottom: 0;
     font-size: 0.875rem;
     text-align: left;
 

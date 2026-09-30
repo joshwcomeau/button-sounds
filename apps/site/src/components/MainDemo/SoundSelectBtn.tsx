@@ -2,8 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { useButtonSounds } from 'button-sounds/react';
 
-import BevelEdge from '@/components/BevelEdge/BevelEdge';
 import { range } from '@/utils';
+
+import BevelEdge from '@/components/BevelEdge/BevelEdge';
+import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 interface Props extends React.ComponentProps<'button'> {
   name: string;
@@ -18,7 +20,9 @@ function SoundSelectBtn({
   ...delegated
 }: Props) {
   const wrapperRef = React.useRef<HTMLButtonElement>(null);
+  const { usingLofi } = useSoundSettings();
   useButtonSounds(wrapperRef, 'carson-microflip', {
+    lofi: usingLofi,
     pitchVariation: 0.1,
   });
   return (
@@ -47,7 +51,8 @@ function SoundSelectBtn({
 const Wrapper = styled.button`
   --top-edge: var(--color-gray-500);
   --bottom-edge: transparent;
-  --from-color: var(--color-gray-75);
+  /* NOTE: --color-gray-75, hardcoded because otherwise the browser can't tell that this is a color type */
+  --from-color: hsl(210deg 17% 15%);
   --to-color: var(--color-gray-75);
   position: relative;
   display: flex;

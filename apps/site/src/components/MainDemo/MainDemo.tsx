@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { SOUND_NAMES, SPRITE_DATA, type SoundName } from 'button-sounds';
+import { SOUND_NAMES, type SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
 import useSyncedRef from '@/hooks/use-synced-ref';
@@ -11,6 +11,7 @@ import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
 import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
+import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
@@ -22,9 +23,9 @@ function MainDemo() {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  const [selectedSoundName, setSelectedSoundName] = React.useState<
-    string | undefined
-  >(SOUND_NAMES[0]);
+  const [selectedSoundName, setSelectedSoundName] = React.useState<SoundName>(
+    SOUND_NAMES[0] || 'hi75-soft',
+  );
   const [selectedFilter, setSelectedFilter] = React.useState<string | null>(
     null,
   );
@@ -38,8 +39,7 @@ function MainDemo() {
   const [selectedUpIndex, setSelectedUpIndex] = React.useState<
     number | undefined
   >();
-  const [usingLofi, setUsingLofi] = React.useState(false);
-  const [pitchVariation, setPitchVariation] = React.useState(0.2);
+  const { usingLofi, pitchVariation } = useSoundSettings();
 
   const relevantSounds = React.useMemo(() => {
     if (!selectedFilter) {
@@ -65,7 +65,7 @@ function MainDemo() {
         (soundName) => soundName === selectedSoundName,
       );
       if (!isCurrentSoundInGroup) {
-        setSelectedSoundName(nextRelevantSounds[0]);
+        setSelectedSoundName(nextRelevantSounds[0] as SoundName);
       }
       setSelectedFilter(newFilter);
     },
@@ -74,17 +74,39 @@ function MainDemo() {
 
   const selectedSoundNameRef = useSyncedRef(selectedSoundName);
 
-  const name = (selectedSoundName ?? SOUND_NAMES[0]) as SoundName;
-  const { press, release } = useImperativeButtonSounds(name, {
+  const { press, release } = useImperativeButtonSounds(selectedSoundName, {
     lofi: usingLofi,
     lofiOptions: { bits: 4, downsample: 0.15 },
   });
-  const loadingStatus = useSoundResourceLoading(name);
+  const loadingStatus = useSoundResourceLoading(selectedSoundName);
+
+  const handleIncrementSound = React.useCallback(() => {
+    const currentIndex = relevantSounds.indexOf(selectedSoundName);
+    const nextIndex =
+      (currentIndex - 1 + relevantSounds.length) % relevantSounds.length;
+    setSelectedSoundName(relevantSounds[nextIndex] as SoundName);
+
+    // Ensure the button is visible within its scroll container
+    const button = document.querySelector<HTMLButtonElement>(
+      `[data-button-id="${relevantSounds[nextIndex]}"]`,
+    );
+    button?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [relevantSounds, selectedSoundName]);
+
+  const handleDecrementSound = React.useCallback(() => {
+    const currentIndex = relevantSounds.indexOf(selectedSoundName);
+    const nextIndex = (currentIndex + 1) % relevantSounds.length;
+    setSelectedSoundName(relevantSounds[nextIndex] as SoundName);
+    const button = document.querySelector<HTMLButtonElement>(
+      `[data-button-id="${relevantSounds[nextIndex]}"]`,
+    );
+    button?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [relevantSounds, selectedSoundName]);
 
   React.useEffect(() => {
     setLastDownIndex(undefined);
     setLastUpIndex(undefined);
-  }, [name]);
+  }, [selectedSoundName]);
 
   React.useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -137,7 +159,7 @@ function MainDemo() {
     function handlePointerDown() {
       let index = selectedDownIndex;
       if (typeof index !== 'number') {
-        index = sampleIndex(getSampleIds(name, 'down')) || 0;
+        index = sampleIndex(getSampleIds(selectedSoundName, 'down')) || 0;
       }
 
       const playbackRate =
@@ -150,7 +172,7 @@ function MainDemo() {
       function handlePointerUp() {
         let index = selectedUpIndex;
         if (typeof index !== 'number') {
-          index = sampleIndex(getSampleIds(name, 'up')) || 0;
+          index = sampleIndex(getSampleIds(selectedSoundName, 'up')) || 0;
         }
 
         const playbackRate =
@@ -173,7 +195,7 @@ function MainDemo() {
     return () => {
       btn.removeEventListener('pointerdown', handlePointerDown);
     };
-  }, [name, selectedDownIndex, selectedUpIndex, pitchVariation]);
+  }, [selectedSoundName, selectedDownIndex, selectedUpIndex, pitchVariation]);
 
   return (
     <Border>
@@ -184,6 +206,8 @@ function MainDemo() {
           relevantSounds={relevantSounds}
           selectedFilter={selectedFilter}
           handleFilterClick={handleFilterClick}
+          handleIncrementSound={handleIncrementSound}
+          handleDecrementSound={handleDecrementSound}
         />
         <Main>
           <Title>Sound Playground</Title>
@@ -198,29 +222,24 @@ function MainDemo() {
             {loadingStatus === 'loading' && <StyledSpinner />}
           </ButtonArea>
 
-          <SoundInfo name={name} />
+          <SoundInfo name={selectedSoundName} />
         </Main>
         <ConfigSidebar>
           <SampleSelector
             label="Press Sample"
-            numOfSamples={getSampleIds(name, 'down').length}
+            numOfSamples={getSampleIds(selectedSoundName, 'down').length}
             selectedSampleIndex={selectedDownIndex}
             lastPlayedSampleIndex={lastDownIndex}
             onSelectSampleManually={setSelectedDownIndex}
           />
           <SampleSelector
             label="Release Sample"
-            numOfSamples={getSampleIds(name, 'up').length}
+            numOfSamples={getSampleIds(selectedSoundName, 'up').length}
             selectedSampleIndex={selectedUpIndex}
             lastPlayedSampleIndex={lastUpIndex}
             onSelectSampleManually={setSelectedUpIndex}
           />
-          <ExtraParams
-            usingLofi={usingLofi}
-            setUsingLofi={setUsingLofi}
-            pitchVariation={pitchVariation}
-            setPitchVariation={setPitchVariation}
-          />
+          <ExtraParams />
         </ConfigSidebar>
       </Wrapper>
       <TLScrew />

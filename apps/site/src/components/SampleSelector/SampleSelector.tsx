@@ -5,6 +5,7 @@ import { useButtonSounds } from 'button-sounds/react';
 import { range } from '@/utils';
 
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
+import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 interface Props {
   label: string;
@@ -66,8 +67,12 @@ function SampleButton({
   handleClick,
 }: SampleButtonProps) {
   const btnRef = React.useRef<HTMLButtonElement>(null);
+  const { usingLofi } = useSoundSettings();
 
-  useButtonSounds(btnRef, isLocked ? 'synth-off' : 'synth-on');
+  useButtonSounds(btnRef, isLocked ? 'synth-off' : 'synth-on', {
+    lofi: usingLofi,
+    pitchVariation: 0.05,
+  });
 
   // const { press: handlePressLock, release: handleReleaseLock } = useImperativeButtonSounds(btnRef, 'synth-on');
   // const { press: handlePressUnlock, release: handleReleaseUnlock } = useImperativeButtonSounds(btnRef, 'synth-off');

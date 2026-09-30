@@ -5,6 +5,8 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
   side: 'top' | 'bottom';
   color: string;
   radius?: number;
+  leftRadius?: number;
+  rightRadius?: number;
   borderWidth?: number;
   ignoreSide?: 'left' | 'right';
 }
@@ -13,6 +15,8 @@ function BevelEdge({
   side,
   color,
   radius = 8,
+  leftRadius = radius,
+  rightRadius = radius,
   borderWidth = 1,
   ignoreSide,
   style = {},
@@ -24,7 +28,8 @@ function BevelEdge({
       style={{
         ...style,
         '--border-color': color,
-        '--bevel-radius': `${radius}px`,
+        '--bevel-radius-left': `${leftRadius}px`,
+        '--bevel-radius-right': `${rightRadius}px`,
         '--border-width': `${borderWidth}px`,
       }}
       data-ignore-side={ignoreSide}
@@ -37,9 +42,9 @@ function BevelEdge({
 const TopEdge = styled.div`
   position: absolute;
   top: calc(var(--border-width) * -1);
-  left: calc(var(--bevel-radius) - var(--border-width));
-  right: calc(var(--bevel-radius) - var(--border-width));
-  height: var(--bevel-radius);
+  left: calc(var(--bevel-radius-left) - var(--border-width));
+  right: calc(var(--bevel-radius-right) - var(--border-width));
+  height: max(var(--bevel-radius-left), var(--bevel-radius-right));
   border-top: var(--border-width) solid var(--border-color);
   pointer-events: none;
 
@@ -48,7 +53,6 @@ const TopEdge = styled.div`
     content: '';
     position: absolute;
     top: 0;
-    width: var(--bevel-radius);
     aspect-ratio: 1 / 1;
     corner-shape: bevel;
     background: inherit;
@@ -56,14 +60,16 @@ const TopEdge = styled.div`
 
   &::before {
     left: 0;
-    border-top-left-radius: var(--bevel-radius);
+    width: var(--bevel-radius-left);
+    border-top-left-radius: var(--bevel-radius-left);
     border-top: var(--border-width) solid var(--border-color);
     border-left: var(--border-width) solid var(--border-color);
     transform: translate(-100%, calc(var(--border-width) * -1));
   }
   &::after {
     right: 0;
-    border-top-right-radius: var(--bevel-radius);
+    width: var(--bevel-radius-right);
+    border-top-right-radius: var(--bevel-radius-right);
     border-top: var(--border-width) solid var(--border-color);
     border-right: var(--border-width) solid var(--border-color);
     transform: translate(100%, calc(var(--border-width) * -1));
@@ -83,9 +89,9 @@ const TopEdge = styled.div`
 const BottomEdge = styled.div`
   position: absolute;
   bottom: calc(var(--border-width) * -1);
-  left: calc(var(--bevel-radius) - var(--border-width));
-  right: calc(var(--bevel-radius) - var(--border-width));
-  height: var(--bevel-radius);
+  left: calc(var(--bevel-radius-left) - var(--border-width));
+  right: calc(var(--bevel-radius-right) - var(--border-width));
+  height: max(var(--bevel-radius-left), var(--bevel-radius-right));
   border-bottom: var(--border-width) solid var(--border-color);
   pointer-events: none;
 
@@ -94,7 +100,6 @@ const BottomEdge = styled.div`
     content: '';
     position: absolute;
     bottom: 0;
-    width: var(--bevel-radius);
     aspect-ratio: 1 / 1;
     corner-shape: bevel;
     background: inherit;
@@ -102,14 +107,16 @@ const BottomEdge = styled.div`
 
   &::before {
     left: 0;
-    border-bottom-left-radius: var(--bevel-radius);
+    width: var(--bevel-radius-left);
+    border-bottom-left-radius: var(--bevel-radius-left);
     border-bottom: var(--border-width) solid var(--border-color);
     border-left: var(--border-width) solid var(--border-color);
     transform: translate(-100%, var(--border-width));
   }
   &::after {
     right: 0;
-    border-bottom-right-radius: var(--bevel-radius);
+    width: var(--bevel-radius-right);
+    border-bottom-right-radius: var(--bevel-radius-right);
     border-bottom: var(--border-width) solid var(--border-color);
     border-right: var(--border-width) solid var(--border-color);
     transform: translate(100%, var(--border-width));

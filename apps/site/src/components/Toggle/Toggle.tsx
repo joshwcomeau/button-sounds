@@ -1,7 +1,9 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import { useButtonSounds, type WireUpOptions } from 'button-sounds/react';
 
 import BevelEdge from '@/components/BevelEdge';
+import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 const OUTER_RADIUS = 6;
 const INSET = 2;
@@ -15,6 +17,7 @@ interface Props extends Omit<
   label?: React.ReactNode;
   checked: boolean;
   setChecked: (checked: boolean) => void;
+  soundOptions?: WireUpOptions;
 }
 
 function Toggle({
@@ -24,13 +27,22 @@ function Toggle({
   className,
   style,
   id,
+  soundOptions = {},
   ...delegated
 }: Props) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  const { usingLofi } = useSoundSettings();
+  useButtonSounds(wrapperRef, checked ? 'synth-on' : 'synth-off', {
+    lofi: usingLofi,
+    pitchVariation: 0.05,
+    ...soundOptions,
+  });
 
   return (
-    <Wrapper className={className} style={style}>
+    <Wrapper className={className} style={style} ref={wrapperRef}>
       {label != null && <Caption htmlFor={inputId}>{label}</Caption>}
       <Track>
         <Input
@@ -52,12 +64,12 @@ function Toggle({
           <Thumb data-checked={checked} aria-hidden="true">
             <BevelEdge
               side="top"
-              color="var(--color-gray-400)"
+              color="var(--top-edge)"
               radius={INNER_RADIUS}
             />
             <BevelEdge
               side="bottom"
-              color="var(--color-gray-200)"
+              color="var(--bottom-edge)"
               radius={INNER_RADIUS}
             />
             <Face></Face>
@@ -146,14 +158,10 @@ const Well = styled.span`
   corner-shape: bevel;
 `;
 
-const Legend = styled.span`
-  position: absolute;
-  inset: 0;
-  display: flex;
-  pointer-events: none;
-`;
-
 const Thumb = styled.span`
+  --top-edge: var(--color-gray-400);
+  --bottom-edge: var(--color-gray-200);
+  --face-bg: var(--color-gray-100);
   position: relative;
   z-index: 1;
   display: block;
@@ -168,15 +176,19 @@ const Thumb = styled.span`
     translate 90ms ease;
 
   &[data-checked='true'] {
+    --face-bg: var(--color-gray-400);
     transform: translateX(100%);
   }
 
-  ${Track}:active & {
+  ${Track}:not(:has(:disabled)):active & {
+    --top-edge: var(--color-gray-100);
+    --bottom-edge: var(--color-gray-300);
     translate: 0 1px;
   }
 
-  ${Track}:has(:disabled):active & {
-    translate: 0 0;
+  ${Track}:not(:has(:disabled)):active   &[data-checked='true'] {
+    --top-edge: var(--color-gray-100);
+    --bottom-edge: var(--color-gray-700);
   }
 `;
 
@@ -188,13 +200,15 @@ const Face = styled.span`
   overflow: hidden;
   border-radius: calc(${INNER_RADIUS}px - 1px);
   corner-shape: inherit;
-  background: var(--color-gray-100);
+  background: var(--face-bg);
   /* Keep the top sheen from blending out through the platform into the recess. */
   isolation: isolate;
   transition: background var(--slide-duration) var(--slide-easing);
 
-  ${Thumb}[data-checked='true'] & {
-    background: var(--color-gray-400);
+  ${Track}:not(:has(:disabled)):active & {
+    background: color-mix(in srgb, var(--face-bg), var(--color-background) 20%);
+    transition-duration: 90ms;
+    transition-timing-function: ease;
   }
 
   &::before {
@@ -202,6 +216,7 @@ const Face = styled.span`
     content: '';
     position: absolute;
     top: var(--glow-inset);
+    bottom: auto;
     left: var(--glow-inset);
     right: var(--glow-inset);
     height: 5px;
@@ -217,6 +232,13 @@ const Face = styled.span`
 
   ${Thumb}[data-checked='true'] &::before {
     opacity: 0.5;
+  }
+
+  ${Track}:not(:has(:disabled)):active &::before {
+    top: auto;
+    bottom: var(--glow-inset);
+    border-radius: 50% 50% 4px 4px;
+    opacity: 0.01;
   }
 `;
 
@@ -235,28 +257,6 @@ const Plate = styled.span`
 
   ${Thumb}[data-checked='true'] & {
     transform: translateX(-50%);
-  }
-`;
-
-const Word = styled.span`
-  flex: 1 0 0;
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  font-family: var(--font-segment);
-  font-weight: 900;
-  font-size: 0.625rem;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  user-select: none;
-  color: var(--color-gray-600);
-
-  ${Plate} &[data-state='off'] {
-    color: var(--color-gray-1000);
-  }
-
-  ${Plate} &[data-state='on'] {
-    color: var(--color-primary);
   }
 `;
 
