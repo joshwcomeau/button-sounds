@@ -10,7 +10,7 @@ function CRTEffect({ strength = 1 }: Props) {
   return (
     <>
       <Scanlines strength={strength} />
-      <ChromaticAberration strength={strength / 2} />
+      <ChromaticAberration strength={strength} />
       <Vignette strength={strength} />
     </>
   );

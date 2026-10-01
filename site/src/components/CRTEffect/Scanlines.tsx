@@ -27,8 +27,8 @@ const Stripes = styled.div`
   height: 100%;
   background: repeating-linear-gradient(
     to bottom,
-    hsl(210deg 15% 6% / 0.5) 0px var(--line-height),
-    hsl(210deg 15% 90% / 0.5) var(--line-height)
+    hsl(210deg 15% 6% / 1) 0px var(--line-height),
+    hsl(210deg 15% 50% / 0.75) var(--line-height)
       calc(var(--line-height) + var(--gap-height))
   );
   mix-blend-mode: hard-light;

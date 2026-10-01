@@ -7,7 +7,7 @@ import { range } from '@/utils';
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
-interface Props {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
   numOfSamples: number;
   lastPlayedSampleIndex: number | undefined;
@@ -21,9 +21,10 @@ function SampleSelector({
   lastPlayedSampleIndex,
   selectedSampleIndex,
   onSelectSampleManually,
+  ...props
 }: Props) {
   return (
-    <Wrapper title={label}>
+    <Wrapper title={label} {...props}>
       <Samples>
         {range(8).map((index) => {
           const isLocked = selectedSampleIndex === index;
@@ -72,6 +73,7 @@ function SampleButton({
   useButtonSounds(btnRef, isLocked ? 'synth-off' : 'synth-on', {
     lofi: usingLofi,
     pitchVariation: 0.05,
+    volume: 0.3,
   });
 
   // const { press: handlePressLock, release: handleReleaseLock } = useImperativeButtonSounds(btnRef, 'synth-on');
@@ -110,17 +112,21 @@ const Wrapper = styled(RaisedContainer)`
 const Samples = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  justify-content: center;
   gap: 4px;
   padding: 16px;
+  width: 100%;
+  max-width: 14rem;
+  margin-inline: auto;
 `;
 
-const SIZE = 2.5;
+// const SIZE = 2.5;
 
 const Sample = styled.button`
   --easing: var(--bezier-overshoot-smooth);
   --duration: 1200ms;
   position: relative;
-  width: ${SIZE}rem;
+  width: 100%;
   aspect-ratio: 1 / 1;
   border: none;
   background: transparent;
@@ -180,7 +186,7 @@ const SampleBorder = styled.span`
 
 const Placeholder = styled.div`
   --stripe-width: 4px;
-  width: ${SIZE}rem;
+  width: 100%;
   aspect-ratio: 1 / 1;
   background: repeating-linear-gradient(
     45deg,

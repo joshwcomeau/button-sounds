@@ -35,9 +35,10 @@ function Toggle({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   const { usingLofi } = useSoundSettings();
-  useButtonSounds(wrapperRef, checked ? 'synth-on' : 'synth-off', {
+  useButtonSounds(wrapperRef, checked ? 'synth-off' : 'synth-on', {
     lofi: usingLofi,
     pitchVariation: 0.05,
+    volume: 0.3,
     ...soundOptions,
   });
 

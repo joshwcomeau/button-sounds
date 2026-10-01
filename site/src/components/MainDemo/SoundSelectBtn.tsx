@@ -24,6 +24,7 @@ function SoundSelectBtn({
   useButtonSounds(wrapperRef, 'carson-microflip', {
     lofi: usingLofi,
     pitchVariation: 0.1,
+    volume: 0.2,
   });
   return (
     <Wrapper

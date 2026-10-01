@@ -18,6 +18,7 @@ function UpDownBtn({ direction, handleClick }: Props) {
   useButtonSounds(wrapperRef, 'sd-standard', {
     lofi: usingLofi,
     pitchVariation: 0.1,
+    volume: 0.2,
   });
 
   return (

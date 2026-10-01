@@ -37,6 +37,7 @@ function FilterBtn({
     {
       lofi: usingLofi,
       pitchVariation: 0.1,
+      volume: 0.25,
     },
   );
 

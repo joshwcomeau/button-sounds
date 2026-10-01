@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import { normalize } from '@/utils';
+import { exponentialNormalize } from '@/utils';
 
 interface Props {
   strength: number;
@@ -14,7 +14,7 @@ const BLUE_CHANNEL = '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0';
 
 function ChromaticAberration({ strength }: Props) {
   const filterId = React.useId().replace(/:/g, '');
-  const mixRatio = normalize(strength, 0, 1, 0, 0.5);
+  const mixRatio = exponentialNormalize(strength, 0, 1, 0, 1, 3);
 
   return (
     <>

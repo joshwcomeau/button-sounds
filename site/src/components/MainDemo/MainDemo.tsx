@@ -156,7 +156,7 @@ function MainDemo() {
       return;
     }
 
-    function handlePointerDown() {
+    function playPress() {
       let index = selectedDownIndex;
       if (typeof index !== 'number') {
         index = sampleIndex(getSampleIds(selectedSoundName, 'down')) || 0;
@@ -168,39 +168,74 @@ function MainDemo() {
       press({ sampleIndex: index, playbackRate });
 
       setLastDownIndex(index);
+    }
+
+    function playRelease() {
+      let index = selectedUpIndex;
+      if (typeof index !== 'number') {
+        index = sampleIndex(getSampleIds(selectedSoundName, 'up')) || 0;
+      }
+
+      const playbackRate =
+        1 + random(-pitchVariation, pitchVariation, { rounded: false });
+
+      release({ sampleIndex: index, playbackRate });
+
+      setLastUpIndex(index);
+      setLastDownIndex(undefined);
+      window.setTimeout(() => {
+        setLastUpIndex(undefined);
+      }, 260);
+    }
+
+    function handlePointerDown() {
+      playPress();
 
       function handlePointerUp() {
-        let index = selectedUpIndex;
-        if (typeof index !== 'number') {
-          index = sampleIndex(getSampleIds(selectedSoundName, 'up')) || 0;
-        }
-
-        const playbackRate =
-          1 + random(-pitchVariation, pitchVariation, { rounded: false });
-
-        release({ sampleIndex: index, playbackRate });
-
-        setLastUpIndex(index);
-        setLastDownIndex(undefined);
-        window.setTimeout(() => {
-          setLastUpIndex(undefined);
-        }, 260);
+        playRelease();
       }
 
       window.addEventListener('pointerup', handlePointerUp, { once: true });
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      // Holding Enter or Space repeats keydown. The press sound should only play for the initial press.
+      if (event.repeat) {
+        return;
+      }
+
+      playPress();
+
+      function handleKeyUp(upEvent: KeyboardEvent) {
+        if (upEvent.key !== event.key) {
+          return;
+        }
+
+        playRelease();
+        window.removeEventListener('keyup', handleKeyUp);
+      }
+
+      window.addEventListener('keyup', handleKeyUp);
+    }
+
     btn.addEventListener('pointerdown', handlePointerDown);
+    btn.addEventListener('keydown', handleKeyDown);
 
     return () => {
       btn.removeEventListener('pointerdown', handlePointerDown);
+      btn.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedSoundName, selectedDownIndex, selectedUpIndex, pitchVariation]);
 
   return (
     <Border>
       <Wrapper ref={wrapperRef}>
-        <SoundSelectSidebar
+        <Title>Sound Playground</Title>
+        <StyledSoundSelectSidebar
           selectedSoundName={selectedSoundName}
           setSelectedSoundName={setSelectedSoundName}
           relevantSounds={relevantSounds}
@@ -209,37 +244,38 @@ function MainDemo() {
           handleIncrementSound={handleIncrementSound}
           handleDecrementSound={handleDecrementSound}
         />
-        <Main>
-          <Title>Sound Playground</Title>
+        <ButtonArea>
+          <ButtonWrapper>
+            <FancyButton
+              disabled={loadingStatus === 'loading'}
+              ref={buttonRef}
+            />
+          </ButtonWrapper>
+          {loadingStatus === 'loading' && <StyledSpinner />}
+        </ButtonArea>
 
-          <ButtonArea>
-            <ButtonWrapper>
-              <FancyButton
-                disabled={loadingStatus === 'loading'}
-                ref={buttonRef}
-              />
-            </ButtonWrapper>
-            {loadingStatus === 'loading' && <StyledSpinner />}
-          </ButtonArea>
+        <StyledSoundInfo name={selectedSoundName} />
 
-          <SoundInfo name={selectedSoundName} />
-        </Main>
         <ConfigSidebar>
-          <SampleSelector
-            label="Press Sample"
-            numOfSamples={getSampleIds(selectedSoundName, 'down').length}
-            selectedSampleIndex={selectedDownIndex}
-            lastPlayedSampleIndex={lastDownIndex}
-            onSelectSampleManually={setSelectedDownIndex}
-          />
-          <SampleSelector
-            label="Release Sample"
-            numOfSamples={getSampleIds(selectedSoundName, 'up').length}
-            selectedSampleIndex={selectedUpIndex}
-            lastPlayedSampleIndex={lastUpIndex}
-            onSelectSampleManually={setSelectedUpIndex}
-          />
-          <ExtraParams />
+          <ConfigGrid>
+            <SampleSelector
+              label="Press Sample"
+              numOfSamples={getSampleIds(selectedSoundName, 'down').length}
+              selectedSampleIndex={selectedDownIndex}
+              lastPlayedSampleIndex={lastDownIndex}
+              onSelectSampleManually={setSelectedDownIndex}
+              style={{ gridArea: 'press-sample' }}
+            />
+            <SampleSelector
+              label="Release Sample"
+              numOfSamples={getSampleIds(selectedSoundName, 'up').length}
+              selectedSampleIndex={selectedUpIndex}
+              lastPlayedSampleIndex={lastUpIndex}
+              onSelectSampleManually={setSelectedUpIndex}
+              style={{ gridArea: 'release-sample' }}
+            />
+            <ExtraParams style={{ gridArea: 'extra-params' }} />
+          </ConfigGrid>
         </ConfigSidebar>
       </Wrapper>
       <TLScrew />
@@ -270,20 +306,34 @@ const Border = styled.div`
 `;
 const Wrapper = styled.div`
   --container-padding: 6px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 14rem 1fr 14rem;
+  grid-template-areas:
+    'sound-sidebar button config-sidebar'
+    'sound-sidebar sound-info config-sidebar';
+  gap: 1rem;
   background: var(--color-gray-75);
   padding: var(--container-padding);
   border-radius: 18px;
   corner-shape: bevel;
-`;
+  isolation: isolate;
 
-const Main = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  padding-top: 0;
+  @media (max-width: 55rem) {
+    grid-template-columns: 10fr 15fr;
+    grid-template-areas:
+      'sound-sidebar button'
+      'sound-sidebar sound-info'
+      'config-sidebar config-sidebar';
+  }
+
+  @media (max-width: 42rem) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'button'
+      'sound-info'
+      'sound-sidebar'
+      'config-sidebar';
+  }
 `;
 
 const Title = styled.h3`
@@ -293,16 +343,20 @@ const Title = styled.h3`
   display: flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--hh) * -1 + 4px);
+  left: 0;
+  right: 0;
+  width: fit-content;
   height: var(--height);
   margin-inline: auto;
-  margin-top: calc(var(--container-padding) * -1);
   padding-inline: 3rem;
   font-size: 1.25rem;
   font-weight: 600;
   text-align: center;
   color: black;
   background: var(--color-gray-800);
-  transform: translateY(-50%);
   border-bottom: 5px solid black;
   corner-shape: bevel;
   /*
@@ -317,15 +371,28 @@ const Title = styled.h3`
   border-radius:
     var(--ar) var(--ar) var(--ar) var(--ar) /
     var(--ar) var(--ar) var(--hh) var(--hh);
+
+  /* On smaller screens, the center-aligned title overlaps the SoundSelectSidebar in a pretty unpleasant way, so let's lift it up totally above the border. */
+  @media (max-width: 55rem) {
+    border-radius: var(--hh) var(--hh) 0 0;
+    top: calc(var(--height) * -1);
+    border-bottom: none;
+  }
+`;
+
+const StyledSoundSelectSidebar = styled(SoundSelectSidebar)`
+  grid-area: sound-sidebar;
 `;
 
 const ButtonArea = styled.div`
-  align-self: center;
+  grid-area: button;
+  justify-self: center;
+  margin-top: 3rem;
   position: relative;
-  padding-bottom: 32px;
 `;
 
 const ButtonWrapper = styled.div`
+  --pad: 64px;
   position: relative;
   --stripe-width: 24px;
   --grad: repeating-linear-gradient(
@@ -333,21 +400,31 @@ const ButtonWrapper = styled.div`
     transparent 0px var(--stripe-width),
     var(--color-gray-200) var(--stripe-width) calc(var(--stripe-width) * 2)
   );
-  padding: 64px;
+  padding: var(--pad);
   /* border: 1px solid var(--color-gray-250); */
   outline: 2px solid var(--color-gray-250);
   outline-offset: 2px;
-  border-radius: 40px;
+  border-radius: calc(var(--pad) / 4);
   corner-shape: bevel;
   background: var(--grad);
 
   &::before {
     content: '';
     position: absolute;
-    inset: 32px;
+    inset: calc(var(--pad) / 2);
     background: var(--color-gray-75);
     border-radius: 24px;
     corner-shape: bevel;
+  }
+
+  @media (max-width: 29rem) {
+    --pad: 12vw;
+  }
+  @media (max-width: 25rem) {
+    --pad: 0;
+    background: transparent;
+    border: none;
+    outline: none;
   }
 `;
 
@@ -359,19 +436,34 @@ const StyledSpinner = styled(Spinner)`
   margin-inline: auto;
 `;
 
-const LoadingLabel = styled.p`
-  position: absolute;
-  left: calc(100% + 1rem);
-  top: 50%;
-  transform: translateY(-50%);
-  margin: 0;
-  white-space: nowrap;
+const StyledSoundInfo = styled(SoundInfo)`
+  grid-area: sound-info;
 `;
 
 const ConfigSidebar = styled.div`
-  display: flex;
-  flex-direction: column;
+  grid-area: config-sidebar;
+  container-type: inline-size;
+`;
+
+const ConfigGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'press-sample'
+    'release-sample'
+    'extra-params';
   gap: 1rem;
+
+  @container (min-width: 30rem) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'press-sample release-sample'
+      'extra-params extra-params';
+  }
+  @container (min-width: 39rem) {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas: 'press-sample release-sample extra-params';
+  }
 `;
 
 const StyledScrew = styled(Screw)`

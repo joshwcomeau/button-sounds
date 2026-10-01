@@ -7,7 +7,6 @@ interface Props extends Omit<
   React.ComponentProps<'input'>,
   'type' | 'value' | 'min' | 'max' | 'step' | 'onChange'
 > {
-  label: React.ReactNode;
   value: number;
   setValue: (value: number) => void;
   min: number;
@@ -16,7 +15,6 @@ interface Props extends Omit<
 }
 
 function Slider({
-  label,
   value,
   setValue,
   min,
@@ -27,58 +25,41 @@ function Slider({
   id,
   ...delegated
 }: Props) {
-  const generatedId = React.useId();
-  const inputId = id ?? generatedId;
   const tickCount = getTickCount(min, max, step);
   const span = max - min;
   const ratio = span === 0 ? 0 : clamp((value - min) / span, 0, 1);
 
   return (
-    <Wrapper className={className} style={style}>
-      <Header>
-        <Label htmlFor={inputId}>{label}</Label>
-        <Value aria-hidden="true">{formatValue(value, step)}</Value>
-      </Header>
-      <Track
-        style={{
-          '--ratio': ratio,
-          '--tick-last': Math.max(tickCount - 1, 1),
+    <Track
+      className={className}
+      style={{
+        ...style,
+        '--ratio': ratio,
+        '--tick-last': Math.max(tickCount - 1, 1),
+      }}
+    >
+      <Ticks aria-hidden="true">
+        {range(tickCount).map((index) => (
+          <Tick key={index} style={{ '--tick-index': index }}>
+            <TickLine data-side="above" />
+            <TickLine data-side="below" />
+          </Tick>
+        ))}
+      </Ticks>
+      <RangeInput
+        {...delegated}
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => {
+          setValue(event.currentTarget.valueAsNumber);
         }}
-      >
-        <Ticks aria-hidden="true">
-          {range(tickCount).map((index) => (
-            <Tick key={index} style={{ '--tick-index': index }}>
-              <TickLine data-side="above" />
-              <TickLine data-side="below" />
-            </Tick>
-          ))}
-        </Ticks>
-        <RangeInput
-          {...delegated}
-          id={inputId}
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(event) => {
-            setValue(event.currentTarget.valueAsNumber);
-          }}
-        />
-      </Track>
-    </Wrapper>
+      />
+    </Track>
   );
-}
-
-function formatValue(value: number, step: number) {
-  const decimals = decimalPlaces(step);
-  return String(Number(value.toFixed(decimals)));
-}
-
-function decimalPlaces(step: number) {
-  const text = String(step);
-  const dot = text.indexOf('.');
-  return dot === -1 ? 0 : text.length - dot - 1;
 }
 
 // Round so float error in `(max - min) / step` doesn’t drop or duplicate the final tick. Possible values include both endpoints, so the count is one more than the number of steps.
@@ -89,34 +70,6 @@ function getTickCount(min: number, max: number, step: number) {
 
   return Math.round((max - min) / step) + 1;
 }
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  min-width: 0;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  color: var(--color-gray-900);
-`;
-
-const Label = styled.label`
-  font-weight: bold;
-  min-width: 0;
-  font-size: 0.875rem;
-`;
-
-const Value = styled.span`
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.875rem;
-`;
 
 const Track = styled.div`
   --thumb-width: 10px;
@@ -226,7 +179,7 @@ const RangeInput = styled.input`
     margin-top: calc((var(--track-height) - var(--thumb-height)) / 2);
     background: var(--thumb-color);
     border: 2px solid var(--color-background);
-    border-radius: 3px;
+    border-radius: 4px;
     corner-shape: bevel;
     cursor: grab;
   }

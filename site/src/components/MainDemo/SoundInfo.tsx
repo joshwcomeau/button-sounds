@@ -6,14 +6,14 @@ import { SOUND_DATA } from '@/data';
 import BevelEdge from '@/components/BevelEdge';
 import OuterCorner from '@/components/OuterCorner';
 
-interface Props {
+interface Props extends React.ComponentProps<'div'> {
   name: SoundName;
 }
 
 const TOP_RADIUS = 8;
 const MAIN_RADIUS = 16;
 
-function SoundInfo({ name }: Props) {
+function SoundInfo({ name, ...delegated }: Props) {
   const soundData = SOUND_DATA[name];
 
   if (!soundData) {
@@ -21,7 +21,7 @@ function SoundInfo({ name }: Props) {
   }
 
   return (
-    <Wrapper>
+    <Wrapper {...delegated}>
       <Title>
         About This Sound
         <BevelEdge
@@ -55,6 +55,7 @@ const Wrapper = styled.div`
   border-radius: 0px ${MAIN_RADIUS}px ${MAIN_RADIUS}px ${MAIN_RADIUS}px;
   corner-shape: bevel;
   background: var(--color-gray-200);
+  margin-top: 3rem;
 `;
 
 const Title = styled.h3`

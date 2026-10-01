@@ -48,6 +48,24 @@ function FancyButton(props: React.ComponentProps<'button'>) {
     setAction('pressing');
   }, []);
 
+  const handleKeyDown = React.useCallback(
+    (ev: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        setAction('pressing');
+      }
+    },
+    [],
+  );
+
+  const handleKeyUp = React.useCallback(
+    (ev: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        setAction('releasing');
+      }
+    },
+    [],
+  );
+
   const transitionDuration = action ? DURATIONS_BY_ACTION[action] : 0;
 
   return (
@@ -57,6 +75,8 @@ function FancyButton(props: React.ComponentProps<'button'>) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
     >
       <Wrapper
         data-action={action}
@@ -80,6 +100,7 @@ function FancyButton(props: React.ComponentProps<'button'>) {
 }
 
 const OuterWrapper = styled.button`
+  position: relative;
   display: block;
   border: none;
   background: transparent;
@@ -103,6 +124,7 @@ const Wrapper = styled.span`
   position: relative;
   display: block;
   width: 15rem;
+  max-width: 100%;
   height: 6rem;
   border: none;
   border-bottom: var(--bw) solid var(--color-gray-300);
@@ -122,8 +144,8 @@ const Wrapper = styled.span`
 `;
 
 const Front = styled.span`
-  --dark: hsl(360deg 100% 30%);
-  --light: hsl(353deg 100% 40%);
+  --dark: hsl(360deg 100% 26%);
+  --light: hsl(353deg 100% 34%);
   position: absolute;
   left: var(--gap);
   right: var(--gap);

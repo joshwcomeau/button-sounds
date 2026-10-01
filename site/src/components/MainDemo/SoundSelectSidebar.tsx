@@ -16,7 +16,7 @@ const FILTER_TYPES = [
   { id: 'misc', icon: Shapes },
 ];
 
-interface Props {
+interface Props extends React.ComponentProps<'div'> {
   selectedSoundName: string | undefined;
   setSelectedSoundName: (name: SoundName) => void;
   relevantSounds: SoundName[];
@@ -34,9 +34,10 @@ function SoundSelectSidebar({
   handleFilterClick,
   handleIncrementSound,
   handleDecrementSound,
+  ...delegated
 }: Props) {
   return (
-    <Wrapper title="Select Sound">
+    <Wrapper title="Select Sound" {...delegated}>
       <List>
         {relevantSounds.map((name) => {
           const isSelected = selectedSoundName === name;
@@ -53,7 +54,7 @@ function SoundSelectSidebar({
       </List>
       <Divider />
       <BottomHeader>
-        <FilterName>{selectedFilter || 'All Sounds'}</FilterName>
+        <FilterName>{selectedFilter || 'Filter'}</FilterName>
         <BottomHeaderEdge />
         <Arrows>
           <UpDownBtn direction="up" handleClick={handleIncrementSound} />
@@ -104,8 +105,9 @@ function BottomHeaderEdge() {
 const Wrapper = styled(RaisedContainer)`
   display: flex;
   flex-direction: column;
-  width: 14rem;
+  min-width: 14rem;
   contain: size;
+  min-height: 28rem;
 `;
 
 const List = styled.ul`

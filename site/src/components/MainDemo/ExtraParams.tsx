@@ -1,20 +1,20 @@
 import styled from 'styled-components';
 
-import Slider from '@/components/Slider';
+import LabeledSlider from '@/components/LabeledSlider';
 import Toggle from '@/components/Toggle';
 import InfoTooltip from '@/components/InfoTooltip';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 import RaisedContainer from '../RaisedContainer/RaisedContainer';
 
-function ExtraParams() {
+function ExtraParams(props: React.HTMLAttributes<HTMLDivElement>) {
   const { usingLofi, setUsingLofi, pitchVariation, setPitchVariation } =
     useSoundSettings();
 
   return (
-    <Wrapper title="Config">
+    <Wrapper title="Config" {...props}>
       <Slot>
-        <Slider
+        <LabeledSlider
           label={
             <InfoTooltip
               content={

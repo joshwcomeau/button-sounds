@@ -13,6 +13,7 @@ function Vignette({ strength }: Props) {
         style={{
           '--saturate': normalize(strength, 0, 1, 1, 1.2),
           '--contrast': normalize(strength, 0, 1, 1, 1.1),
+          '--brightness': normalize(strength, 0, 1, 1, 1.2),
         }}
       />
       <Edges style={{ opacity: strength }} />
@@ -25,7 +26,11 @@ const ColorGrade = styled.div`
   inset: 0;
   width: 100%;
   height: 100%;
-  backdrop-filter: saturate(var(--saturate)) contrast(var(--contrast));
+  /* prettier-ignore */
+  backdrop-filter:
+   saturate(var(--saturate))
+   contrast(var(--contrast))
+   brightness(var(--brightness));
   pointer-events: none;
 `;
 
@@ -37,7 +42,7 @@ const Edges = styled.div`
   background: radial-gradient(
     ellipse at center,
     transparent 50%,
-    hsl(210deg 25% 1% / 0.8) 100%
+    hsl(210deg 25% 1%) 100%
   );
   pointer-events: none;
 `;
