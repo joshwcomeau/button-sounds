@@ -20,15 +20,6 @@ const raddySharedDesc = (
   </p>
 );
 
-const urevoSharedDesc = (
-  <p>
-    If you haven’t tried using a walking pad with a standing desk, I highly
-    recommend it! The walking pad I use is from <a href={urevoHref}>Urevo</a>,
-    but they don't seem to offer the one I have anymore, but the one I got has
-    been solid.
-  </p>
-);
-
 type Category = 'mouse' | 'keyboard' | 'gamepad' | 'toggle' | 'misc';
 
 interface SoundData {
@@ -102,6 +93,65 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
 
+  'low-thumps': {
+    title: 'Rubber Buttons',
+    category: 'misc',
+    description: (
+      <p>
+        Pressing soft rubber buttons on the remote control for my standing desk.
+      </p>
+    ),
+  },
+  'ps4-clicky': {
+    title: 'PS4 (clicky)',
+    category: 'gamepad',
+    description: (
+      <p>
+        Pressing the clicky “Mute” button on a Playstation DualSense controller.
+      </p>
+    ),
+  },
+  'ps4-double': {
+    title: 'PS4 (double)',
+    category: 'gamepad',
+    description: (
+      <p>
+        Tapping the back trigger buttons (L2/R2) on a Playstation DualSense
+        controller from a distance to create a stepped double click.
+      </p>
+    ),
+  },
+  'ps4-dull': {
+    title: 'PS4 (dull)',
+    category: 'gamepad',
+    description: (
+      <p>
+        Pressing the main 4 action buttons on a Playstation DualSense
+        controller.
+      </p>
+    ),
+  },
+  'ps4-paddle': {
+    title: 'PS4 (paddle)',
+    category: 'gamepad',
+    description: (
+      <p>
+        The back trigger buttons (L2/R2) on a Playstation DualSense controller
+        are spring-loaded, and when they’re released quickly, they snap back
+        into place.
+      </p>
+    ),
+  },
+  'ps4-snappy': {
+    title: 'PS4 (snappy)',
+    category: 'gamepad',
+    description: (
+      <p>
+        Pressing the emblematic “PS” button in the center of my Playstation
+        DualSense controller.
+      </p>
+    ),
+  },
   'halo-soft': {
     title: 'NuPhy Halo75 V2 (gentle)',
     category: 'keyboard',
@@ -172,65 +222,6 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
         Really smacking the keys on my{' '}
         <a href={uhkHref}>Ultimate Hacking Keyboard 60 v2</a> mechanical
         keyboard. “Silent Pink” switches.
-      </p>
-    ),
-  },
-  'low-thumps': {
-    title: 'Rubber Buttons',
-    category: 'misc',
-    description: (
-      <p>
-        Pressing soft rubber buttons on the remote control for my standing desk.
-      </p>
-    ),
-  },
-  'ps4-clicky': {
-    title: 'PS4 (clicky)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Pressing the clicky “Mute” button on a Playstation DualSense controller.
-      </p>
-    ),
-  },
-  'ps4-double': {
-    title: 'PS4 (double)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Tapping the back trigger buttons (L2/R2) on a Playstation DualSense
-        controller from a distance to create a stepped double click.
-      </p>
-    ),
-  },
-  'ps4-dull': {
-    title: 'PS4 (dull)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Pressing the main 4 action buttons on a Playstation DualSense
-        controller.
-      </p>
-    ),
-  },
-  'ps4-paddle': {
-    title: 'PS4 (paddle)',
-    category: 'gamepad',
-    description: (
-      <p>
-        The back trigger buttons (L2/R2) on a Playstation DualSense controller
-        are spring-loaded, and when they’re released quickly, they snap back
-        into place.
-      </p>
-    ),
-  },
-  'ps4-snappy': {
-    title: 'PS4 (snappy)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Pressing the emblematic “PS” button in the center of my Playstation
-        DualSense controller.
       </p>
     ),
   },
@@ -621,7 +612,6 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </p>
     ),
   },
-
   'synth-on': {
     title: 'Synthesized button, on',
     category: 'toggle',
@@ -641,6 +631,26 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
         Using granular and FM synthesis, I created a button sound in Ableton
         Live. The “release” sound goes down in pitch, making this sound suitable
         for toggling something off.
+      </p>
+    ),
+  },
+  'lock-closed': {
+    title: 'Lock (closed)',
+    category: 'toggle',
+    description: (
+      <p>
+        I recorded a heavy-duty combination lock being locked, to indicate
+        something being locked or frozen.
+      </p>
+    ),
+  },
+  'lock-open': {
+    title: 'Lock (open)',
+    category: 'toggle',
+    description: (
+      <p>
+        I recorded a heavy-duty combination lock snapping open, to indicate
+        something being unlocked or released.
       </p>
     ),
   },

@@ -340,6 +340,7 @@ const Title = styled.h3`
   --height: 3rem;
   --bw: 5px;
   --hh: calc(var(--height) / 2);
+  --selection-color: white;
   display: flex;
   align-items: center;
   justify-content: center;

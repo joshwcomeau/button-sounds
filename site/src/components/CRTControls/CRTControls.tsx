@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import Slider from '@/components/Slider/Slider';
 import Screw from '@/components/Screw/Screw';
+import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
 interface Props {
   crtStrength: number;
@@ -20,6 +21,9 @@ function CRTControls({ crtStrength, setCrtStrength }: Props) {
         <Screw style={screwStyles} />
       </ScrewWrapper>
       <Main>
+        <InnerEdge>
+          <BevelEdge side="bottom" color="var(--color-gray-250)" radius={14} />
+        </InnerEdge>
         <Label htmlFor={sliderId}>CRT</Label>
         <Slider
           id={sliderId}
@@ -39,7 +43,7 @@ function CRTControls({ crtStrength, setCrtStrength }: Props) {
 
 const Wrapper = styled.div`
   --color-outline: hsl(210deg 15% 26%);
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 3rem;
   display: flex;
@@ -96,6 +100,16 @@ const Main = styled.div`
     opacity: 0.2;
     mix-blend-mode: hard-light;
   }
+`;
+
+const InnerEdge = styled.div`
+  position: absolute;
+  inset: 1px;
+  top: 0;
+  border: 1px solid var(--color-gray-75);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  corner-shape: inherit;
 `;
 
 const Label = styled.label`

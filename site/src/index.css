@@ -51,6 +51,11 @@
   background: var(--scrollbar-color-bg);
 }
 
+::selection {
+  background: var(--selection-bg, var(--color-background));
+  color: var(--selection-color);
+}
+
 * {
   box-sizing: border-box;
 }

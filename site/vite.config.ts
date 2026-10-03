@@ -22,6 +22,10 @@ export default defineConfig({
       ],
     }),
   ],
+  // The syntax highlighter lazy-loads the grammars, and Vite's dependency optimizer breaks this, so we need to exclude it.
+  optimizeDeps: {
+    exclude: ['microlighter'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

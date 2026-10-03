@@ -1,7 +1,10 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-const VANILLA_JS_EXAMPLE = `
+import MultiSampleDemo from '@/components/MultiSampleDemo/MultiSampleDemo';
+import Snippet from '../Snippet/Snippet';
+
+const VANILLA_JS_EXAMPLE = `\
 import ButtonSounds from 'button-sounds';
 
 // Grab a reference to the button you want to add sounds to:
@@ -10,7 +13,7 @@ const button = document.querySelector('.my-button');
 // Specify which sound you want to use:
 ButtonSounds.wireUp(button, 'hi75-soft');
 `;
-const REACT_EXAMPLE = `
+const REACT_EXAMPLE = `\
 import { useButtonSounds } from 'button-sounds/react';
 
 function SomeComponent() {
@@ -49,7 +52,7 @@ function AboutPhilosophy() {
         much-more-realistic and tactile button-pressing experience.
       </p>
       <p>Here's a little demo showing the difference:</p>
-      TODO DEMO
+      <MultiSampleDemo />
       <h3>A cohesive set of sounds</h3>
       <p>
         In the past, I’ve assembled my library of sound effects from sites like{' '}
@@ -71,7 +74,7 @@ function AboutPhilosophy() {
         sounds in your own JavaScript projects.
       </p>
       <p>Here’s a quick “Hello World” example of the raw JS version:</p>
-      CODE
+      <Snippet lang="javascript">{VANILLA_JS_EXAMPLE}</Snippet>
       <p>
         That’s it! The <code>wireUp</code> function will automatically add
         pointer event listeners to the button.
@@ -87,7 +90,7 @@ function AboutPhilosophy() {
         If you use React, I’ve also included a couple of React hooks you can
         use:
       </p>
-      REACT EXAMPLE
+      <Snippet lang="javascript">{REACT_EXAMPLE}</Snippet>
       <p>
         Both the React and JavaScript versions have lower-level alternative
         APIs, in case you want to trigger the sounds yourself. You can also use

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import ButtonSounds, { SOUND_NAMES, DEFAULT_NAME } from 'button-sounds';
+import { highlightAll } from 'microlighter';
+import 'microlighter/themes/tokyo-night.css';
 
 import SoundSettingsProvider from '@/components/SoundSettingsProvider';
 import CRTEffect from '@/components/CRTEffect/CRTEffect';
@@ -14,6 +16,12 @@ ButtonSounds.setPath(SOUNDS_PATH);
 
 function App() {
   const [crtStrength, setCrtStrength] = React.useState(0.7);
+
+  React.useEffect(() => {
+    document.body.dataset.syntaxTheme = 'tokyo-night';
+    highlightAll();
+  }, []);
+
   return (
     <SoundSettingsProvider>
       <Wrapper>

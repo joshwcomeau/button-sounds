@@ -6,31 +6,34 @@ import Divider from '@/components/Divider';
 
 const OUTER_RADIUS = 16;
 const PADDING = 2;
-const INNER_RADIUS = OUTER_RADIUS - PADDING;
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
+  radius?: number;
 }
 
-function RaisedContainer({ title, children, ...props }: Props) {
+function RaisedContainer({
+  title,
+  children,
+  radius = OUTER_RADIUS,
+  style = {},
+  ...props
+}: Props) {
+  const innerRadius = radius - PADDING;
   return (
-    <OuterWrapper {...props}>
-      <BevelEdge side="top" color="black" radius={OUTER_RADIUS} />
-      <BevelEdge
-        side="bottom"
-        color="var(--color-gray-300)"
-        radius={OUTER_RADIUS}
-      />
-      <Wrapper>
+    <OuterWrapper style={{ ...style, borderRadius: radius }} {...props}>
+      <BevelEdge side="top" color="black" radius={radius} />
+      <BevelEdge side="bottom" color="var(--color-gray-300)" radius={radius} />
+      <Wrapper style={{ borderRadius: innerRadius }}>
         <BevelEdge
           side="top"
           color="var(--color-gray-400)"
-          radius={INNER_RADIUS}
+          radius={innerRadius}
         />
         <BevelEdge
           side="bottom"
           color="var(--color-gray-200)"
-          radius={INNER_RADIUS}
+          radius={innerRadius}
         />
         {title && (
           <>
@@ -46,9 +49,8 @@ function RaisedContainer({ title, children, ...props }: Props) {
 
 const OuterWrapper = styled.div`
   position: relative;
-  padding: 2px;
+  padding: ${PADDING}px;
   border: 1px solid var(--color-gray-200);
-  border-radius: ${OUTER_RADIUS}px;
   corner-shape: bevel;
   background: var(--color-background);
 `;
@@ -73,7 +75,6 @@ const Wrapper = styled.div`
     hsl(210deg 19% 8%) 4rem
   );
   border: 1px solid var(--color-gray-200);
-  border-radius: ${INNER_RADIUS}px;
   corner-shape: inherit;
   /* Hide the ::before glow effect that otherwise spills over */
   /* NOTE: If I wind up having some instance that needs to overflow, I can always move the ::before to a separate elem within a <Clipper> */
