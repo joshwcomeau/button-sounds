@@ -10,30 +10,50 @@ const PADDING = 2;
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   radius?: number;
+  topRadius?: number;
+  bottomRadius?: number;
 }
 
 function RaisedContainer({
   title,
   children,
   radius = OUTER_RADIUS,
+  topRadius = radius,
+  bottomRadius = radius,
   style = {},
   ...props
 }: Props) {
   const innerRadius = radius - PADDING;
+  const topInnerRadius = topRadius - PADDING;
+  const bottomInnerRadius = bottomRadius - PADDING;
   return (
-    <OuterWrapper style={{ ...style, borderRadius: radius }} {...props}>
-      <BevelEdge side="top" color="black" radius={radius} />
-      <BevelEdge side="bottom" color="var(--color-gray-300)" radius={radius} />
-      <Wrapper style={{ borderRadius: innerRadius }}>
+    <OuterWrapper
+      style={{
+        ...style,
+        borderRadius: `${topRadius}px ${topRadius}px ${bottomRadius}px ${bottomRadius}px`,
+      }}
+      {...props}
+    >
+      <BevelEdge side="top" color="black" radius={topRadius} />
+      <BevelEdge
+        side="bottom"
+        color="var(--color-gray-300)"
+        radius={bottomRadius}
+      />
+      <Wrapper
+        style={{
+          borderRadius: `${topInnerRadius}px ${topInnerRadius}px ${bottomInnerRadius}px ${bottomInnerRadius}px`,
+        }}
+      >
         <BevelEdge
           side="top"
           color="var(--color-gray-400)"
-          radius={innerRadius}
+          radius={topInnerRadius}
         />
         <BevelEdge
           side="bottom"
           color="var(--color-gray-200)"
-          radius={innerRadius}
+          radius={bottomInnerRadius}
         />
         {title && (
           <>

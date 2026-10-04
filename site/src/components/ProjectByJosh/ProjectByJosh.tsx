@@ -96,6 +96,7 @@ function TaughtByJosh() {
 }
 
 const ROW_HEIGHT = 3.75;
+const RADIUS = 16;
 
 const Wrapper = styled.div`
   --spring: cubic-bezier(0.17, 0.67, 0.36, 0.99);
@@ -111,13 +112,6 @@ const Wrapper = styled.div`
   animation: fadeFromTransparent 500ms var(--spring) var(--enter-delay)
     backwards;
   isolation: isolate;
-
-  &[data-selected-tool='wand']:hover,
-  &[data-selected-tool='wand']:focus-visible {
-    border-radius: 1000px;
-    outline: 3px dashed hsl(50deg 100% 50%);
-    outline-offset: 16px !important;
-  }
 
   @media (max-width: 25rem) {
     margin-bottom: 2rem;
@@ -170,7 +164,8 @@ const AvatarWrapper = styled.span`
   align-items: center;
   width: ${ROW_HEIGHT}rem;
   height: ${ROW_HEIGHT}rem;
-  border-radius: 50%;
+  border-radius: ${RADIUS}px;
+  corner-shape: bevel;
   outline: 1px solid var(--color-gray-300);
   outline-offset: var(--inset-by);
 
@@ -180,7 +175,8 @@ const AvatarWrapper = styled.span`
     position: absolute;
     inset: calc(var(--inset-by) * -1);
     background-color: var(--color-background);
-    border-radius: 50%;
+    border-radius: ${RADIUS + 2}px;
+    corner-shape: inherit;
   }
   &::after {
     content: '';
@@ -191,7 +187,8 @@ const AvatarWrapper = styled.span`
     height: calc(50% + var(--inset-by));
     border: var(--inset-by) solid var(--color-background);
     border-top: 0;
-    border-radius: 0 0 1000px 1000px;
+    border-radius: 0 0 ${RADIUS + 2}px ${RADIUS + 2}px;
+    corner-shape: inherit;
   }
 `;
 
@@ -212,7 +209,8 @@ const AvatarClipper = styled.span`
   align-items: center;
   overflow: hidden;
   overflow: clip;
-  border-radius: 0 0 1000px 1000px;
+  border-radius: 0 0 ${RADIUS}px ${RADIUS}px;
+  corner-shape: inherit;
 `;
 
 const riseIn = keyframes`

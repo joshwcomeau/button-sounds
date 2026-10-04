@@ -40,7 +40,9 @@ function IconButton({ icon, children, color, ...props }: Props) {
               color="hsl(210deg 15% 5% / 0.15)"
               radius={OUTER_RADIUS - 1}
             />
-            <IconSlot>{icon}</IconSlot>
+            <IconSlot>
+              <IconWrapper>{icon}</IconWrapper>
+            </IconSlot>
             {children}
           </Face>
           <Colorizer style={{ '--face-color': color }} />
@@ -52,6 +54,7 @@ function IconButton({ icon, children, color, ...props }: Props) {
 
 const Wrapper = styled.button`
   position: relative;
+  display: block;
   height: ${HEIGHT}rem;
   padding: 1px;
   margin: 0;
@@ -59,6 +62,7 @@ const Wrapper = styled.button`
   border-radius: ${OUTER_RADIUS}px;
   background: black;
   corner-shape: bevel;
+  cursor: pointer;
 
   &:focus {
     outline: none;
@@ -150,7 +154,7 @@ const Slider = styled.span`
 `;
 
 const Front = styled.span`
-  --side: hsl(210deg 17% 28%);
+  --side: hsl(210deg 17% 9%);
   --center: hsl(210deg 17% 12%);
   --inset: ${OUTER_RADIUS - 1}px;
   position: absolute;
@@ -218,18 +222,25 @@ const IconSlot = styled.span`
   flex: none;
   width: calc(${HEIGHT}rem - 6px * 2);
   aspect-ratio: 1;
-  background: var(--color-gray-100);
+  background: var(--color-gray-250);
   border-radius: 4px;
   corner-shape: inherit;
   box-shadow:
-    inset 0 2px 0 var(--color-gray-50),
-    inset 0 -1px 0 var(--color-gray-400);
+    inset 0 -1px 0 var(--color-gray-50),
+    inset 0 2px 0 var(--color-gray-400);
 
-  ${Wrapper}[data-action='pressing'] & {
-    background: var(--color-gray-50);
+  ${Wrapper}:active & {
     box-shadow:
-      inset 0 2px 0 var(--color-background),
-      inset 0 -1px 0 var(--color-gray-250);
+      inset 0 2px 0 var(--color-gray-50),
+      inset 0 -1px 0 var(--color-gray-400);
+  }
+`;
+
+const IconWrapper = styled.span`
+  display: block;
+
+  ${Wrapper}:active & {
+    transform: translateY(2px);
   }
 `;
 
