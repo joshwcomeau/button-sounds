@@ -11,7 +11,7 @@ const SoundSettingsContext = React.createContext<SoundSettings | null>(null);
 
 function SoundSettingsProvider({ children }: { children: React.ReactNode }) {
   const [usingLofi, setUsingLofi] = React.useState(false);
-  const [pitchVariation, setPitchVariation] = React.useState(0.2);
+  const [pitchVariation, setPitchVariation] = React.useState(0.1);
 
   const value = React.useMemo(
     () => ({

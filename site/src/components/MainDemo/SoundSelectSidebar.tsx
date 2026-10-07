@@ -3,10 +3,13 @@ import type { SoundName } from 'button-sounds';
 import { Keyboard, Mouse, Gamepad, ToggleRight, Shapes } from 'lucide-react';
 
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
+import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
+import type { SortOrder } from './MainDemo.helpers';
 import SoundSelectBtn from './SoundSelectBtn';
 import FilterBtn from './FilterBtn';
 import UpDownBtn from './UpDownBtn';
+import SortBtn from './SortBtn';
 
 const FILTER_TYPES = [
   { id: 'keyboard', icon: Keyboard },
@@ -17,10 +20,12 @@ const FILTER_TYPES = [
 ];
 
 interface Props extends React.ComponentProps<'div'> {
-  selectedSoundName: string | undefined;
+  selectedSoundName: SoundName | undefined;
   setSelectedSoundName: (name: SoundName) => void;
   relevantSounds: SoundName[];
   selectedFilter: string | null;
+  sortOrder: SortOrder;
+  handleSortOrderClick: (order: SortOrder) => void;
   handleFilterClick: (filterId: string) => void;
   handleIncrementSound: () => void;
   handleDecrementSound: () => void;
@@ -31,6 +36,8 @@ function SoundSelectSidebar({
   setSelectedSoundName,
   relevantSounds,
   selectedFilter,
+  sortOrder,
+  handleSortOrderClick,
   handleFilterClick,
   handleIncrementSound,
   handleDecrementSound,
@@ -38,6 +45,9 @@ function SoundSelectSidebar({
 }: Props) {
   return (
     <Wrapper title="Select Sound" {...delegated}>
+      <UpBtn direction="up" handleClick={handleIncrementSound} />
+      <DownBtn direction="down" handleClick={handleDecrementSound} />
+
       <List>
         {relevantSounds.map((name) => {
           const isSelected = selectedSoundName === name;
@@ -56,10 +66,19 @@ function SoundSelectSidebar({
       <BottomHeader>
         <FilterName>{selectedFilter || 'Filter'}</FilterName>
         <BottomHeaderEdge />
-        <Arrows>
-          <UpDownBtn direction="up" handleClick={handleIncrementSound} />
-          <UpDownBtn direction="down" handleClick={handleDecrementSound} />
-        </Arrows>
+        <Actions>
+          <SortBtnWrapper>
+            <BevelEdge side="top" radius={8} color="var(--color-gray-400)" />
+            <SortBtn
+              sortOrder={sortOrder}
+              handleSortOrderClick={handleSortOrderClick}
+              style={{
+                // Optical alignment
+                transform: 'translateY(-1px)',
+              }}
+            />
+          </SortBtnWrapper>
+        </Actions>
       </BottomHeader>
       <Filters>
         {FILTER_TYPES.map((filter, index) => (
@@ -130,11 +149,16 @@ const ListItem = styled.li`
   background: black;
 `;
 
-const BottomExtraWrapper = styled.div`
-  /* border-top: 1px solid var(--color-gray-300); */
+const UpBtn = styled(UpDownBtn)`
+  position: absolute;
+  top: 8px;
+  left: 6px;
 `;
-const BottomArea = styled.div`
-  /* border-top: 2px solid var(--color-gray-75); */
+
+const DownBtn = styled(UpDownBtn)`
+  position: absolute;
+  top: 8px;
+  right: 6px;
 `;
 
 const Divider = styled.div`
@@ -160,14 +184,23 @@ const FilterName = styled.span`
   flex: 1;
   background: var(--color-gray-50);
 `;
-const Arrows = styled.div`
+const Actions = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   height: 2rem;
-  padding-inline: 8px;
+  padding-left: 8px;
+  padding-right: 4px;
   gap: 2px;
   border-bottom: 1px solid var(--color-gray-300);
   background: var(--color-gray-75);
+`;
+
+const SortBtnWrapper = styled.div`
+  position: relative;
+  padding: 5px;
+  background: inherit;
+  border-radius: 8px 8px 0 0;
+  corner-shape: bevel;
 `;
 
 const Filters = styled.div`

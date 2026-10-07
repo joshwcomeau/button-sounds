@@ -46,6 +46,12 @@ const OuterWrapper = styled.div`
   border-radius: ${OUTER_RADIUS}px;
   corner-shape: bevel;
   background: var(--color-background);
+
+  @media (max-width: 42.5rem) {
+    max-width: 100%;
+    contain: inline-size;
+    margin-inline: 0;
+  }
 `;
 
 const Wrapper = styled.div`
@@ -81,6 +87,11 @@ const Pre = styled.pre`
   corner-shape: bevel;
   font-size: 0.875rem;
   padding: ${CODE_PADDING}px;
+  overflow-x: auto;
+
+  @media (max-width: 42.5rem) {
+    padding: 1rem;
+  }
 `;
 
 const Code = styled.code``;

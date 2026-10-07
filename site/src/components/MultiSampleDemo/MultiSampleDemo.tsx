@@ -19,6 +19,7 @@ import WaveformHighlighter, {
 import IconButton from '@/components/IconButton/IconButton';
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
 import LockToggle from '@/components/LockToggle/LockToggle';
+import { SPRITE_SRC } from '@/components/ButtonShapes/ButtonShapes';
 
 const WAVEFORM_DATA = {
   down1: [100, 200],
@@ -61,70 +62,96 @@ function MultiSampleDemo() {
   }, [isLocked, release]);
 
   return (
-    <Wrapper>
-      <StyledBackgroundPattern patternId="f" />
-      <BevelEdge side="top" color="var(--color-gray-300)" radius={16} />
-      <BevelEdge side="bottom" color="var(--color-background)" radius={16} />
-      <Header>
-        <HeaderLeftCorner
-          corner="bottom-right"
-          borderRadius={16}
-          borderWidth={1}
-          borderColor="var(--color-gray-300)"
-        />
-        <HeaderRightCorner
-          corner="bottom-left"
-          borderRadius={16}
-          borderWidth={1}
-          borderColor="var(--color-gray-300)"
-        />
-        <TitleWrapper>
-          <Subtitle>Sample</Subtitle>
-          <Title>uhk-soft.mp3</Title>
-        </TitleWrapper>
-        <LockToggle isLocked={isLocked} setIsLocked={setIsLocked} />
-      </Header>
-      <WaveformWrapper>
-        <StyledRaisedContainer topRadius={8} bottomRadius={8}>
-          <WaveformHighlighter
-            waveformData={WAVEFORM_DATA}
-            waveformDuration={WAVEFORM_DURATION}
-            activeWaveformData={activeWaveformData}
-            barFrequency={100}
-          >
-            <Waveform />
-          </WaveformHighlighter>
-        </StyledRaisedContainer>
-      </WaveformWrapper>
-      <Actions>
-        <TriggerWrapper>
-          <OuterCorner
-            corner="bottom-left"
-            borderRadius={6}
-            borderWidth={1}
-            borderColor="var(--color-gray-300)"
-            style={{ left: -6, top: 0 }}
-          />
-          <OuterCorner
+    <Container>
+      <LockWrapper>
+        <LockImg src={SPRITE_SRC} alt="" />
+      </LockWrapper>
+      <Wrapper>
+        <StyledBackgroundPattern patternId="f" />
+        <BevelEdge side="top" color="var(--color-gray-300)" radius={16} />
+        <BevelEdge side="bottom" color="var(--color-gray-75)" radius={16} />
+        <Header>
+          <HeaderLeftCorner
             corner="bottom-right"
-            borderRadius={6}
+            borderRadius={16}
             borderWidth={1}
             borderColor="var(--color-gray-300)"
-            style={{ right: -6, top: 0 }}
           />
-          <StyledIconButton
-            color="hsl(155deg 100% 30%)"
-            icon={<Play size={16} strokeWidth={3} />}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-          >
-            <span style={{ flex: 1, textAlign: 'center' }}>Trigger</span>
-          </StyledIconButton>
-        </TriggerWrapper>
-      </Actions>
-    </Wrapper>
+          <HeaderRightCorner
+            corner="bottom-left"
+            borderRadius={16}
+            borderWidth={1}
+            borderColor="var(--color-gray-300)"
+          />
+          <TitleWrapper>
+            <Subtitle>Sample</Subtitle>
+            <Title>uhk-soft.mp3</Title>
+          </TitleWrapper>
+          <LockToggle isLocked={isLocked} setIsLocked={setIsLocked} />
+        </Header>
+        <WaveformWrapper>
+          <StyledRaisedContainer topRadius={8} bottomRadius={8}>
+            <WaveformHighlighter
+              waveformData={WAVEFORM_DATA}
+              waveformDuration={WAVEFORM_DURATION}
+              activeWaveformData={activeWaveformData}
+              barFrequency={100}
+            >
+              <Waveform />
+            </WaveformHighlighter>
+          </StyledRaisedContainer>
+        </WaveformWrapper>
+        <Actions>
+          <TriggerWrapper>
+            <OuterCorner
+              corner="bottom-left"
+              borderRadius={6}
+              borderWidth={1}
+              borderColor="var(--color-gray-300)"
+              style={{ left: -6, top: 0 }}
+            />
+            <OuterCorner
+              corner="bottom-right"
+              borderRadius={6}
+              borderWidth={1}
+              borderColor="var(--color-gray-300)"
+              style={{ right: -6, top: 0 }}
+            />
+            <StyledIconButton
+              color="hsl(155deg 100% 30%)"
+              icon={<Play size={16} strokeWidth={3} />}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+            >
+              <span style={{ flex: 1, textAlign: 'center' }}>Trigger</span>
+            </StyledIconButton>
+          </TriggerWrapper>
+        </Actions>
+      </Wrapper>
+    </Container>
   );
 }
+
+const Container = styled.div`
+  position: relative;
+`;
+
+const LockWrapper = styled.div`
+  position: absolute;
+  top: 48px;
+  right: -64px;
+  width: 170px;
+  height: 220px;
+  transform-origin: top left;
+  transform: translate(50%, -50%) scale(0.5);
+`;
+const LockImg = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: -604px 0px;
+`;
 
 const Wrapper = styled.div`
   position: relative;
@@ -138,6 +165,11 @@ const Wrapper = styled.div`
   background: hsl(210deg 15% 18% / 0.75);
   border-radius: 16px;
   corner-shape: bevel;
+  outline: 3px solid var(--color-background);
+
+  @media (max-width: 41rem) {
+    margin-inline: 0;
+  }
 `;
 
 const StyledBackgroundPattern = styled(PatternDither)`

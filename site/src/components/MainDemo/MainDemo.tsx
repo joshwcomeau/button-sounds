@@ -5,7 +5,7 @@ import { useImperativeButtonSounds } from 'button-sounds/react';
 
 import useSyncedRef from '@/hooks/use-synced-ref';
 import { SOUND_DATA } from '@/data';
-import { random, sampleIndex } from '@/utils';
+import { random, sampleIndex, seededShuffle } from '@/utils';
 
 import FancyButton from '@/components/FancyButton/FancyButton';
 import SampleSelector from '@/components/SampleSelector';
@@ -19,6 +19,30 @@ import ExtraParams from './ExtraParams';
 import SoundInfo from './SoundInfo';
 import { useSoundResourceLoading } from './useSoundResourceLoading';
 
+import type { SortOrder } from './MainDemo.helpers';
+
+function orderSounds(
+  sounds: readonly SoundName[],
+  sortOrder: SortOrder,
+  shuffleKey: number,
+) {
+  if (sortOrder === 'alphabetical') {
+    return [...sounds].sort((a, b) => a.localeCompare(b));
+  }
+
+  if (sortOrder === 'shuffle') {
+    const included = new Set(sounds);
+    return seededShuffle(SOUND_NAMES, shuffleKey).filter((name) =>
+      included.has(name),
+    );
+  }
+
+  const defaultIndex = new Map(SOUND_NAMES.map((name, index) => [name, index]));
+  return [...sounds].sort(
+    (a, b) => (defaultIndex.get(a) ?? 0) - (defaultIndex.get(b) ?? 0),
+  );
+}
+
 function MainDemo() {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -29,6 +53,14 @@ function MainDemo() {
   const [selectedFilter, setSelectedFilter] = React.useState<string | null>(
     null,
   );
+  const [sortOrder, setSortOrder] = React.useState<SortOrder>('default');
+  const [shuffleKey, setShuffleKey] = React.useState(() =>
+    Math.floor(Math.random() * 100000),
+  );
+  const [relevantSounds, setRelevantSounds] = React.useState<SoundName[]>(
+    () => [...SOUND_NAMES],
+  );
+
   const [lastDownIndex, setLastDownIndex] = React.useState<
     number | undefined
   >();
@@ -41,36 +73,65 @@ function MainDemo() {
   >();
   const { usingLofi, pitchVariation } = useSoundSettings();
 
-  const relevantSounds = React.useMemo(() => {
-    if (!selectedFilter) {
-      return SOUND_NAMES;
-    }
-    return SOUND_NAMES.filter((name) => {
-      return SOUND_DATA[name].category === selectedFilter;
-    });
-  }, [selectedFilter]);
-
   const handleFilterClick = React.useCallback(
     (newFilter: string) => {
-      if (newFilter === selectedFilter) {
-        setSelectedFilter(null);
-        return;
-      }
-      const nextRelevantSounds = SOUND_NAMES.filter((name) => {
-        return SOUND_DATA[name].category === newFilter;
-      });
+      const nextFilter = newFilter === selectedFilter ? null : newFilter;
+      setSelectedFilter(nextFilter);
 
-      // If the currently-selected sound is not part of the newly filtered group, select the first sound in that group
-      const isCurrentSoundInGroup = nextRelevantSounds.some(
-        (soundName) => soundName === selectedSoundName,
-      );
-      if (!isCurrentSoundInGroup) {
-        setSelectedSoundName(nextRelevantSounds[0] as SoundName);
-      }
-      setSelectedFilter(newFilter);
+      setRelevantSounds((currentSounds) => {
+        // Filter the current list so an active sort stays put. If that list is already another category, it won’t contain the sounds we need, so start from the full catalog and apply the current sort.
+        const canFilterCurrentList =
+          nextFilter !== null &&
+          (selectedFilter === null ||
+            currentSounds.some(
+              (name) => SOUND_DATA[name].category === nextFilter,
+            ));
+
+        if (canFilterCurrentList) {
+          return currentSounds.filter(
+            (name) => SOUND_DATA[name].category === nextFilter,
+          );
+        }
+
+        return orderSounds(
+          nextFilter
+            ? SOUND_NAMES.filter(
+                (name) => SOUND_DATA[name].category === nextFilter,
+              )
+            : SOUND_NAMES,
+          sortOrder,
+          shuffleKey,
+        );
+      });
     },
-    [selectedSoundName, selectedFilter],
+    [selectedFilter, sortOrder, shuffleKey],
   );
+
+  const handleSortOrderClick = React.useCallback(
+    (nextSortOrder: SortOrder) => {
+      const nextShuffleKey =
+        nextSortOrder === 'shuffle'
+          ? Math.floor(Math.random() * 100000)
+          : shuffleKey;
+
+      if (nextSortOrder === 'shuffle') {
+        setShuffleKey(nextShuffleKey);
+      }
+
+      setSortOrder(nextSortOrder);
+      setRelevantSounds((currentSounds) => {
+        return orderSounds(currentSounds, nextSortOrder, nextShuffleKey);
+      });
+    },
+    [shuffleKey],
+  );
+
+  React.useEffect(() => {
+    const firstSound = relevantSounds[0];
+    if (firstSound) {
+      setSelectedSoundName(firstSound);
+    }
+  }, [relevantSounds]);
 
   const selectedSoundNameRef = useSyncedRef(selectedSoundName);
 
@@ -133,6 +194,11 @@ function MainDemo() {
         (currentIndex + direction + relevantSounds.length) %
         relevantSounds.length;
       const nextSoundName = relevantSounds[nextIndex];
+
+      if (!nextSoundName) {
+        // Should be impossible
+        return;
+      }
 
       const btn = document.querySelector<HTMLButtonElement>(
         `[data-button-id="${nextSoundName}"]`,
@@ -232,59 +298,69 @@ function MainDemo() {
   }, [selectedSoundName, selectedDownIndex, selectedUpIndex, pitchVariation]);
 
   return (
-    <Border>
-      <Wrapper ref={wrapperRef}>
-        <Title>Sound Playground</Title>
-        <StyledSoundSelectSidebar
-          selectedSoundName={selectedSoundName}
-          setSelectedSoundName={setSelectedSoundName}
-          relevantSounds={relevantSounds}
-          selectedFilter={selectedFilter}
-          handleFilterClick={handleFilterClick}
-          handleIncrementSound={handleIncrementSound}
-          handleDecrementSound={handleDecrementSound}
-        />
-        <ButtonArea>
-          <ButtonWrapper>
-            <FancyButton
-              disabled={loadingStatus === 'loading'}
-              ref={buttonRef}
-            />
-          </ButtonWrapper>
-          {loadingStatus === 'loading' && <StyledSpinner />}
-        </ButtonArea>
+    <Container>
+      <TitleOutline aria-hidden="true">Sound Playground</TitleOutline>
+      <Border>
+        <Wrapper ref={wrapperRef}>
+          <Title>Sound Playground</Title>
+          <StyledSoundSelectSidebar
+            selectedSoundName={selectedSoundName}
+            setSelectedSoundName={setSelectedSoundName}
+            relevantSounds={relevantSounds}
+            selectedFilter={selectedFilter}
+            sortOrder={sortOrder}
+            handleSortOrderClick={handleSortOrderClick}
+            handleFilterClick={handleFilterClick}
+            handleIncrementSound={handleIncrementSound}
+            handleDecrementSound={handleDecrementSound}
+          />
+          <ButtonArea>
+            <ButtonWrapper>
+              <FancyButton
+                disabled={loadingStatus === 'loading'}
+                ref={buttonRef}
+              />
+            </ButtonWrapper>
+            {loadingStatus === 'loading' && <StyledSpinner />}
+          </ButtonArea>
 
-        <StyledSoundInfo name={selectedSoundName} />
+          <StyledSoundInfo name={selectedSoundName} />
 
-        <ConfigSidebar>
-          <ConfigGrid>
-            <SampleSelector
-              label="Press Sample"
-              numOfSamples={getSampleIds(selectedSoundName, 'down').length}
-              selectedSampleIndex={selectedDownIndex}
-              lastPlayedSampleIndex={lastDownIndex}
-              onSelectSampleManually={setSelectedDownIndex}
-              style={{ gridArea: 'press-sample' }}
-            />
-            <SampleSelector
-              label="Release Sample"
-              numOfSamples={getSampleIds(selectedSoundName, 'up').length}
-              selectedSampleIndex={selectedUpIndex}
-              lastPlayedSampleIndex={lastUpIndex}
-              onSelectSampleManually={setSelectedUpIndex}
-              style={{ gridArea: 'release-sample' }}
-            />
-            <ExtraParams style={{ gridArea: 'extra-params' }} />
-          </ConfigGrid>
-        </ConfigSidebar>
-      </Wrapper>
-      <TLScrew />
-      <TRScrew />
-      <BLScrew />
-      <BRScrew />
-    </Border>
+          <ConfigSidebar>
+            <ConfigGrid>
+              <SampleSelector
+                label="Press Sample"
+                numOfSamples={getSampleIds(selectedSoundName, 'down').length}
+                selectedSampleIndex={selectedDownIndex}
+                lastPlayedSampleIndex={lastDownIndex}
+                onSelectSampleManually={setSelectedDownIndex}
+                style={{ gridArea: 'press-sample' }}
+              />
+              <SampleSelector
+                label="Release Sample"
+                numOfSamples={getSampleIds(selectedSoundName, 'up').length}
+                selectedSampleIndex={selectedUpIndex}
+                lastPlayedSampleIndex={lastUpIndex}
+                onSelectSampleManually={setSelectedUpIndex}
+                style={{ gridArea: 'release-sample' }}
+              />
+              <ExtraParams style={{ gridArea: 'extra-params' }} />
+            </ConfigGrid>
+          </ConfigSidebar>
+        </Wrapper>
+        <TLScrew />
+        <TRScrew />
+        <BLScrew />
+        <BRScrew />
+      </Border>
+      <Explanation></Explanation>
+    </Container>
   );
 }
+
+const Container = styled.div`
+  position: relative;
+`;
 
 const Border = styled.div`
   --main-border-width: 4px;
@@ -298,6 +374,7 @@ const Border = styled.div`
     0px 4px 8px var(--sc),
     0px 8px 16px var(--sc),
     0px 16px 32px var(--sc);
+  outline: 3px solid var(--color-background);
 
   @supports (corner-shape: squircle) {
     border-radius: 10px;
@@ -317,6 +394,7 @@ const Wrapper = styled.div`
   border-radius: 18px;
   corner-shape: bevel;
   isolation: isolate;
+  reading-flow: grid-rows;
 
   @media (max-width: 55rem) {
     grid-template-columns: 10fr 15fr;
@@ -330,8 +408,8 @@ const Wrapper = styled.div`
     grid-template-columns: 1fr;
     grid-template-areas:
       'button'
-      'sound-info'
       'sound-sidebar'
+      'sound-info'
       'config-sidebar';
   }
 `;
@@ -346,7 +424,7 @@ const Title = styled.h3`
   justify-content: center;
   position: absolute;
   z-index: 2;
-  top: calc(var(--hh) * -1 + 4px);
+  top: calc(var(--hh) * -1 + 2px);
   left: 0;
   right: 0;
   width: fit-content;
@@ -358,20 +436,8 @@ const Title = styled.h3`
   text-align: center;
   color: black;
   background: var(--color-gray-800);
-  border-bottom: 5px solid black;
   corner-shape: bevel;
-  /*
-    Ok this is pretty complicated.
-    I want to create a fake shadow using a bottom border; it looks better than real box-shadow since it follows the taper of the beveled edge nicely. The problem is that this nameplate overlaps the pseudo-border created by Border, and the black shadow shouldn't show over that edge.
-    First, we create "Adjusted Radius", --ar, which is 50% of the element's height minus 4.5px. This WOULD produce a 9px flat vertical edge on the left/right.
-    But then, we use the long-form border-radius syntax to change the angle of the bottom bevels. By using 50% of the height (--hh, unadjusted), we both shift the angle so that it still feels like a 90-degree bevel (ignoring the border sliver), and it also causes the plateau to become smaller and higher.
-    Note that otherwise, this element would be 2px too low, since the 'transform: translateY(-50%)' above doesn't adjust to overlap Border's pseudo-border.
-  */
-  --ar: calc(var(--hh) - 4.5px);
-  /* prettier-ignore */
-  border-radius:
-    var(--ar) var(--ar) var(--ar) var(--ar) /
-    var(--ar) var(--ar) var(--hh) var(--hh);
+  border-radius: calc(var(--hh));
 
   /* On smaller screens, the center-aligned title overlaps the SoundSelectSidebar in a pretty unpleasant way, so let's lift it up totally above the border. */
   @media (max-width: 55rem) {
@@ -379,6 +445,11 @@ const Title = styled.h3`
     top: calc(var(--height) * -1);
     border-bottom: none;
   }
+`;
+
+const TitleOutline = styled(Title)`
+  outline: 3px solid var(--color-background);
+  z-index: 0;
 `;
 
 const StyledSoundSelectSidebar = styled(SoundSelectSidebar)`
@@ -390,17 +461,23 @@ const ButtonArea = styled.div`
   justify-self: center;
   margin-top: 3rem;
   position: relative;
+
+  @media (max-width: 28rem) {
+    width: calc(100% - 8px);
+  }
 `;
 
 const ButtonWrapper = styled.div`
   --pad: 64px;
-  position: relative;
   --stripe-width: 24px;
   --grad: repeating-linear-gradient(
     45deg,
     transparent 0px var(--stripe-width),
     var(--color-gray-200) var(--stripe-width) calc(var(--stripe-width) * 2)
   );
+  position: relative;
+  display: flex;
+  justify-content: center;
   padding: var(--pad);
   /* border: 1px solid var(--color-gray-250); */
   outline: 2px solid var(--color-gray-250);
@@ -455,7 +532,7 @@ const ConfigGrid = styled.div`
     'extra-params';
   gap: 1rem;
 
-  @container (min-width: 30rem) {
+  @container (min-width: 23.5rem) {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       'press-sample release-sample'
@@ -490,6 +567,11 @@ const BLScrew = styled(StyledScrew)`
 const BRScrew = styled(StyledScrew)`
   bottom: 2.5px;
   right: 2.5px;
+`;
+
+const Explanation = styled.div`
+  background: red;
+  padding: 1rem;
 `;
 
 export default MainDemo;

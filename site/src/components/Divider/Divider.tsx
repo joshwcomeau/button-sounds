@@ -16,12 +16,12 @@ const Svg = styled.svg`
   height: 4px;
   fill: none;
   overflow: visible;
-  vector-effect: non-scaling-stroke;
 `;
 
 const Path = styled.path`
   stroke-linecap: round;
   stroke-dasharray: 1, 3;
+  vector-effect: non-scaling-stroke;
 `;
 
 const BottomLine = styled(Path)`

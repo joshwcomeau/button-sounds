@@ -10,6 +10,8 @@ import CRTControls from '@/components/CRTControls/CRTControls';
 import ProjectByJosh from '@/components/ProjectByJosh/ProjectByJosh';
 import MainDemo from '@/components/MainDemo/MainDemo';
 import AboutPhilosophy from '@/components/AboutPhilosophy/AboutPhilosophy';
+import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
+
 import { SOUNDS_PATH } from './constants';
 
 ButtonSounds.setPath(SOUNDS_PATH);
@@ -24,32 +26,41 @@ function App() {
 
   return (
     <SoundSettingsProvider>
-      <Wrapper>
-        <Header>
-          <h1>Button Sounds</h1>
-          <p>
-            A collection of 50+ professionally-recorded multi-sampled clicks and
-            toggles. Distributed as an NPM package with optional React bindings.
-          </p>
-          <ProjectByJosh />
-        </Header>
+      <Container>
+        <Wrapper>
+          <ShapeLayer layer="background" />
+          <Header>
+            <h1>Button Sounds</h1>
+            <p>
+              A <em>free</em> collection of 50+ professionally-recorded
+              multi-sampled clicks and toggles. Distributed as an NPM package
+              with optional React bindings.
+            </p>
+            <ProjectByJosh />
+          </Header>
 
-        <MainDemo />
+          <MainDemo />
 
-        <AboutPhilosophy />
+          <AboutPhilosophy />
 
-        <footer>
-          <p>
-            MIT © Josh Comeau · built on{' '}
-            <a href="https://github.com/goldfire/howler.js">howler</a>
-          </p>
-        </footer>
-        <CRTEffect strength={crtStrength} />
-      </Wrapper>
+          <footer>
+            <p>
+              MIT © Josh Comeau · built on{' '}
+              <a href="https://github.com/goldfire/howler.js">howler</a>
+            </p>
+          </footer>
+          <CRTEffect strength={crtStrength} />
+        </Wrapper>
+      </Container>
       <CRTControls crtStrength={crtStrength} setCrtStrength={setCrtStrength} />
     </SoundSettingsProvider>
   );
 }
+
+// NOTE: I need this for `ShapeLayer`; it uses `position; absolute; inset: 0`, which by default uses the initial containing block, and as a result, images below the fold get cut off due to overflow: hidden. So, this element wraps around everything and creates a containing block so that we aren't locked to the ICB.
+const Container = styled.div`
+  position: relative;
+`;
 
 const Wrapper = styled.div`
   display: flex;
@@ -60,6 +71,7 @@ const Wrapper = styled.div`
 `;
 
 const Header = styled.header`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,6 +90,7 @@ const Header = styled.header`
   p {
     text-wrap: balance;
     margin-bottom: 2rem;
+    font-size: 1.125rem;
   }
 `;
 

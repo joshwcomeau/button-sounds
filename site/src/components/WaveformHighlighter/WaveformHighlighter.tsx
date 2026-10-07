@@ -57,14 +57,38 @@ function WaveformHighlighter({
 
   const numOfBars = Math.floor(waveformDuration / barFrequency);
   const barWidth = 100 / numOfBars;
+  const activeSpriteId =
+    activeWaveformData && !hasFinished
+      ? getSpriteId(activeWaveformData)
+      : undefined;
+  const spriteIdByBarIndex = new Map(
+    Object.entries(waveformData).map(([spriteId, [start]]) => [
+      Math.round((start / waveformDuration) * numOfBars),
+      spriteId,
+    ]),
+  );
 
   return (
     <Wrapper>
       {children}
       <Bars>
-        {range(numOfBars).map((index) => (
-          <Bar key={index} style={{ width: `${barWidth}%` }} />
-        ))}
+        {range(numOfBars).map((index) => {
+          const spriteId = spriteIdByBarIndex.get(index);
+
+          return (
+            <Bar
+              key={index}
+              style={{ width: `${barWidth}%` }}
+              data-solid={!!spriteId}
+            >
+              {spriteId && (
+                <Label data-is-active={spriteId === activeSpriteId}>
+                  {spriteId}
+                </Label>
+              )}
+            </Bar>
+          );
+        })}
       </Bars>
       {activeWaveformData && sprite && !hasFinished && (
         <Overlay
@@ -78,7 +102,6 @@ function WaveformHighlighter({
         >
           <Region>
             <Playhead />
-            <Label>{getSpriteId(activeWaveformData)}</Label>
           </Region>
         </Overlay>
       )}
@@ -124,15 +147,26 @@ const Region = styled.div`
   background: hsl(210deg 30% 70% / 0.2);
 `;
 
-const Label = styled.div`
+const Label = styled.span`
   position: absolute;
-  top: 0;
+  z-index: 1;
+  bottom: 0;
   left: 0;
-  width: 100%;
   padding: 2px;
-  font-size: 0.75rem;
+  color: var(--color-gray-300);
+  font-size: 0.6875rem;
   font-weight: 700;
+  line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 300ms;
+  background: var(--color-background);
+
+  &[data-is-active='true'] {
+    transition: color 100ms;
+    color: white;
+  }
 `;
 
 const Playhead = styled.div`
@@ -152,9 +186,22 @@ const Bars = styled.div`
 `;
 
 const Bar = styled.div`
-  border-left: 1px dashed var(--color-gray-200);
+  position: relative;
   height: 100%;
-  transform: translateX(-1px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border-left: 1px dashed var(--color-gray-200);
+    transform: translateX(-1px);
+  }
+
+  &[data-solid='true']::before {
+    border-left-color: var(--color-gray-500);
+  }
 `;
 
 export default WaveformHighlighter;

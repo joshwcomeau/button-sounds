@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useButtonSounds } from 'button-sounds/react';
+import type { SoundName } from 'button-sounds';
 
 import { range } from '@/utils';
 
@@ -8,9 +9,9 @@ import BevelEdge from '@/components/BevelEdge/BevelEdge';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 interface Props extends React.ComponentProps<'button'> {
-  name: string;
+  name: SoundName;
   isSelected: boolean;
-  setSelectedSoundName: (name: string) => void;
+  setSelectedSoundName: (name: SoundName) => void;
 }
 
 function SoundSelectBtn({

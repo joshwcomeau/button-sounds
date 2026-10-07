@@ -385,7 +385,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
   },
   'kvm-switch': {
     title: 'KVM Switch',
-    category: 'toggle',
+    category: 'misc',
     description: (
       <p>
         A KVM switch is a device that allows multiple PCs to share the same USB
@@ -396,7 +396,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
   },
   'led-blacklight': {
     title: 'LED Blacklight',
-    category: 'toggle',
+    category: 'misc',
     description: (
       <p>
         My partner has a handheld LED blacklight, used to check the fluorescence

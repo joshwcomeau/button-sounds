@@ -23,9 +23,9 @@ function RaisedContainer({
   style = {},
   ...props
 }: Props) {
-  const innerRadius = radius - PADDING;
   const topInnerRadius = topRadius - PADDING;
   const bottomInnerRadius = bottomRadius - PADDING;
+
   return (
     <OuterWrapper
       style={{
@@ -100,7 +100,8 @@ const Wrapper = styled.div`
   /* NOTE: If I wind up having some instance that needs to overflow, I can always move the ::before to a separate elem within a <Clipper> */
   overflow: hidden;
 
-  &::before {
+  /* The white glare near the top, making it seem like a screen: */
+  &::after {
     --inset: 4px;
     content: '';
     position: absolute;
@@ -114,6 +115,7 @@ const Wrapper = styled.div`
     filter: blur(6px);
     opacity: 0.2;
     mix-blend-mode: hard-light;
+    pointer-events: none;
   }
 `;
 
@@ -128,6 +130,7 @@ const Label = styled.label`
   text-shadow: 0px 0px 8px var(--color-background);
   font-family: var(--font-segment);
   font-weight: 900;
+  user-select: none;
 `;
 
 const StyledDivider = styled(Divider)`

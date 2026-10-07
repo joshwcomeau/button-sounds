@@ -436,6 +436,22 @@ export const seededRandom = (seed: string, min: number, max: number) => {
   return min + ratio * (max - min);
 };
 
+// Fisher–Yates shuffle driven by a numeric seed. The same seed always produces the same order.
+export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
+  const nextItems = [...items];
+  let state = seed | 0;
+
+  for (let index = nextItems.length - 1; index > 0; index--) {
+    state = (Math.imul(1664525, state) + 1013904223) | 0;
+    const swapIndex = (state >>> 0) % (index + 1);
+    const current = nextItems[index]!;
+    nextItems[index] = nextItems[swapIndex]!;
+    nextItems[swapIndex] = current;
+  }
+
+  return nextItems;
+}
+
 const BINOMIAL_INVERSE_TRANSFORM_THRESHOLD = 10;
 
 function sampleBinomialInverse(

@@ -41,8 +41,8 @@ function ExtraParams(props: React.HTMLAttributes<HTMLDivElement>) {
           value={pitchVariation}
           setValue={setPitchVariation}
           min={0}
-          max={0.5}
-          step={0.05}
+          max={0.4}
+          step={0.02}
         />
       </Slot>
       <Slot>

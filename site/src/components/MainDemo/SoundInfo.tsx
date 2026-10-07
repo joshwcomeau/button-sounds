@@ -5,6 +5,7 @@ import { SOUND_DATA } from '@/data';
 
 import BevelEdge from '@/components/BevelEdge';
 import OuterCorner from '@/components/OuterCorner';
+import PatternDither from '@/components/BackgroundPatterns/PatternDither';
 
 interface Props extends React.ComponentProps<'div'> {
   name: SoundName;
@@ -15,10 +16,6 @@ const MAIN_RADIUS = 16;
 
 function SoundInfo({ name, ...delegated }: Props) {
   const soundData = SOUND_DATA[name];
-
-  if (!soundData) {
-    return 'TODO';
-  }
 
   return (
     <Wrapper {...delegated}>
@@ -44,18 +41,21 @@ function SoundInfo({ name, ...delegated }: Props) {
         radius={MAIN_RADIUS}
       />
       <BevelEdge side="bottom" color="black" radius={MAIN_RADIUS} />
+      <BottomDecoration>
+        <StyledPattern patternId="b" />
+      </BottomDecoration>
     </Wrapper>
   );
 }
 
 const Wrapper = styled.div`
   position: relative;
-  margin-top: 32px;
+  margin-top: 3rem;
+  padding-bottom: 1rem;
   border: 1px solid var(--color-gray-250);
   border-radius: 0px ${MAIN_RADIUS}px ${MAIN_RADIUS}px ${MAIN_RADIUS}px;
   corner-shape: bevel;
   background: var(--color-gray-200);
-  margin-top: 3rem;
 `;
 
 const Title = styled.h3`
@@ -99,6 +99,35 @@ const Main = styled.div`
 
 const StyledMainTopEdge = styled(BevelEdge)`
   left: calc(13rem + 5px);
+`;
+
+const BottomDecoration = styled.div`
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
+  height: 24px;
+  overflow: hidden;
+  /* opacity: 0.5; */
+  border-top: 1px solid var(--color-gray-300);
+  border-inline: 1px solid var(--color-gray-50);
+  border-radius: 0 0 ${MAIN_RADIUS}px ${MAIN_RADIUS}px;
+  corner-shape: bevel;
+
+  color: var(--color-gray-500);
+  background: var(--color-gray-100);
+`;
+
+const StyledPattern = styled(PatternDither)`
+  --inset: 3px;
+  --r: calc(${MAIN_RADIUS}px - var(--inset));
+  position: absolute;
+  inset: var(--inset);
+  width: calc(100% - 2 * var(--inset));
+  height: calc(100% - 2 * var(--inset));
+  border-radius: 0 0 var(--r) var(--r);
+  corner-shape: bevel;
+  color: var(--color-gray-250);
 `;
 
 export default SoundInfo;

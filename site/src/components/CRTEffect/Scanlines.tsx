@@ -14,7 +14,7 @@ function Scanlines({ strength, lineHeight = 1, gapHeight = 1 }: Props) {
       style={{
         '--line-height': `${lineHeight}px`,
         '--gap-height': `${gapHeight}px`,
-        opacity: normalize(strength, 0, 1, 0, 0.2),
+        opacity: normalize(strength, 0, 1, 0, 0.3),
       }}
     />
   );
