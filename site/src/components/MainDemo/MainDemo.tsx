@@ -17,6 +17,7 @@ import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
 import ExtraParams from './ExtraParams';
 import SoundInfo from './SoundInfo';
+import Explanation from './Explanation';
 import { useSoundResourceLoading } from './useSoundResourceLoading';
 
 import type { SortOrder } from './MainDemo.helpers';
@@ -298,10 +299,10 @@ function MainDemo() {
   }, [selectedSoundName, selectedDownIndex, selectedUpIndex, pitchVariation]);
 
   return (
-    <Container>
+    <Container ref={wrapperRef}>
       <TitleOutline aria-hidden="true">Sound Playground</TitleOutline>
       <Border>
-        <Wrapper ref={wrapperRef}>
+        <Wrapper>
           <Title>Sound Playground</Title>
           <StyledSoundSelectSidebar
             selectedSoundName={selectedSoundName}
@@ -309,6 +310,7 @@ function MainDemo() {
             relevantSounds={relevantSounds}
             selectedFilter={selectedFilter}
             sortOrder={sortOrder}
+            mainButtonRef={buttonRef}
             handleSortOrderClick={handleSortOrderClick}
             handleFilterClick={handleFilterClick}
             handleIncrementSound={handleIncrementSound}
@@ -353,7 +355,7 @@ function MainDemo() {
         <BLScrew />
         <BRScrew />
       </Border>
-      <Explanation></Explanation>
+      <Explanation />
     </Container>
   );
 }
@@ -567,11 +569,6 @@ const BLScrew = styled(StyledScrew)`
 const BRScrew = styled(StyledScrew)`
   bottom: 2.5px;
   right: 2.5px;
-`;
-
-const Explanation = styled.div`
-  background: red;
-  padding: 1rem;
 `;
 
 export default MainDemo;

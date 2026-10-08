@@ -69,6 +69,16 @@ body {
   min-height: 100svh;
 }
 
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible,
+.focused {
+  outline: var(--focus-dot-size, 2px) dotted white;
+  outline-offset: var(--focus-offset, 4px);
+}
+
 @font-face {
   font-family: 'seven-segment';
   src: url('/fonts/seven-segment.woff2') format('woff2');

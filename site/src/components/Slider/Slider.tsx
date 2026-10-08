@@ -12,6 +12,7 @@ interface Props extends Omit<
   min: number;
   max: number;
   step: number;
+  inputStyles?: React.CSSProperties;
 }
 
 function Slider({
@@ -20,6 +21,7 @@ function Slider({
   min,
   max,
   step,
+  inputStyles,
   className,
   style,
   id,
@@ -54,6 +56,7 @@ function Slider({
         max={max}
         step={step}
         value={value}
+        style={inputStyles}
         onChange={(event) => {
           setValue(event.currentTarget.valueAsNumber);
         }}
@@ -147,15 +150,6 @@ const RangeInput = styled.input`
   line-height: 0;
   cursor: pointer;
   z-index: 1;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    outline: 2px dotted var(--color-gray-500);
-    outline-offset: 4px;
-  }
 
   /* WebKit doesn’t ship a progress pseudo-element, so the filled portion is a gradient painted on the track. Firefox has ::-moz-range-progress instead, and it’s missing some of the bevel styling — that’s an acceptable gap. */
   &::-webkit-slider-runnable-track {

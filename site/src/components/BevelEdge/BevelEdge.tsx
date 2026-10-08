@@ -39,7 +39,7 @@ function BevelEdge({
 }
 
 // NOTE: These are simpler alternatives to BevelEdge. I should probably move this code into that component and use it.
-const TopEdge = styled.div`
+const TopEdge = styled.span`
   position: absolute;
   top: calc(var(--border-width) * -1);
   left: calc(var(--bevel-radius-left) - var(--border-width));
@@ -86,7 +86,7 @@ const TopEdge = styled.div`
     }
   }
 `;
-const BottomEdge = styled.div`
+const BottomEdge = styled.span`
   position: absolute;
   bottom: calc(var(--border-width) * -1);
   left: calc(var(--bevel-radius-left) - var(--border-width));

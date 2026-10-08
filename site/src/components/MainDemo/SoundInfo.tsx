@@ -43,6 +43,7 @@ function SoundInfo({ name, ...delegated }: Props) {
       <BevelEdge side="bottom" color="black" radius={MAIN_RADIUS} />
       <BottomDecoration>
         <StyledPattern patternId="b" />
+        <SlantedThingy />
       </BottomDecoration>
     </Wrapper>
   );
@@ -128,6 +129,37 @@ const StyledPattern = styled(PatternDither)`
   border-radius: 0 0 var(--r) var(--r);
   corner-shape: bevel;
   color: var(--color-gray-250);
+`;
+
+const SlantedThingy = styled.div`
+  position: absolute;
+  right: 17px;
+  bottom: 0px;
+  width: 98px;
+  height: 16px;
+  border: 3px solid var(--color-gray-250);
+  border-top-width: 2px;
+  background: var(--color-gray-50);
+  outline: 2px solid var(--color-gray-100);
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+  transform: skewX(-45deg);
+
+  &::after {
+    --stripe-width: 3px;
+    content: '';
+    position: absolute;
+    inset: 2px;
+    image-rendering: pixelated;
+    background: repeating-linear-gradient(
+      to right,
+      var(--color-gray-400) 0px var(--stripe-width),
+      transparent 2px calc(var(--stripe-width) * 2),
+      var(--color-gray-250) calc(var(--stripe-width) * 2)
+        calc(var(--stripe-width) * 3),
+      transparent calc(var(--stripe-width) * 3) calc(var(--stripe-width) * 4)
+    );
+  }
 `;
 
 export default SoundInfo;

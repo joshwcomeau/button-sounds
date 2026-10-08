@@ -41,6 +41,7 @@ function UpDownBtn({ direction, handleClick, ...props }: Props) {
 const Wrapper = styled.button`
   --r: 4px;
   --big-r: 10px;
+  --focus-offset: 2px;
 
   position: relative;
   width: calc(2rem - 4px);
@@ -60,6 +61,9 @@ const Wrapper = styled.button`
   &:hover {
     opacity: 1;
     transition: opacity 100ms;
+  }
+  &:focus-visible {
+    opacity: 1;
   }
 
   &[data-direction='up'] {

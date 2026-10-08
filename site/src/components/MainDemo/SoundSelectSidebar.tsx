@@ -1,6 +1,9 @@
+import * as React from 'react';
 import styled from 'styled-components';
 import type { SoundName } from 'button-sounds';
 import { Keyboard, Mouse, Gamepad, ToggleRight, Shapes } from 'lucide-react';
+
+import useResizeObserver from '@/hooks/use-resize-observer';
 
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
@@ -25,6 +28,7 @@ interface Props extends React.ComponentProps<'div'> {
   relevantSounds: SoundName[];
   selectedFilter: string | null;
   sortOrder: SortOrder;
+  mainButtonRef: React.RefObject<HTMLButtonElement>;
   handleSortOrderClick: (order: SortOrder) => void;
   handleFilterClick: (filterId: string) => void;
   handleIncrementSound: () => void;
@@ -37,31 +41,55 @@ function SoundSelectSidebar({
   relevantSounds,
   selectedFilter,
   sortOrder,
+  mainButtonRef,
   handleSortOrderClick,
   handleFilterClick,
   handleIncrementSound,
   handleDecrementSound,
   ...delegated
 }: Props) {
+  const listRef = React.useRef<HTMLUListElement>(null);
+  const [canScroll, setCanScroll] = React.useState(false);
+
+  // I have scroll-indicating gradients at the top/bottom of the sound list, and they animate smoothly using animation-timeline (aside from Firefox). The trouble is that sometimes, when filtering, all of the sounds fit within the container, so there's no overflow to scroll through.
+  // This tracks whether the list is scrollable or not, so that we can hide the gradients when all of the sounds fit in the container.
+  // NOTE: In the future, I can use @container scroll-state for this! But it's not available in Safari yet, so we need to do it in JS.
+  useResizeObserver(listRef, () => {
+    const scrollList = listRef.current;
+    if (!scrollList) {
+      return;
+    }
+
+    const nextCanScroll = scrollList.scrollHeight - scrollList.clientHeight > 1;
+    setCanScroll((current) =>
+      current === nextCanScroll ? current : nextCanScroll,
+    );
+  });
+
   return (
     <Wrapper title="Select Sound" {...delegated}>
       <UpBtn direction="up" handleClick={handleIncrementSound} />
       <DownBtn direction="down" handleClick={handleDecrementSound} />
 
-      <List>
-        {relevantSounds.map((name) => {
-          const isSelected = selectedSoundName === name;
-          return (
-            <ListItem key={name}>
-              <SoundSelectBtn
-                name={name}
-                isSelected={isSelected}
-                setSelectedSoundName={setSelectedSoundName}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+      <ListFrame>
+        <List ref={listRef} data-can-scroll={canScroll}>
+          <EdgeFade data-edge="top" aria-hidden="true" />
+          {relevantSounds.map((name) => {
+            const isSelected = selectedSoundName === name;
+            return (
+              <ListItem key={name}>
+                <SoundSelectBtn
+                  name={name}
+                  isSelected={isSelected}
+                  mainButtonRef={mainButtonRef}
+                  setSelectedSoundName={setSelectedSoundName}
+                />
+              </ListItem>
+            );
+          })}
+          <EdgeFade data-edge="bottom" aria-hidden="true" />
+        </List>
+      </ListFrame>
       <Divider />
       <BottomHeader>
         <FilterName>{selectedFilter || 'Filter'}</FilterName>
@@ -72,10 +100,6 @@ function SoundSelectSidebar({
             <SortBtn
               sortOrder={sortOrder}
               handleSortOrderClick={handleSortOrderClick}
-              style={{
-                // Optical alignment
-                transform: 'translateY(-1px)',
-              }}
             />
           </SortBtnWrapper>
         </Actions>
@@ -129,15 +153,74 @@ const Wrapper = styled(RaisedContainer)`
   min-height: 28rem;
 `;
 
-const List = styled.ul`
+const ListFrame = styled.div`
+  position: relative;
   flex: 1;
+  min-height: 0;
+`;
+
+const List = styled.ul`
+  --list-gap: 2px;
+  --list-padding: 4px;
+
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   list-style: none;
-  padding: 4px;
+  padding: var(--list-padding);
   margin: 0;
-  gap: 2px;
+  gap: var(--list-gap);
+  scroll-timeline-name: --sound-list;
+  scroll-timeline-axis: block;
+`;
+
+const EdgeFade = styled.li`
+  --fade-size: 100px;
+
+  position: sticky;
+  z-index: 1;
+  flex: none;
+  height: var(--fade-size);
+  pointer-events: none;
+  /* Browsers without scroll timelines, including Firefox, keep the fades hidden. */
+  opacity: 0;
+
+  &[data-edge='top'] {
+    /* Sticky insets are inside the padding, so a negative offset covers the padding the rows scroll through. */
+    top: calc(-1 * var(--list-padding));
+    /* Pull the following rows back up so the fade overlays them instead of occupying a slot. */
+    margin-bottom: calc(-1 * (var(--fade-size) + var(--list-gap)));
+    background: linear-gradient(to bottom, black, transparent);
+  }
+
+  &[data-edge='bottom'] {
+    bottom: calc(-1 * var(--list-padding));
+    margin-top: calc(-1 * (var(--fade-size) + var(--list-gap)));
+    background: linear-gradient(to top, black, transparent);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    /* The scroll animations fade toward this opacity. fadeFromTransparent and fadeToTransparent only set one keyframe. */
+    opacity: 0.5;
+
+    &[data-edge='top'] {
+      animation: fadeFromTransparent linear both;
+      animation-timeline: --sound-list;
+      animation-range: 0px 150px;
+    }
+
+    &[data-edge='bottom'] {
+      animation: fadeToTransparent linear both;
+      animation-timeline: --sound-list;
+      animation-range: calc(100% - 150px) 100%;
+    }
+
+    ${List}[data-can-scroll='false'] & {
+      animation: none;
+      opacity: 0;
+    }
+  }
 `;
 
 const ListItem = styled.li`
@@ -197,6 +280,8 @@ const Actions = styled.div`
 
 const SortBtnWrapper = styled.div`
   position: relative;
+  /* This tab sticks up into the list, above the bottom scroll fade. */
+  z-index: 2;
   padding: 5px;
   background: inherit;
   border-radius: 8px 8px 0 0;

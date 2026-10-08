@@ -37,8 +37,6 @@ function TaughtByJosh() {
 
   return (
     <Wrapper>
-      <KeyboardFocusRing data-kbd-focus-ring />
-
       {hasLoadedImage && (
         <Author>
           <AvatarButton
@@ -118,15 +116,6 @@ const Wrapper = styled.div`
   }
 `;
 
-const KeyboardFocusRing = styled.div`
-  opacity: 0;
-  position: absolute;
-  inset: 0;
-  border-radius: 1000px;
-  outline-offset: 12px !important;
-  pointer-events: none;
-`;
-
 const Author = styled.div`
   display: flex;
   align-items: center;
@@ -145,14 +134,19 @@ const JoshLink = styled.a`
   font-weight: 600;
   color: white;
   text-decoration: none;
+  border-radius: 2px;
+  corner-shape: bevel;
 `;
 
 const AvatarButton = styled.button`
+  --focus-dot-size: 3px;
+  --focus-offset: 6px;
   border: none;
   background: transparent;
   padding: 0;
   margin: 0;
-  outline: none;
+  border-radius: ${RADIUS}px;
+  corner-shape: bevel;
 `;
 
 const AvatarWrapper = styled.span`

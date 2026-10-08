@@ -5,18 +5,18 @@ import Slider from '@/components/Slider/Slider';
 import Screw from '@/components/Screw/Screw';
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
-interface Props {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
   crtStrength: number;
   setCrtStrength: (strength: number) => void;
 }
 
 const screwStyles = { opacity: 0.5 };
 
-function CRTControls({ crtStrength, setCrtStrength }: Props) {
+function CRTControls({ crtStrength, setCrtStrength, ...delegated }: Props) {
   const sliderId = React.useId().replace(/:/g, '-');
 
   return (
-    <Wrapper>
+    <Wrapper {...delegated}>
       <ScrewWrapper data-side="left">
         <Screw style={screwStyles} />
       </ScrewWrapper>
@@ -32,6 +32,13 @@ function CRTControls({ crtStrength, setCrtStrength }: Props) {
           min={0}
           max={1}
           step={0.1}
+          // When focusing, I want the dotted focus outline to follow the diagonal edge of the bottom-right corner
+          inputStyles={
+            {
+              borderRadius: '0 0 8px 0',
+              cornerShape: 'bevel',
+            } as React.CSSProperties
+          }
         />
       </Main>
       <ScrewWrapper data-side="right">

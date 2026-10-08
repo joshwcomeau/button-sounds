@@ -26,6 +26,13 @@ function App() {
 
   return (
     <SoundSettingsProvider>
+      <CRTControls
+        crtStrength={crtStrength}
+        setCrtStrength={setCrtStrength}
+        // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
+        // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
+        style={{ zIndex: 2 }}
+      />
       <Container>
         <Wrapper>
           <ShapeLayer layer="background" />
@@ -52,7 +59,6 @@ function App() {
           <CRTEffect strength={crtStrength} />
         </Wrapper>
       </Container>
-      <CRTControls crtStrength={crtStrength} setCrtStrength={setCrtStrength} />
     </SoundSettingsProvider>
   );
 }
@@ -60,6 +66,7 @@ function App() {
 // NOTE: I need this for `ShapeLayer`; it uses `position; absolute; inset: 0`, which by default uses the initial containing block, and as a result, images below the fold get cut off due to overflow: hidden. So, this element wraps around everything and creates a containing block so that we aren't locked to the ICB.
 const Container = styled.div`
   position: relative;
+  reading-order: 2;
 `;
 
 const Wrapper = styled.div`
