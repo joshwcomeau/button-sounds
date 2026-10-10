@@ -18,7 +18,8 @@
     "microlighter": "^2.2.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "styled-components": "^6.5.3"
+    "styled-components": "^6.5.3",
+    "use-sound": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

@@ -15,6 +15,10 @@ function ExtraParams(props: React.HTMLAttributes<HTMLDivElement>) {
     <Wrapper title="Config" {...props}>
       <Slot>
         <LabeledSlider
+          inputStyles={{
+            borderRadius: '6px',
+            cornerShape: 'bevel',
+          }}
           label={
             <InfoTooltip
               content={

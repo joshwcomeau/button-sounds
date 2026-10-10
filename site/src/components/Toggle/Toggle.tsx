@@ -120,8 +120,8 @@ const Track = styled.div`
   background: var(--color-background);
 
   &:has(:focus-visible) {
-    outline: 2px dotted var(--color-gray-500);
-    outline-offset: 3px;
+    outline: var(--focus-dot-size, 2px) dotted white;
+    outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -142,7 +142,7 @@ const Input = styled.input`
   cursor: pointer;
   appearance: none;
 
-  &:focus {
+  &:focus-visible {
     outline: none;
   }
 

@@ -218,7 +218,7 @@ const BACKGROUND_SHAPES: Array<Shape> = [
     id: 'iidx',
     x: 945,
     y: 358,
-    translateX: -380,
+    translateX: -400,
     translateY: 1250,
     width: 206,
     height: 258,

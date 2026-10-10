@@ -6,15 +6,23 @@ import { SOUND_DATA } from '@/data';
 import BevelEdge from '@/components/BevelEdge';
 import OuterCorner from '@/components/OuterCorner';
 import PatternDither from '@/components/BackgroundPatterns/PatternDither';
+import CodedLights from '@/components/CodedLights/CodedLights';
 
 interface Props extends React.ComponentProps<'div'> {
   name: SoundName;
+  hasWonMinigame: boolean;
+  onMinigameComplete: () => void;
 }
 
 const TOP_RADIUS = 8;
 const MAIN_RADIUS = 16;
 
-function SoundInfo({ name, ...delegated }: Props) {
+function SoundInfo({
+  name,
+  hasWonMinigame,
+  onMinigameComplete,
+  ...delegated
+}: Props) {
   const soundData = SOUND_DATA[name];
 
   return (
@@ -43,7 +51,7 @@ function SoundInfo({ name, ...delegated }: Props) {
       <BevelEdge side="bottom" color="black" radius={MAIN_RADIUS} />
       <BottomDecoration>
         <StyledPattern patternId="b" />
-        <SlantedThingy />
+        <CodedLights hasWon={hasWonMinigame} onComplete={onMinigameComplete} />
       </BottomDecoration>
     </Wrapper>
   );
@@ -108,8 +116,6 @@ const BottomDecoration = styled.div`
   right: -1px;
   bottom: 0;
   height: 24px;
-  overflow: hidden;
-  /* opacity: 0.5; */
   border-top: 1px solid var(--color-gray-300);
   border-inline: 1px solid var(--color-gray-50);
   border-radius: 0 0 ${MAIN_RADIUS}px ${MAIN_RADIUS}px;
@@ -129,37 +135,6 @@ const StyledPattern = styled(PatternDither)`
   border-radius: 0 0 var(--r) var(--r);
   corner-shape: bevel;
   color: var(--color-gray-250);
-`;
-
-const SlantedThingy = styled.div`
-  position: absolute;
-  right: 17px;
-  bottom: 0px;
-  width: 98px;
-  height: 16px;
-  border: 3px solid var(--color-gray-250);
-  border-top-width: 2px;
-  background: var(--color-gray-50);
-  outline: 2px solid var(--color-gray-100);
-  border-bottom: none;
-  border-radius: 3px 3px 0 0;
-  transform: skewX(-45deg);
-
-  &::after {
-    --stripe-width: 3px;
-    content: '';
-    position: absolute;
-    inset: 2px;
-    image-rendering: pixelated;
-    background: repeating-linear-gradient(
-      to right,
-      var(--color-gray-400) 0px var(--stripe-width),
-      transparent 2px calc(var(--stripe-width) * 2),
-      var(--color-gray-250) calc(var(--stripe-width) * 2)
-        calc(var(--stripe-width) * 3),
-      transparent calc(var(--stripe-width) * 3) calc(var(--stripe-width) * 4)
-    );
-  }
 `;
 
 export default SoundInfo;

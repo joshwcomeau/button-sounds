@@ -55,6 +55,13 @@ const Wrapper = styled.div`
   right: 3rem;
   display: flex;
   align-items: flex-start;
+
+  @media (max-width: 57rem) {
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+  }
 `;
 
 const ScrewWrapper = styled.div`

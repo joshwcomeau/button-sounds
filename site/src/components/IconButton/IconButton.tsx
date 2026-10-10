@@ -12,8 +12,36 @@ interface Props extends React.ComponentProps<'button'> {
 }
 
 function IconButton({ icon, children, color, ...props }: Props) {
+  const [isPressedWithKeyboard, setIsPressedWithKeyboard] =
+    React.useState(false);
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      setIsPressedWithKeyboard(true);
+    }
+
+    if (props.onKeyDown) {
+      props.onKeyDown(event);
+    }
+  }
+
+  function handleKeyUp(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      setIsPressedWithKeyboard(false);
+    }
+
+    if (props.onKeyUp) {
+      props.onKeyUp(event);
+    }
+  }
   return (
-    <Wrapper type="button" {...props}>
+    <Wrapper
+      type="button"
+      data-is-depressed={isPressedWithKeyboard}
+      {...props}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+    >
       <Shaft />
       <BevelEdge
         side="top"
@@ -53,6 +81,7 @@ function IconButton({ icon, children, color, ...props }: Props) {
 }
 
 const Wrapper = styled.button`
+  --focus-offset: 0px;
   position: relative;
   display: block;
   height: ${HEIGHT}rem;
@@ -63,15 +92,6 @@ const Wrapper = styled.button`
   background: black;
   corner-shape: bevel;
   cursor: pointer;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    outline: 2px dotted var(--color-gray-500);
-    outline-offset: 3px;
-  }
 
   &:disabled {
     opacity: 0.5;
@@ -118,7 +138,7 @@ const CastShadow = styled.span`
   ${Wrapper}:hover & {
     --size: 8px;
   }
-  ${Wrapper}:active & {
+  ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {
     --size: 0px;
     transition: transform 0ms;
   }
@@ -147,7 +167,7 @@ const Slider = styled.span`
     transform: translateY(-2px);
   }
 
-  ${Wrapper}:active & {
+  ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {
     transform: translateY(4px);
     transition: transform 0ms;
   }
@@ -202,7 +222,7 @@ const Face = styled.span`
     transition: opacity 250ms;
   }
 
-  ${Wrapper}:active & {
+  ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {
     background: linear-gradient(
       to top,
       var(--color-gray-200),
@@ -229,7 +249,7 @@ const IconSlot = styled.span`
     inset 0 -1px 0 var(--color-gray-50),
     inset 0 2px 0 var(--color-gray-400);
 
-  ${Wrapper}:active & {
+  ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {
     box-shadow:
       inset 0 2px 0 var(--color-gray-50),
       inset 0 -1px 0 var(--color-gray-400);
@@ -239,7 +259,7 @@ const IconSlot = styled.span`
 const IconWrapper = styled.span`
   display: block;
 
-  ${Wrapper}:active & {
+  ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {
     transform: translateY(2px);
   }
 `;

@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 // prettier-ignore
-type Action =
+export type Action =
   | 'hovering'
   | 'pressing'
   | 'releasing'
@@ -17,56 +17,69 @@ const DURATIONS_BY_ACTION: Record<Action, number> = {
   'releasing-elsewhere': 300,
 };
 
-function FancyButton(props: React.ComponentProps<'button'>) {
+interface Props extends React.ComponentProps<'button'> {
+  buttonAction: Action | null;
+  setButtonAction: React.Dispatch<React.SetStateAction<Action | null>>;
+}
+
+function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
   const wrapperRef = React.useRef<HTMLSpanElement>(null);
-  const [action, setAction] = React.useState<Action | null>(null);
   const actionRef = React.useRef<Action | null>(null);
   React.useEffect(() => {
-    actionRef.current = action;
-  }, [action]);
+    actionRef.current = buttonAction;
+  }, [buttonAction]);
 
-  const handleMouseUp = React.useCallback((ev) => {
-    const releasedWithinButton = wrapperRef.current?.contains(ev.target);
-    setAction(releasedWithinButton ? 'releasing' : 'releasing-elsewhere');
-  }, []);
+  const handleMouseUp = React.useCallback(
+    (ev: MouseEvent) => {
+      const releasedWithinButton = wrapperRef.current?.contains(
+        ev.target as Node,
+      );
+      setButtonAction(
+        releasedWithinButton ? 'releasing' : 'releasing-elsewhere',
+      );
+    },
+    [setButtonAction],
+  );
 
   const handleMouseEnter = React.useCallback(() => {
-    setAction('hovering');
+    setButtonAction('hovering');
 
     window.addEventListener('mouseup', handleMouseUp);
-  }, [handleMouseUp]);
+  }, [handleMouseUp, setButtonAction]);
 
   const handleMouseLeave = React.useCallback(() => {
     const action = actionRef.current;
 
     if (action !== 'pressing') {
-      setAction('leaving');
+      setButtonAction('leaving');
     }
-  }, []);
+  }, [setButtonAction]);
 
   const handleMouseDown = React.useCallback(() => {
-    setAction('pressing');
-  }, []);
+    setButtonAction('pressing');
+  }, [setButtonAction]);
 
   const handleKeyDown = React.useCallback(
     (ev: React.KeyboardEvent<HTMLButtonElement>) => {
       if (ev.key === 'Enter' || ev.key === ' ') {
-        setAction('pressing');
+        setButtonAction('pressing');
       }
     },
-    [],
+    [setButtonAction],
   );
 
   const handleKeyUp = React.useCallback(
     (ev: React.KeyboardEvent<HTMLButtonElement>) => {
       if (ev.key === 'Enter' || ev.key === ' ') {
-        setAction('releasing');
+        setButtonAction('releasing');
       }
     },
-    [],
+    [setButtonAction],
   );
 
-  const transitionDuration = action ? DURATIONS_BY_ACTION[action] : 0;
+  const transitionDuration = buttonAction
+    ? DURATIONS_BY_ACTION[buttonAction]
+    : 0;
 
   return (
     <OuterWrapper
@@ -79,7 +92,7 @@ function FancyButton(props: React.ComponentProps<'button'>) {
       onKeyUp={handleKeyUp}
     >
       <Wrapper
-        data-action={action}
+        data-action={buttonAction}
         style={{
           '--transition-duration': transitionDuration + 'ms',
         }}
@@ -100,16 +113,29 @@ function FancyButton(props: React.ComponentProps<'button'>) {
 }
 
 const OuterWrapper = styled.button`
+  --focus-offset: 2px;
+  --dot-size: 3px;
   position: relative;
   display: block;
   border: none;
   background: transparent;
   margin: 0;
   padding: 0;
-  outline: 2px dotted var(--color-gray-200);
   corner-shape: bevel;
   border-radius: 16px;
-  outline-offset: 2px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border: 2px dashed var(--color-gray-200);
+    border-radius: 19px;
+    corner-shape: inherit;
+  }
+
+  &:focus-visible::before {
+    opacity: 0;
+  }
 
   &:disabled {
     opacity: 0.5;

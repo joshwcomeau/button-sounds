@@ -7,10 +7,13 @@ import useSyncedRef from '@/hooks/use-synced-ref';
 import { SOUND_DATA } from '@/data';
 import { random, sampleIndex, seededShuffle } from '@/utils';
 
-import FancyButton from '@/components/FancyButton/FancyButton';
+import FancyButton, { type Action } from '@/components/FancyButton/FancyButton';
+import PatternDither from '@/components/BackgroundPatterns/PatternDither';
 import SampleSelector from '@/components/SampleSelector';
 import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
+import ToastWon from '@/components/ToastWon/ToastWon';
+import InPortal from '@/components/InPortal/InPortal';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
@@ -62,6 +65,7 @@ function MainDemo() {
     () => [...SOUND_NAMES],
   );
 
+  const [buttonAction, setButtonAction] = React.useState<Action | null>(null);
   const [lastDownIndex, setLastDownIndex] = React.useState<
     number | undefined
   >();
@@ -72,6 +76,7 @@ function MainDemo() {
   const [selectedUpIndex, setSelectedUpIndex] = React.useState<
     number | undefined
   >();
+  const [hasWonMinigame, setHasWonMinigame] = React.useState(false);
   const { usingLofi, pitchVariation } = useSoundSettings();
 
   const handleFilterClick = React.useCallback(
@@ -177,7 +182,13 @@ function MainDemo() {
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+      console.log(event.key);
+      if (
+        event.key !== 'ArrowUp' &&
+        event.key !== 'ArrowDown' &&
+        event.key !== 'w' &&
+        event.key !== 's'
+      ) {
         return;
       }
 
@@ -186,7 +197,7 @@ function MainDemo() {
 
       event.preventDefault();
 
-      const direction = event.key === 'ArrowUp' ? -1 : 1;
+      const direction = event.key === 'ArrowUp' || event.key === 'w' ? -1 : 1;
       const currentIndex = relevantSounds.indexOf(
         selectedSoundName as SoundName,
       );
@@ -216,6 +227,40 @@ function MainDemo() {
     };
   }, [relevantSounds, selectedSoundNameRef]);
 
+  const triggerPress = React.useCallback(() => {
+    let index = selectedDownIndex;
+    if (typeof index !== 'number') {
+      index = sampleIndex(getSampleIds(selectedSoundName, 'down')) || 0;
+    }
+
+    const playbackRate =
+      1 + random(-pitchVariation, pitchVariation, { rounded: false });
+
+    press({ sampleIndex: index, playbackRate });
+
+    setLastDownIndex(index);
+    setButtonAction('pressing');
+  }, [selectedDownIndex, selectedSoundName, pitchVariation, press]);
+
+  const triggerRelease = React.useCallback(() => {
+    let index = selectedUpIndex;
+    if (typeof index !== 'number') {
+      index = sampleIndex(getSampleIds(selectedSoundName, 'up')) || 0;
+    }
+
+    const playbackRate =
+      1 + random(-pitchVariation, pitchVariation, { rounded: false });
+
+    release({ sampleIndex: index, playbackRate });
+
+    setLastUpIndex(index);
+    setLastDownIndex(undefined);
+    setButtonAction('releasing');
+    window.setTimeout(() => {
+      setLastUpIndex(undefined);
+    }, 260);
+  }, [selectedUpIndex, selectedSoundName, pitchVariation, release]);
+
   React.useEffect(() => {
     const btn = buttonRef.current;
 
@@ -223,43 +268,11 @@ function MainDemo() {
       return;
     }
 
-    function playPress() {
-      let index = selectedDownIndex;
-      if (typeof index !== 'number') {
-        index = sampleIndex(getSampleIds(selectedSoundName, 'down')) || 0;
-      }
-
-      const playbackRate =
-        1 + random(-pitchVariation, pitchVariation, { rounded: false });
-
-      press({ sampleIndex: index, playbackRate });
-
-      setLastDownIndex(index);
-    }
-
-    function playRelease() {
-      let index = selectedUpIndex;
-      if (typeof index !== 'number') {
-        index = sampleIndex(getSampleIds(selectedSoundName, 'up')) || 0;
-      }
-
-      const playbackRate =
-        1 + random(-pitchVariation, pitchVariation, { rounded: false });
-
-      release({ sampleIndex: index, playbackRate });
-
-      setLastUpIndex(index);
-      setLastDownIndex(undefined);
-      window.setTimeout(() => {
-        setLastUpIndex(undefined);
-      }, 260);
-    }
-
     function handlePointerDown() {
-      playPress();
+      triggerPress();
 
       function handlePointerUp() {
-        playRelease();
+        triggerRelease();
       }
 
       window.addEventListener('pointerup', handlePointerUp, { once: true });
@@ -275,14 +288,14 @@ function MainDemo() {
         return;
       }
 
-      playPress();
+      triggerPress();
 
       function handleKeyUp(upEvent: KeyboardEvent) {
         if (upEvent.key !== event.key) {
           return;
         }
 
-        playRelease();
+        triggerRelease();
         window.removeEventListener('keyup', handleKeyUp);
       }
 
@@ -296,13 +309,15 @@ function MainDemo() {
       btn.removeEventListener('pointerdown', handlePointerDown);
       btn.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedSoundName, selectedDownIndex, selectedUpIndex, pitchVariation]);
+  }, [triggerPress, triggerRelease]);
 
   return (
     <Container ref={wrapperRef}>
       <TitleOutline aria-hidden="true">Sound Playground</TitleOutline>
       <Border>
         <Wrapper>
+          <StyledBackgroundPattern patternId="c" />
+
           <Title>Sound Playground</Title>
           <StyledSoundSelectSidebar
             selectedSoundName={selectedSoundName}
@@ -310,7 +325,8 @@ function MainDemo() {
             relevantSounds={relevantSounds}
             selectedFilter={selectedFilter}
             sortOrder={sortOrder}
-            mainButtonRef={buttonRef}
+            triggerPress={triggerPress}
+            triggerRelease={triggerRelease}
             handleSortOrderClick={handleSortOrderClick}
             handleFilterClick={handleFilterClick}
             handleIncrementSound={handleIncrementSound}
@@ -321,12 +337,18 @@ function MainDemo() {
               <FancyButton
                 disabled={loadingStatus === 'loading'}
                 ref={buttonRef}
+                buttonAction={buttonAction}
+                setButtonAction={setButtonAction}
               />
             </ButtonWrapper>
             {loadingStatus === 'loading' && <StyledSpinner />}
           </ButtonArea>
 
-          <StyledSoundInfo name={selectedSoundName} />
+          <StyledSoundInfo
+            name={selectedSoundName}
+            hasWonMinigame={hasWonMinigame}
+            onMinigameComplete={() => setHasWonMinigame(true)}
+          />
 
           <ConfigSidebar>
             <ConfigGrid>
@@ -356,6 +378,11 @@ function MainDemo() {
         <BRScrew />
       </Border>
       <Explanation />
+      {hasWonMinigame && (
+        <InPortal id="toast-container">
+          <ToastWon />
+        </InPortal>
+      )}
     </Container>
   );
 }
@@ -369,7 +396,8 @@ const Border = styled.div`
   position: relative;
   background: var(--color-gray-800);
   padding: var(--main-border-width);
-  border-radius: 6px;
+  border-radius: 4px;
+  corner-shape: bevel;
   --sc: hsl(from var(--color-background) h s l / 0.125);
   box-shadow:
     0px 1px 2px var(--sc),
@@ -377,11 +405,6 @@ const Border = styled.div`
     0px 8px 16px var(--sc),
     0px 16px 32px var(--sc);
   outline: 3px solid var(--color-background);
-
-  @supports (corner-shape: squircle) {
-    border-radius: 10px;
-    corner-shape: squircle;
-  }
 `;
 const Wrapper = styled.div`
   --container-padding: 6px;
@@ -414,6 +437,10 @@ const Wrapper = styled.div`
       'sound-info'
       'config-sidebar';
   }
+`;
+
+const StyledBackgroundPattern = styled(PatternDither)`
+  opacity: 0.08;
 `;
 
 const Title = styled.h3`
@@ -467,6 +494,10 @@ const ButtonArea = styled.div`
   @media (max-width: 28rem) {
     width: calc(100% - 8px);
   }
+
+  @media (max-width: 42rem) {
+    margin-bottom: 1rem;
+  }
 `;
 
 const ButtonWrapper = styled.div`
@@ -481,12 +512,11 @@ const ButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
   padding: var(--pad);
-  /* border: 1px solid var(--color-gray-250); */
   outline: 2px solid var(--color-gray-250);
   outline-offset: 2px;
   border-radius: calc(var(--pad) / 4);
   corner-shape: bevel;
-  background: var(--grad);
+  background: var(--grad), var(--color-gray-75);
 
   &::before {
     content: '';
@@ -547,6 +577,7 @@ const ConfigGrid = styled.div`
 `;
 
 const StyledScrew = styled(Screw)`
+  --inset: 4px;
   position: absolute;
 
   @supports not (corner-shape: bevel) {
@@ -555,20 +586,20 @@ const StyledScrew = styled(Screw)`
 `;
 
 const TLScrew = styled(StyledScrew)`
-  top: 2.5px;
-  left: 2.5px;
+  top: var(--inset);
+  left: var(--inset);
 `;
 const TRScrew = styled(StyledScrew)`
-  top: 2.5px;
-  right: 2.5px;
+  top: var(--inset);
+  right: var(--inset);
 `;
 const BLScrew = styled(StyledScrew)`
-  bottom: 2.5px;
-  left: 2.5px;
+  bottom: var(--inset);
+  left: var(--inset);
 `;
 const BRScrew = styled(StyledScrew)`
-  bottom: 2.5px;
-  right: 2.5px;
+  bottom: var(--inset);
+  right: var(--inset);
 `;
 
 export default MainDemo;

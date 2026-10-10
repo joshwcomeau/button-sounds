@@ -167,6 +167,13 @@ const Label = styled.span`
     transition: color 100ms;
     color: white;
   }
+
+  /* Sadly, the labels don't fit nicely on mobile, since everything gets compressed. Hide them altogether, unless the region is active */
+  @media (max-width: 33rem) {
+    &[data-is-active='false'] {
+      display: none;
+    }
+  }
 `;
 
 const Playhead = styled.div`

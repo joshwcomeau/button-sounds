@@ -11,14 +11,16 @@ import { useSoundSettings } from '@/components/SoundSettingsProvider';
 interface Props extends React.ComponentProps<'button'> {
   name: SoundName;
   isSelected: boolean;
-  mainButtonRef: React.RefObject<HTMLButtonElement>;
+  triggerPress: () => void;
+  triggerRelease: () => void;
   setSelectedSoundName: (name: SoundName) => void;
 }
 
 function SoundSelectBtn({
   name,
   isSelected,
-  mainButtonRef,
+  triggerPress,
+  triggerRelease,
   setSelectedSoundName,
   ...delegated
 }: Props) {
@@ -37,7 +39,6 @@ function SoundSelectBtn({
       data-is-selected={isSelected}
       data-button-id={name}
       onClick={() => setSelectedSoundName(name)}
-      // I want users to be able to use up/down arrows to move between sounds and then Enter or Space to trigger them. This is tricky, since the current logic exists in @MainDemo, within an effect that adds pointerDown/pointerUp event handlers to buttonRef. A proper solution would be to pass those trigger functions down, but I'm feeling a bit sloppy today so I'm going to dispatch pointerDown/pointerUp events directly.
       onKeyDown={(event) => {
         if (event.key !== 'Enter' && event.key !== ' ') {
           return;
@@ -47,18 +48,14 @@ function SoundSelectBtn({
           return;
         }
 
-        mainButtonRef.current?.dispatchEvent(
-          new PointerEvent('pointerdown', { bubbles: true }),
-        );
+        triggerPress();
       }}
       onKeyUp={(event) => {
         if (event.key !== 'Enter' && event.key !== ' ') {
           return;
         }
 
-        mainButtonRef.current?.dispatchEvent(
-          new PointerEvent('pointerup', { bubbles: true }),
-        );
+        triggerRelease();
       }}
       {...delegated}
     >

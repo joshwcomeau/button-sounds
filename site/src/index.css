@@ -79,6 +79,10 @@ a:focus-visible,
   outline-offset: var(--focus-offset, 4px);
 }
 
+a {
+  color: var(--color-primary);
+}
+
 @font-face {
   font-family: 'seven-segment';
   src: url('/fonts/seven-segment.woff2') format('woff2');
@@ -102,5 +106,11 @@ a:focus-visible,
 @keyframes fadeToTransparent {
   to {
     opacity: 0;
+  }
+}
+
+@keyframes fadeFromOpaque {
+  from {
+    opacity: 1;
   }
 }

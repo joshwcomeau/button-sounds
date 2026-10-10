@@ -6,6 +6,7 @@ import { range } from '@/utils';
 
 import RaisedContainer from '@/components/RaisedContainer/RaisedContainer';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
+import VisuallyHidden from '@/components/VisuallyHidden';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
@@ -23,68 +24,67 @@ function SampleSelector({
   onSelectSampleManually,
   ...props
 }: Props) {
+  const groupName = React.useId();
+
   return (
     <Wrapper title={label} {...props}>
-      <Samples>
-        {range(8).map((index) => {
-          const isLocked = selectedSampleIndex === index;
-          const hasSample = index < numOfSamples;
+      <Group>
+        <VisuallyHidden as="legend">{label}</VisuallyHidden>
+        <Samples>
+          {range(8).map((index) => {
+            const isLocked = selectedSampleIndex === index;
+            const hasSample = index < numOfSamples;
 
-          if (!hasSample) {
-            return <Placeholder key={index} />;
-          }
+            if (!hasSample) {
+              return <Placeholder key={index} />;
+            }
 
-          return (
-            <SampleButton
-              key={index}
-              num={index + 1}
-              isLastPlayed={lastPlayedSampleIndex === index}
-              isLocked={isLocked}
-              handleClick={() => {
-                const action =
-                  selectedSampleIndex === index ? 'deselect' : 'select';
-                const nextValue = action === 'select' ? index : undefined;
-                onSelectSampleManually(nextValue);
-              }}
-            />
-          );
-        })}
-      </Samples>
+            return (
+              <SampleButton
+                key={index}
+                name={groupName}
+                num={index + 1}
+                isLastPlayed={lastPlayedSampleIndex === index}
+                isLocked={isLocked}
+                onSelect={() => onSelectSampleManually(index)}
+                onDeselect={() => onSelectSampleManually(undefined)}
+              />
+            );
+          })}
+        </Samples>
+      </Group>
     </Wrapper>
   );
 }
 
 interface SampleButtonProps {
+  name: string;
   num: number;
   isLastPlayed: boolean;
   isLocked: boolean;
-  handleClick: () => void;
+  onSelect: () => void;
+  onDeselect: () => void;
 }
 
 function SampleButton({
+  name,
   num,
   isLastPlayed,
   isLocked,
-  handleClick,
+  onSelect,
+  onDeselect,
 }: SampleButtonProps) {
-  const btnRef = React.useRef<HTMLButtonElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const { usingLofi } = useSoundSettings();
 
-  useButtonSounds(btnRef, isLocked ? 'synth-off' : 'synth-on', {
+  useButtonSounds(inputRef, isLocked ? 'synth-off' : 'synth-on', {
     lofi: usingLofi,
     pitchVariation: 0.05,
     volume: 0.3,
   });
 
-  // const { press: handlePressLock, release: handleReleaseLock } = useImperativeButtonSounds(btnRef, 'synth-on');
-  // const { press: handlePressUnlock, release: handleReleaseUnlock } = useImperativeButtonSounds(btnRef, 'synth-off');
   return (
-    <Sample
-      ref={btnRef}
-      data-is-last-played={isLastPlayed}
-      data-is-locked={isLocked}
-      onClick={handleClick}
-    >
+    <Sample data-is-last-played={isLastPlayed} data-is-locked={isLocked}>
       {/*
         Border as a separate elem for two reasons:
         1. So that I can animate it separately
@@ -92,6 +92,31 @@ function SampleButton({
 
         <Locked> label moved within to prevent weird clipping issues during hover/active transitions.
       */}
+      <Radio
+        ref={inputRef}
+        type="radio"
+        name={name}
+        value={num}
+        checked={isLocked}
+        onChange={onSelect}
+        onClick={(event) => {
+          // Native radios stay checked once selected. Clicking the active sample still clears it.
+          if (!isLocked) {
+            return;
+          }
+          event.preventDefault();
+          onDeselect();
+        }}
+        onKeyDown={(event) => {
+          if (!isLocked) {
+            return;
+          }
+          if (event.key === 'Enter' || event.key === ' ') {
+            onDeselect();
+            event.preventDefault();
+          }
+        }}
+      />
       <SampleBorder>
         <Locked aria-hidden={!isLocked}>Locked</Locked>
       </SampleBorder>
@@ -109,6 +134,13 @@ const Wrapper = styled(RaisedContainer)`
   font-weight: 900;
 `;
 
+const Group = styled.fieldset`
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+`;
+
 const Samples = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -122,13 +154,14 @@ const Samples = styled.div`
 
 // const SIZE = 2.5;
 
-const Sample = styled.button`
+const Sample = styled.label`
   --easing: var(--bezier-overshoot-smooth);
   --duration: 1200ms;
   position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: none;
   background: transparent;
   border-radius: 6px;
   corner-shape: bevel;
@@ -147,6 +180,20 @@ const Sample = styled.button`
     --locked-color: hsl(175deg 100% 55%);
     color: var(--locked-color);
   }
+`;
+
+const Radio = styled.input`
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  corner-shape: inherit;
+  cursor: pointer;
+  --focus-offset: 1px;
 `;
 
 const SampleBorder = styled.span`
@@ -230,6 +277,7 @@ const Locked = styled.span`
   border-radius: 4px;
   corner-shape: bevel;
   letter-spacing: -0.25px;
+  text-align: center;
   transform: translateY(100%);
   transition:
     transform var(--duration) var(--easing),

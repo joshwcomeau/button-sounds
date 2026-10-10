@@ -77,6 +77,7 @@ function SortBtn({ sortOrder, handleSortOrderClick, ...delegated }: Props) {
 const Wrapper = styled.button`
   --top-edge: var(--color-gray-600);
   --bottom-edge: var(--color-gray-50);
+  --focus-offset: 2px;
   position: relative;
   display: grid;
   place-content: center;

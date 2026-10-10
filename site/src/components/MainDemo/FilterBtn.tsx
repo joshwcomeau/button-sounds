@@ -47,6 +47,7 @@ function FilterBtn({
   return (
     <Wrapper
       ref={wrapperRef}
+      data-filter-btn
       data-is-selected={isSelected}
       onClick={() => handleClick(filterId)}
       style={{
@@ -81,7 +82,11 @@ function FilterBtn({
         />
         <Icon size={16} style={{ position: 'relative' }} />
       </IconWrapper>
-      <Overlay />
+      <OverlayWrapper>
+        <Blur>
+          <Overlay />
+        </Blur>
+      </OverlayWrapper>
     </Wrapper>
   );
 }
@@ -91,6 +96,7 @@ const TRANSITION_DURATION = 220;
 const Wrapper = styled.button`
   --top-edge: var(--color-gray-600);
   --bottom-edge: var(--color-gray-200);
+  --focus-offset: 1px;
   position: relative;
   display: grid;
   place-content: center;
@@ -122,16 +128,29 @@ const Wrapper = styled.button`
   }
 `;
 
-const Overlay = styled.div`
+const OverlayWrapper = styled.div`
   position: absolute;
   inset: -1px;
+  border-radius: inherit;
+  corner-shape: bevel;
+  overflow: hidden;
+`;
+
+const Blur = styled.div`
+  position: absolute;
+  inset: 0;
+  filter: blur(4px);
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     to bottom,
     hsl(45deg 100% 50% / 0.25),
     hsl(45deg 100% 50% / 0)
   );
-  border-radius: inherit;
-  corner-shape: bevel;
+
   opacity: 0;
   transition:
     opacity ${TRANSITION_DURATION}ms,

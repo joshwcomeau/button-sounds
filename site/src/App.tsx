@@ -11,6 +11,7 @@ import ProjectByJosh from '@/components/ProjectByJosh/ProjectByJosh';
 import MainDemo from '@/components/MainDemo/MainDemo';
 import AboutPhilosophy from '@/components/AboutPhilosophy/AboutPhilosophy';
 import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
+import BouncyLetters from '@/components/BouncyLetters/BouncyLetters';
 
 import { SOUNDS_PATH } from './constants';
 
@@ -39,7 +40,7 @@ function App() {
           <Header>
             <h1>Button Sounds</h1>
             <p>
-              A <em>free</em> collection of 50+ professionally-recorded
+              A <Free>free</Free> collection of 50+ professionally-recorded
               multi-sampled clicks and toggles. Distributed as an NPM package
               with optional React bindings.
             </p>
@@ -48,7 +49,7 @@ function App() {
 
           <MainDemo />
 
-          <AboutPhilosophy />
+          <StyledAboutPhilosophy />
 
           <footer>
             <p>
@@ -59,6 +60,7 @@ function App() {
           <CRTEffect strength={crtStrength} />
         </Wrapper>
       </Container>
+      <div id="toast-container"></div>
     </SoundSettingsProvider>
   );
 }
@@ -91,7 +93,8 @@ const Header = styled.header`
 
   h1 {
     font-size: 4rem;
-    font-family: var(--font-segment);
+    letter-spacing: -1px;
+    /* font-family: var(--font-segment); */
   }
 
   p {
@@ -99,6 +102,14 @@ const Header = styled.header`
     margin-bottom: 2rem;
     font-size: 1.125rem;
   }
+`;
+
+const StyledAboutPhilosophy = styled(AboutPhilosophy)`
+  margin-top: 8rem;
+`;
+
+const Free = styled(BouncyLetters)`
+  font-weight: 700;
 `;
 
 export default App;

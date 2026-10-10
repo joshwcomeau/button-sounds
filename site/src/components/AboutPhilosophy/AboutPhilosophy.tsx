@@ -27,17 +27,23 @@ function SomeComponent() {
 }
 `;
 
-function AboutPhilosophy() {
+function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Wrapper>
-      <h2>Why is this useful?</h2>
-      <p>
-        There are plenty of existing button sound effects out there, including{' '}
-        <a href="https://freesound.org/search/?q=button">
-          thousands on freesound.org
-        </a>
-        . So why would you use this?
-      </p>
+    <Wrapper {...props}>
+      <h2>
+        About <em>Button Sounds</em>
+      </h2>
+      <p>There’s two pieces to this project:</p>
+      <ol>
+        <li>
+          A library of 50+ uniform high-quality button sounds, with 4-8 samples
+          per sound.
+        </li>
+        <li>
+          An NPM package that makes it as easy as possible to start using these
+          sounds in your web projects.
+        </li>
+      </ol>
       <p>There are a few reasons I think this is a useful tool.</p>
       <h3>Multi-sampled sounds</h3>
       <p>
@@ -106,8 +112,12 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-block: 3rem;
-  max-width: 60ch;
+  max-width: 70ch;
   margin-inline: auto;
+
+  li:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 `;
 
 export default AboutPhilosophy;

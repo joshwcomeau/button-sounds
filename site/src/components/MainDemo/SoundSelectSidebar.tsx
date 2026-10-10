@@ -28,7 +28,8 @@ interface Props extends React.ComponentProps<'div'> {
   relevantSounds: SoundName[];
   selectedFilter: string | null;
   sortOrder: SortOrder;
-  mainButtonRef: React.RefObject<HTMLButtonElement>;
+  triggerPress: () => void;
+  triggerRelease: () => void;
   handleSortOrderClick: (order: SortOrder) => void;
   handleFilterClick: (filterId: string) => void;
   handleIncrementSound: () => void;
@@ -41,7 +42,8 @@ function SoundSelectSidebar({
   relevantSounds,
   selectedFilter,
   sortOrder,
-  mainButtonRef,
+  triggerPress,
+  triggerRelease,
   handleSortOrderClick,
   handleFilterClick,
   handleIncrementSound,
@@ -74,6 +76,20 @@ function SoundSelectSidebar({
       <ListFrame>
         <List ref={listRef} data-can-scroll={canScroll}>
           <EdgeFade data-edge="top" aria-hidden="true" />
+          {/*
+            There's 50+ sounds and it's a lot to tab through for keyboard users. This focusable button allows them to skip to the next section
+          */}
+          <SkipContent
+            onClick={() => {
+              const filterButtons =
+                document.querySelectorAll('[data-filter-btn]');
+              if (filterButtons.length > 0) {
+                (filterButtons[0] as HTMLElement).focus();
+              }
+            }}
+          >
+            Skip to filters
+          </SkipContent>
           {relevantSounds.map((name) => {
             const isSelected = selectedSoundName === name;
             return (
@@ -81,7 +97,8 @@ function SoundSelectSidebar({
                 <SoundSelectBtn
                   name={name}
                   isSelected={isSelected}
-                  mainButtonRef={mainButtonRef}
+                  triggerPress={triggerPress}
+                  triggerRelease={triggerRelease}
                   setSelectedSoundName={setSelectedSoundName}
                 />
               </ListItem>
@@ -173,6 +190,27 @@ const List = styled.ul`
   gap: var(--list-gap);
   scroll-timeline-name: --sound-list;
   scroll-timeline-axis: block;
+`;
+
+const SkipContent = styled.button`
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: auto;
+  background: white;
+  color: black;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+
+  &:focus-visible {
+    opacity: 1;
+  }
 `;
 
 const EdgeFade = styled.li`

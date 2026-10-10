@@ -55,6 +55,7 @@ const Header = styled.div`
   align-items: baseline;
   gap: 12px;
   color: var(--color-gray-900);
+  container-type: inline-size;
 `;
 
 const Label = styled.label`
@@ -67,6 +68,15 @@ const Value = styled.span`
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   font-size: 0.875rem;
+
+  /*
+    In really narrow containers, the label splits across two lines in a very unsightly way. The cleanest approach is to hide the value, giving the label all of the available space.
+
+    HACK: I only have one LabeledSlider, so I'm hardcoding the specific breakpoint that works for it. If I wind up using this elsewhere, I'll need to come up with a better solution.
+  */
+  @container (max-width: 11rem) {
+    display: none;
+  }
 `;
 
 export default LabeledSlider;

@@ -122,6 +122,22 @@ function MultiSampleDemo() {
               icon={<Play size={16} strokeWidth={3} />}
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
+              onKeyDown={(event) => {
+                if (event.repeat) {
+                  return;
+                }
+                if (event.key === 'Enter' || event.key === ' ') {
+                  handlePointerDown();
+
+                  event.preventDefault();
+                }
+              }}
+              onKeyUp={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  handlePointerUp();
+                  event.preventDefault();
+                }
+              }}
             >
               <span style={{ flex: 1, textAlign: 'center' }}>Trigger</span>
             </StyledIconButton>
@@ -144,6 +160,10 @@ const LockWrapper = styled.div`
   height: 220px;
   transform-origin: top left;
   transform: translate(50%, -50%) scale(0.5);
+
+  @media (max-width: 46.875rem) {
+    display: none;
+  }
 `;
 const LockImg = styled.img`
   display: block;
@@ -224,12 +244,6 @@ const WaveformWrapper = styled.div`
   background: var(--color-background);
   border-radius: 8px;
   corner-shape: bevel;
-`;
-
-const WaveformHeader = styled.div`
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
 `;
 
 const StyledRaisedContainer = styled(RaisedContainer)`
