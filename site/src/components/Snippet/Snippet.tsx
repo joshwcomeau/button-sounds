@@ -42,10 +42,13 @@ const OuterWrapper = styled.div`
   position: relative;
   padding: ${PADDING}px;
   margin-inline: calc(${CODE_PADDING + PADDING}px * -1);
+  margin-block: 1rem 2rem;
   border: 1px solid var(--color-gray-200);
   border-radius: ${OUTER_RADIUS}px;
+  outline: 8px solid var(--color-background);
   corner-shape: bevel;
   background: var(--color-background);
+  --selection-bg: black;
 
   @media (max-width: 42.5rem) {
     max-width: 100%;

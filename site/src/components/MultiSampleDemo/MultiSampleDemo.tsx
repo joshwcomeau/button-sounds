@@ -34,7 +34,7 @@ const WAVEFORM_DATA = {
 
 const WAVEFORM_DURATION = 2300;
 
-function MultiSampleDemo() {
+function MultiSampleDemo(props: React.HTMLAttributes<HTMLDivElement>) {
   const [isLocked, setIsLocked] = React.useState(false);
   const [activeWaveformData, setActiveWaveformData] =
     React.useState<ActiveWaveformData | null>(null);
@@ -62,7 +62,7 @@ function MultiSampleDemo() {
   }, [isLocked, release]);
 
   return (
-    <Container>
+    <Container {...props}>
       <LockWrapper>
         <LockImg src={SPRITE_SRC} alt="" />
       </LockWrapper>
