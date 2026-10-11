@@ -1,7 +1,9 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { load, press, release, type SoundName } from 'button-sounds';
-import type { WireUpOptions } from 'button-sounds/react';
+import {
+  useImperativeButtonSounds,
+  type WireUpOptions,
+} from 'button-sounds/react';
 
 import BevelEdge from '@/components/BevelEdge';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
@@ -46,39 +48,24 @@ function Toggle({
   const inputId = id ?? generatedId;
 
   const { usingLofi } = useSoundSettings();
-  const soundOptionsRef = React.useRef<WireUpOptions>({});
-  React.useLayoutEffect(() => {
-    soundOptionsRef.current = {
-      lofi: usingLofi,
-      pitchVariation: 0.05,
-      volume: 0.3,
-      ...soundOptions,
-    };
-  });
-
-  React.useEffect(() => {
-    load('synth-on');
-    load('synth-off');
-  }, []);
-
-  function playSound(trigger: typeof press, name: SoundName) {
-    const { pitchVariation, ...options } = soundOptionsRef.current;
-    trigger(name, {
-      ...options,
-      playbackRate: getPlaybackRate(pitchVariation),
-    });
-  }
+  const { pitchVariation = 0.05, ...triggerOptions } = soundOptions;
+  const hookOptions = { lofi: usingLofi, volume: 0.3, ...triggerOptions };
+  // NOTE: unlike other components in this project, I'm using the lower-level `useImperativeButtonSounds` hook. This is because I really wanted the `lofi` toggle to update *immediately*.
+  // For example, when lofi is disabled and the user clicks the toggle, the "press" sound should be high-fidelity, but the "release" sound should be lofi. With `useButtonSounds`, the setting only takes effect on the next press/release cycle. Which, honestly, was fine, but I tend to be obsessive with these sorts of details. 😅
+  const onSounds = useImperativeButtonSounds('synth-on', hookOptions);
+  const offSounds = useImperativeButtonSounds('synth-off', hookOptions);
 
   function handlePointerDown() {
-    // Toggling flips `checked`, which flips the sound name. Capture it now so the release belongs to the same sound as the press.
-    const name: SoundName = checked ? 'synth-off' : 'synth-on';
-    playSound(press, name);
+    const sounds = checked ? offSounds : onSounds;
+    sounds.press({ playbackRate: getPlaybackRate(pitchVariation) });
 
     window.addEventListener(
       'pointerup',
       () => {
-        // The click that toggles the input fires *after* pointerup. Waiting a tick lets that change (and React’s re-render) land first, so that when this toggle controls a sound setting like lofi, the release already reflects the new value.
-        window.setTimeout(() => playSound(release, name));
+        // This is how we get the "release" sound to take the updated lofi setting into account: by playing the release sound asynchronously, so that it waits for the current set of call to complete.
+        window.setTimeout(() => {
+          sounds.release({ playbackRate: getPlaybackRate(pitchVariation) });
+        });
       },
       { once: true },
     );
@@ -286,24 +273,6 @@ const Face = styled.span`
     bottom: var(--glow-inset);
     border-radius: 50% 50% 4px 4px;
     opacity: 0.01;
-  }
-`;
-
-// The plate holds both words at the full width of the track. It travels opposite the thumb, so each word stays parked on its side while the raised platform slides over it.
-const Plate = styled.span`
-  position: absolute;
-  z-index: 1;
-  top: -${BORDER}px;
-  left: -${BORDER}px;
-  display: flex;
-  display: none;
-  /* The face is the thumb’s content box, inset by its border. Stretch back over that border so these words sit on the same pixels as the legend underneath. */
-  width: calc(200% + ${BORDER * 4}px);
-  height: calc(100% + ${BORDER * 2}px);
-  transition: transform var(--slide-duration) var(--slide-easing);
-
-  ${Thumb}[data-checked='true'] & {
-    transform: translateX(-50%);
   }
 `;
 

@@ -2,6 +2,10 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import MultiSampleDemo from '@/components/MultiSampleDemo/MultiSampleDemo';
+import TextLink from '@/components/Link/TextLink';
+import InlineCode from '@/components/InlineCode/InlineCode';
+import Aside from '@/components/Aside/Aside';
+
 import Snippet from '../Snippet/Snippet';
 
 const VANILLA_JS_EXAMPLE = `\
@@ -51,7 +55,7 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <p>There’s two pieces to this project:</p>
       <ol>
         <li>
-          A library of 50+ uniform high-quality button sounds, with up to 16
+          A library of 50+ high-quality button sounds, with up to 16 recorded
           samples per sound.
         </li>
         <li>
@@ -67,15 +71,15 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <p>
         The vast majority of existing SFX are “one-shots”; you get a single
         recorded instance of the sound. If that sound gets triggered often
-        (like, a button which can be clicked over and over), it winds up feeling
-        very monotonous and artificial. In real life, button presses don’t sound{' '}
+        (like, clicking a button repeatedly), it winds up feeling very
+        monotonous and artificial. In real life, button presses don’t sound{' '}
         <em>identical</em> every time.
       </p>
       <p>
         One of my favourite lil’ sound effect tricks is to record the same sound
-        multiple times, and pick one of those sounds randomly whenever it’s
-        triggered. It’s subtle, but it winds up feeling a lot more realistic and
-        organic.
+        multiple times. Whenever it gets triggered, a random instance is
+        selected and played. It’s subtle, but it winds up feeling a lot more
+        realistic and organic.
       </p>
       <p>
         Here's a little demo showing the difference. Try spamming the “Trigger”
@@ -84,48 +88,57 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <StyledMultiSampleDemo />
       <p>
         Like I said, it can be a bit subtle, especially if you’re listening on
-        phone speakers. But I hope you’ll agree that the random sample selection
-        just <em>feels</em> better.
+        laptop or phone speakers. But I hope you’ll agree that the random sample
+        selection just <em>feels</em> better.
       </p>
       <p>
         <strong>This is the core idea with this library.</strong> I scoured my
-        home looking for things that had buttons and recorded a whole lot of
-        button presses and releases. Each of the 50+ sounds has at least 8
-        samples (4 pressing, 4 releasing), and I tried to select samples that
-        had a good bit of variety, while still feeling consistent.
+        home looking for things with buttons and made a whole bunch of
+        recordings. Each of the 50+ sounds has at least 8 samples (4 pressing, 4
+        releasing). In reality, I recorded many more than that, but I only kept
+        the most interesting ones.
       </p>
-      <aside>
-        For the audio nerds out there: sounds were recorded in a sound-treated
-        room using a Zoom H4 recorder, with additional processing to remove
-        noise in Adobe Audition. Sounds are available either as{' '}
-        <a
-          target="_blank"
-          href="https://github.com/joshwcomeau/button-sounds/tree/main/package/assets"
-        >
-          192kbps MP3 files
-        </a>{' '}
-        or{' '}
-        <a
-          target="_blank"
-          href="https://github.com/joshwcomeau/button-sounds/tree/main/package/audio"
-        >
-          48Hz .wav files
-        </a>
-        .
-      </aside>
+      <Aside title="For the audio nerds">
+        <p>
+          The sounds were recorded in the same sound-treated room using a Zoom
+          H4 recorder, with additional processing to remove noise in Adobe
+          Audition. The only exceptions are <InlineCode>synth-on</InlineCode>{' '}
+          and <InlineCode>synth-off</InlineCode>, which were created digitally
+          using the <i>Current</i> VST synth.
+        </p>
+        <p>
+          Sounds are available either as{' '}
+          <TextLink
+            target="_blank"
+            href="https://github.com/joshwcomeau/button-sounds/tree/main/package/assets"
+          >
+            192kbps MP3 files
+          </TextLink>{' '}
+          or{' '}
+          <TextLink
+            target="_blank"
+            href="https://github.com/joshwcomeau/button-sounds/tree/main/package/audio"
+          >
+            lossless 48KHz .wav files
+          </TextLink>
+          .
+        </p>
+      </Aside>
 
       <h3>A super-convenient library</h3>
       <p>
         The other half of this project is the{' '}
-        <a href="https://www.npmjs.com/package/button-sounds">NPM package</a>{' '}
+        <TextLink href="https://www.npmjs.com/package/button-sounds">
+          NPM package
+        </TextLink>{' '}
         that makes it as easy as possible to start using these sounds in your
         own projects.
       </p>
       <p>Here’s a quick “Hello World” example:</p>
       <Snippet lang="javascript">{VANILLA_JS_EXAMPLE}</Snippet>
       <p>
-        That <code>wireUp</code> function is doing <em>a bunch</em> of stuff
-        under the hood, including:
+        That <InlineCode>wireUp</InlineCode> function is doing <em>a bunch</em>{' '}
+        of stuff under the hood, including:
       </p>
       <ol>
         <li>
@@ -148,19 +161,19 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <p>
         By default, the audio files will be loaded from NPM’s CDN, so you don’t
         even need to host them yourself (though you can if you want, and there’s
-        an <a href="">NPM script</a> to make this easy). The files are only
-        loaded when you call <code>.wireUp</code>, which means only the selected
-        sound(s) will be downloaded.
+        an <TextLink href="">NPM script</TextLink> to make this easy). The files
+        are only loaded when you call <InlineCode>.wireUp</InlineCode>, which
+        means only the selected sound(s) will be downloaded.
       </p>
       <p>
-        The <code>button-sounds</code> package is tiny, only adding ~2kB gzip to
-        your bundle (though it does asynchronously load Howler, a ~12kB JS
-        library for playing sounds).
+        The <InlineCode>button-sounds</InlineCode> package is tiny, only adding
+        ~2kB gzip to your bundle (though it does asynchronously load Howler, a
+        ~12kB JS library for playing sounds).
       </p>
       <h3>The lower-level API</h3>
       <p>
-        I consider the <code>wireUp</code> function to be the high-level API.
-        Call one function and you’re good to go.
+        I consider the <InlineCode>wireUp</InlineCode> function to be the
+        high-level API. Call one function and you’re good to go.
       </p>
       <p>
         In some cases, however, you might want more control over when the
@@ -189,9 +202,9 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <Snippet lang="javascript">{REACT_EXAMPLE}</Snippet>
       <p>
         I’ve also included a lower-level hook,{' '}
-        <code>useImperativeButtonSounds</code>, that provides the{' '}
-        <code>press</code> and <code>release</code> functions directly, in case
-        the higher-level API doesn’t work for you.
+        <InlineCode>useImperativeButtonSounds</InlineCode>, that provides the{' '}
+        <InlineCode>press</InlineCode> and <InlineCode>release</InlineCode>{' '}
+        functions directly, in case the higher-level API doesn’t work for you.
       </p>
     </Wrapper>
   );

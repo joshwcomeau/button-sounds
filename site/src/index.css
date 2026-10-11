@@ -13,7 +13,9 @@
   --color-gray-800: hsl(210deg 20% 77%);
   --color-gray-900: hsl(210deg 25% 88%);
   --color-gray-1000: hsl(210deg 25% 96%);
-  --color-primary: hsl(44deg 100% 50%);
+  --color-primary-500: hsl(44deg 100% 50%);
+  --color-primary-700: hsl(46deg 100% 65%);
+  --color-primary: var(--color-primary-500);
   --font-default: 'Space Mono', monospace;
   --font-segment: 'seven-segment', monospace;
 

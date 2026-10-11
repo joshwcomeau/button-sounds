@@ -16,7 +16,7 @@ function LockToggle({ isLocked, setIsLocked }: Props) {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   useButtonSounds(buttonRef, isLocked ? 'lock-open' : 'lock-closed', {
-    volume: 0.5,
+    volume: 0.25,
   });
 
   return (

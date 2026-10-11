@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import Link, { type Props } from './Link';
+import Link from './Link';
 
 const TextLink = styled(Link)`
   color: inherit;
@@ -12,18 +12,14 @@ const TextLink = styled(Link)`
   will-change: transform;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-
-  html[data-color-mode='light'] ${WarningAside} & {
-    box-shadow: 0px 1.5px 0px var(--color-warning-700);
-  }
+  font-weight: 600;
 
   strong & {
     font-weight: inherit;
   }
 
-  /* Double the selector so that it overrides dark/light styles */
-  &:hover&:hover {
-    box-shadow: 0px 0px 0px transparent;
+  &:hover {
+    box-shadow: 0px 2.5px 0px var(--color-primary);
   }
 
   &:focus-visible {

@@ -75,8 +75,8 @@ function Link({
             {last}
             <StyledExternalIcon
               isHovering={isHovering}
-              accentColor="var(--color-primary)"
-              size="0.7em"
+              accentColor="var(--color-primary-700)"
+              size="0.925em"
               style={{
                 opacity: 1,
               }}
@@ -92,9 +92,8 @@ function Link({
 }
 
 const StyledExternalIcon = styled(ExternalIcon)`
-  display: none;
   transform: translateY(0.0625rem);
-  margin-left: 0.125em;
+  margin-left: 0.25em;
   color: var(--base-icon-color, inherit);
 `;
 

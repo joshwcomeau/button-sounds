@@ -19,14 +19,14 @@ const ExternalIcon = ({
   style = {},
   ...delegated
 }: Props) => {
-  const id = React.useId();
+  const id = React.useId().replace(/:/g, '');
 
   const isBooped = useBoopMinimal(isHovering, { timing });
 
   const maskId = `external-icon-mask-${id}`;
 
   const arrowPath = isBooped
-    ? `M 10 14 L 21 3 h -6 h 6 v 6`
+    ? `M 10 14 L 23 1 h -6 h 6 v 6`
     : `M 10 14 L 20 4 h -6 h 6 v 6`;
 
   return (
@@ -59,17 +59,19 @@ const ExternalIcon = ({
 };
 
 const Svg = styled.svg`
+  display: inline-block;
   stroke: currentColor;
-  stroke-width: 2px;
+  stroke-width: 2.5px;
   stroke-linecap: round;
   stroke-linejoin: round;
   will-change: transform;
   backface-visibility: hidden;
   transition: opacity 200ms;
+  overflow: visible;
 `;
 
 const Arrow = styled.path`
-  transition: stroke var(--spring-springy) var(--spring-springy-duration);
+  transition: d var(--spring-springy) var(--spring-springy-duration);
 `;
 
 export default ExternalIcon;
