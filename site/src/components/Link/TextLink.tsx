@@ -1,18 +1,9 @@
 import * as React from 'react';
-import { styled } from '@linaria/react';
+import styled from 'styled-components';
 
-import { WarningAside } from '@/components/Aside';
+import Link, { type Props } from './Link';
 
-import Link, { Props } from './Link';
-
-function TextLink(
-  props: Props,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
-  return <Anchor {...props} ref={ref} />;
-}
-
-export const Anchor = styled(Link)`
+const TextLink = styled(Link)`
   color: inherit;
   font-weight: var(--font-weight-medium);
   text-decoration: none;
@@ -45,4 +36,4 @@ export const Anchor = styled(Link)`
   }
 `;
 
-export default React.forwardRef(TextLink);
+export default TextLink;

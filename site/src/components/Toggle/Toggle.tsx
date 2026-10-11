@@ -1,9 +1,11 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { useButtonSounds, type WireUpOptions } from 'button-sounds/react';
+import { load, press, release, type SoundName } from 'button-sounds';
+import type { WireUpOptions } from 'button-sounds/react';
 
 import BevelEdge from '@/components/BevelEdge';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
+import { random } from '@/utils';
 
 const OUTER_RADIUS = 6;
 const INSET = 2;
@@ -20,6 +22,16 @@ interface Props extends Omit<
   soundOptions?: WireUpOptions;
 }
 
+function getPlaybackRate(pitchVariation: WireUpOptions['pitchVariation']) {
+  if (pitchVariation == null) {
+    return undefined;
+  }
+  const [min, max] = Array.isArray(pitchVariation)
+    ? pitchVariation
+    : [1 - pitchVariation, 1 + pitchVariation];
+  return random(min, max, { rounded: false });
+}
+
 function Toggle({
   label,
   checked,
@@ -32,18 +44,52 @@ function Toggle({
 }: Props) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   const { usingLofi } = useSoundSettings();
-  useButtonSounds(wrapperRef, checked ? 'synth-off' : 'synth-on', {
-    lofi: usingLofi,
-    pitchVariation: 0.05,
-    volume: 0.3,
-    ...soundOptions,
+  const soundOptionsRef = React.useRef<WireUpOptions>({});
+  React.useLayoutEffect(() => {
+    soundOptionsRef.current = {
+      lofi: usingLofi,
+      pitchVariation: 0.05,
+      volume: 0.3,
+      ...soundOptions,
+    };
   });
 
+  React.useEffect(() => {
+    load('synth-on');
+    load('synth-off');
+  }, []);
+
+  function playSound(trigger: typeof press, name: SoundName) {
+    const { pitchVariation, ...options } = soundOptionsRef.current;
+    trigger(name, {
+      ...options,
+      playbackRate: getPlaybackRate(pitchVariation),
+    });
+  }
+
+  function handlePointerDown() {
+    // Toggling flips `checked`, which flips the sound name. Capture it now so the release belongs to the same sound as the press.
+    const name: SoundName = checked ? 'synth-off' : 'synth-on';
+    playSound(press, name);
+
+    window.addEventListener(
+      'pointerup',
+      () => {
+        // The click that toggles the input fires *after* pointerup. Waiting a tick lets that change (and React’s re-render) land first, so that when this toggle controls a sound setting like lofi, the release already reflects the new value.
+        window.setTimeout(() => playSound(release, name));
+      },
+      { once: true },
+    );
+  }
+
   return (
-    <Wrapper className={className} style={style} ref={wrapperRef}>
+    <Wrapper
+      className={className}
+      style={style}
+      onPointerDown={handlePointerDown}
+    >
       {label != null && <Caption htmlFor={inputId}>{label}</Caption>}
       <Track>
         <Input
