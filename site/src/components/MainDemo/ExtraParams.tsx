@@ -17,6 +17,8 @@ function ExtraParams(props: React.HTMLAttributes<HTMLDivElement>) {
         <LabeledSlider
           inputStyles={{
             borderRadius: '6px',
+            // Stupid TS doesn't know about modern CSS
+            // @ts-expect-error
             cornerShape: 'bevel',
           }}
           label={
