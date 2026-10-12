@@ -23,7 +23,7 @@ function BouncyLetters({
           key={index}
           style={{
             '--duration': `${duration}ms`,
-            '--delay': `${index * stagger}ms`,
+            '--delay': `${index * -stagger}ms`,
             '--offset': `${offset}`,
           }}
         >
