@@ -18,7 +18,7 @@ const button = document.querySelector('.my-button');
 ButtonSounds.wireUp(button, 'hi75-soft');
 `;
 const LOW_LEVEL_EXAMPLE = `\
-import { load, press, release} from 'button-sounds';
+import { load, press, release } from 'button-sounds';
 
 // Preload the audio file ASAP:
 load('hi75-soft');
@@ -27,8 +27,28 @@ const btn = document.querySelector('my-button');
 
 // Trigger the sounds whenever you’d like:
 btn.addEventListener('pointerdown', () => {
-  press('hi75-soft');
+  if (someCondition) {
+    press('hi75-soft');
+  }
 });
+`;
+const CONFIGURATION_EXAMPLE = `\
+import { wireUp } from 'button-sounds';
+
+const button = document.querySelector('.my-button');
+
+ButtonSounds.wireUp(
+  button,
+  'hi75-soft',
+  {
+    pitchVariation: 0.1,
+    lofi: true,
+    lofiOptions: {
+      bits: 4,
+      downsample: 0.25,
+    },
+  }
+);
 `;
 const REACT_EXAMPLE = `\
 import { useButtonSounds } from 'button-sounds/react';
@@ -40,6 +60,25 @@ function SomeComponent() {
 
   return (
     <button ref={buttonRef}>
+      Click me
+    </button>
+  );
+}
+`;
+const REACT_LOW_LEVEL_EXAMPLE = `\
+import { useImperativeButtonSounds } from 'button-sounds/react';
+
+function SomeComponent() {
+  const { press, release } = useImperativeButtonSounds('hi75-soft');
+
+  return (
+    <button
+      onPointerDown={() => {
+        if (someCondition) {
+          press();
+        }
+      }}
+    >
       Click me
     </button>
   );
@@ -147,8 +186,8 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
         </li>
         <li>
           Adding event handlers to the button so that the correct sounds trigger
-          at the right times. This is harder than it sounds, since there are
-          lots of little edge cases.
+          at the right times. There are some subtle gotchas here that the
+          library takes care of.
         </li>
         <li>
           Picking random samples on every press/release, and optionally adding a
@@ -183,15 +222,25 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <Snippet lang="javascript">{LOW_LEVEL_EXAMPLE}</Snippet>
 
       <p>
-        Just please note that the lower-level API misses some of the
-        nice-to-haves. For example, the higher-level API wires up the pointerUp
-        listener <em>within</em> the pointerDown listener, so that the release
-        sound still triggers even if the user isn’t still hovering over the
-        button when they release the cursor.
+        This lower-level API is intended to be used for less-basic use cases, of
+        course. If the goal is to trigger the sounds on press/release, the
+        higher-level API is both easier to use and provides better UX
+        (specifically around making sure the 'release' sound always triggers
+        correctly, regardless of where the cursor is).
       </p>
 
       <h3>Additional configuration</h3>
-      <p>Pitch variation and lofi.</p>
+      <p>
+        As shown in the playground above, the library also includes options for
+        pitch variation and lower fidelity:
+      </p>
+      <Snippet lang="javascript">{CONFIGURATION_EXAMPLE}</Snippet>
+      <p>
+        The <InlineCode>lofi</InlineCode> parameter is a boolean that can be
+        turned on for a typical NES-style bitcrusher effect, but you can also
+        supply <InlineCode>LofiOptions</InlineCode> to control the specific bit
+        depth and downsampling rate.
+      </p>
 
       <h3>React bindings</h3>
 
@@ -201,10 +250,21 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       </p>
       <Snippet lang="javascript">{REACT_EXAMPLE}</Snippet>
       <p>
-        I’ve also included a lower-level hook,{' '}
-        <InlineCode>useImperativeButtonSounds</InlineCode>, that provides the{' '}
+        And here’s the lower-level API that exposes{' '}
         <InlineCode>press</InlineCode> and <InlineCode>release</InlineCode>{' '}
-        functions directly, in case the higher-level API doesn’t work for you.
+        functions directly:
+      </p>
+      <Snippet lang="javascript">{REACT_LOW_LEVEL_EXAMPLE}</Snippet>
+
+      <h2>Going deeper</h2>
+      <p>
+        This has been a quick introduction to the library. If you want to learn
+        more, check out the{' '}
+        <TextLink href="https://github.com/joshwcomeau/button-sounds">
+          README on Github
+        </TextLink>{' '}
+        for the source code and documentation. You can also point your agent to
+        this README for better results.
       </p>
     </Wrapper>
   );

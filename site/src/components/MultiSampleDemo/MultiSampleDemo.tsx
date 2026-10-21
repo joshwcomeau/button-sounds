@@ -120,8 +120,13 @@ function MultiSampleDemo(props: React.HTMLAttributes<HTMLDivElement>) {
             <StyledIconButton
               color="hsl(155deg 100% 30%)"
               icon={<Play size={16} strokeWidth={3} />}
-              onPointerDown={handlePointerDown}
-              onPointerUp={handlePointerUp}
+              onPointerDown={(event) => {
+                handlePointerDown();
+
+                window.addEventListener('pointerup', handlePointerUp, {
+                  once: true,
+                });
+              }}
               onKeyDown={(event) => {
                 if (event.repeat) {
                   return;

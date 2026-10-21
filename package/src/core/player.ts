@@ -65,7 +65,13 @@ export function trigger(
     return;
   }
 
-  const { sampleIndex, volume, playbackRate, lofi, lofiOptions } = options;
+  const {
+    sampleIndex,
+    volume = 0.5,
+    playbackRate,
+    lofi,
+    lofiOptions,
+  } = options;
   const id = pickSampleId(spriteMap, variant, sampleIndex);
   if (!id) return;
 
