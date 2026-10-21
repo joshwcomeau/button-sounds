@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 // prettier-ignore
 export type Action =
@@ -104,7 +104,8 @@ function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
         <Clipper>
           <Front />
           <Face>
-            Press me! <BottomShadow />
+            Press me!
+            <BottomShadow />
           </Face>
         </Clipper>
       </Wrapper>
@@ -207,6 +208,13 @@ const Shaft = styled.span`
     );
 `;
 
+// A small detail: I want the button to rise up from deep within the machine on page load. We'll tackle this with a keyframe animation, applied to both the Face and the CastShadow (which mirrors the same animation)
+const slideInShadow = keyframes`
+  from {
+    transform: translateY(0);
+  }
+`;
+
 const CastShadow = styled.span`
   --size: 8px;
   position: absolute;
@@ -222,6 +230,8 @@ const CastShadow = styled.span`
   transition: transform var(--transition-duration);
   transform: translateY(var(--size));
   pointer-events: none;
+  animation: ${slideInShadow} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms
+    backwards;
 
   ${Wrapper}[data-action="hovering"] &, ${Wrapper}[data-action="releasing"] & {
     --size: 16px;
@@ -239,6 +249,12 @@ const Clipper = styled.span`
   overflow: hidden;
   border-radius: 0 0 var(--outer-radius) var(--outer-radius);
   corner-shape: inherit;
+`;
+
+const slideIn = keyframes`
+  from {
+    transform: translateY(12px);
+  }
 `;
 
 const Face = styled.span`
@@ -275,6 +291,7 @@ const Face = styled.span`
     text-shadow var(--transition-duration),
     border var(--transition-duration),
     --shadow-color var(--transition-duration);
+  animation: ${slideIn} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms backwards;
 
   @property --shadow-color {
     syntax: '<color>';

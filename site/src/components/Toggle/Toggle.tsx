@@ -1,9 +1,13 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { useButtonSounds, type WireUpOptions } from 'button-sounds/react';
+import {
+  useImperativeButtonSounds,
+  type WireUpOptions,
+} from 'button-sounds/react';
 
 import BevelEdge from '@/components/BevelEdge';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
+import { random } from '@/utils';
 
 const OUTER_RADIUS = 6;
 const INSET = 2;
@@ -20,6 +24,16 @@ interface Props extends Omit<
   soundOptions?: WireUpOptions;
 }
 
+function getPlaybackRate(pitchVariation: WireUpOptions['pitchVariation']) {
+  if (pitchVariation == null) {
+    return undefined;
+  }
+  const [min, max] = Array.isArray(pitchVariation)
+    ? pitchVariation
+    : [1 - pitchVariation, 1 + pitchVariation];
+  return random(min, max, { rounded: false });
+}
+
 function Toggle({
   label,
   checked,
@@ -32,18 +46,37 @@ function Toggle({
 }: Props) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   const { usingLofi } = useSoundSettings();
-  useButtonSounds(wrapperRef, checked ? 'synth-off' : 'synth-on', {
-    lofi: usingLofi,
-    pitchVariation: 0.05,
-    volume: 0.3,
-    ...soundOptions,
-  });
+  const { pitchVariation = 0.05, ...triggerOptions } = soundOptions;
+  const hookOptions = { lofi: usingLofi, volume: 0.3, ...triggerOptions };
+  // NOTE: unlike other components in this project, I'm using the lower-level `useImperativeButtonSounds` hook. This is because I really wanted the `lofi` toggle to update *immediately*.
+  // For example, when lofi is disabled and the user clicks the toggle, the "press" sound should be high-fidelity, but the "release" sound should be lofi. With `useButtonSounds`, the setting only takes effect on the next press/release cycle. Which, honestly, was fine, but I tend to be obsessive with these sorts of details. 😅
+  const onSounds = useImperativeButtonSounds('synth-on', hookOptions);
+  const offSounds = useImperativeButtonSounds('synth-off', hookOptions);
+
+  function handlePointerDown() {
+    const sounds = checked ? offSounds : onSounds;
+    sounds.press({ playbackRate: getPlaybackRate(pitchVariation) });
+
+    window.addEventListener(
+      'pointerup',
+      () => {
+        // This is how we get the "release" sound to take the updated lofi setting into account: by playing the release sound asynchronously, so that it waits for the current set of call to complete.
+        window.setTimeout(() => {
+          sounds.release({ playbackRate: getPlaybackRate(pitchVariation) });
+        });
+      },
+      { once: true },
+    );
+  }
 
   return (
-    <Wrapper className={className} style={style} ref={wrapperRef}>
+    <Wrapper
+      className={className}
+      style={style}
+      onPointerDown={handlePointerDown}
+    >
       {label != null && <Caption htmlFor={inputId}>{label}</Caption>}
       <Track>
         <Input
@@ -240,24 +273,6 @@ const Face = styled.span`
     bottom: var(--glow-inset);
     border-radius: 50% 50% 4px 4px;
     opacity: 0.01;
-  }
-`;
-
-// The plate holds both words at the full width of the track. It travels opposite the thumb, so each word stays parked on its side while the raised platform slides over it.
-const Plate = styled.span`
-  position: absolute;
-  z-index: 1;
-  top: -${BORDER}px;
-  left: -${BORDER}px;
-  display: flex;
-  display: none;
-  /* The face is the thumb’s content box, inset by its border. Stretch back over that border so these words sit on the same pixels as the legend underneath. */
-  width: calc(200% + ${BORDER * 4}px);
-  height: calc(100% + ${BORDER * 2}px);
-  transition: transform var(--slide-duration) var(--slide-easing);
-
-  ${Thumb}[data-checked='true'] & {
-    transform: translateX(-50%);
   }
 `;
 

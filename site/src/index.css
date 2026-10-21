@@ -13,7 +13,9 @@
   --color-gray-800: hsl(210deg 20% 77%);
   --color-gray-900: hsl(210deg 25% 88%);
   --color-gray-1000: hsl(210deg 25% 96%);
-  --color-primary: hsl(44deg 100% 50%);
+  --color-primary-500: hsl(44deg 100% 50%);
+  --color-primary-700: hsl(46deg 100% 65%);
+  --color-primary: var(--color-primary-500);
   --font-default: 'Space Mono', monospace;
   --font-segment: 'seven-segment', monospace;
 
@@ -24,6 +26,16 @@
   --scrollbar-color-bg: var(--color-gray-50);
 
   --bezier-overshoot-smooth: cubic-bezier(0.06, 1.1, 0, 1.03);
+
+  /*
+    Created using https://linear-easing-generator.netlify.app/
+    Stiffness: 300  •  damping: 14
+  */
+  /* prettier-ignore */
+  --spring-springy: linear(
+    0, 0.039, 0.16 3.6%, 1.035 13%, 1.178, 1.243 18.6%, 1.248 20.4%, 1.228 22.4%, 1.002 32.3%, 0.96, 0.94 38.2%, 0.943 42.2%, 0.999 51.9%, 1.015 57.6%, 0.996 76.9%, 1.001
+  );
+  --spring-springy-duration: 1.5s;
 
   color-scheme: dark;
   background: var(--color-background);

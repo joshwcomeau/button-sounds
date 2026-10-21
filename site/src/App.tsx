@@ -1,6 +1,6 @@
 import * as React from 'react';
-import styled from 'styled-components';
-import ButtonSounds, { SOUND_NAMES, DEFAULT_NAME } from 'button-sounds';
+import styled, { keyframes } from 'styled-components';
+import ButtonSounds from 'button-sounds';
 import { highlightAll } from 'microlighter';
 import 'microlighter/themes/tokyo-night.css';
 
@@ -79,6 +79,12 @@ const Wrapper = styled.div`
   margin-inline: auto;
 `;
 
+const scaleIn = keyframes`
+  from {
+    transform: scale(0.95);
+  }
+`;
+
 const Header = styled.header`
   position: relative;
   display: flex;
@@ -90,6 +96,9 @@ const Header = styled.header`
   margin-bottom: 4rem;
   padding-block: 4rem;
   text-align: center;
+  animation:
+    fadeFromTransparent 400ms 100ms backwards,
+    ${scaleIn} 300ms 100ms backwards;
 
   h1 {
     font-size: 4rem;

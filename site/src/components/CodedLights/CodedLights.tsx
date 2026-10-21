@@ -9,6 +9,7 @@ import { range, sampleOne } from '@/utils';
 
 type SpriteMap = Record<string, [number, number]>;
 type ButtonStatus = 'idle' | 'correct' | 'error';
+type EngineStatus = 'idle' | 'warm' | 'hot' | 'rainbow' | 'complete';
 
 const CORRECT_SEQUENCE = [2, 0, 3, 1];
 
@@ -47,18 +48,34 @@ function CodedLights({ hasWon, onComplete }: Props) {
     sprite: SPRITE_DATA,
   });
   const [statuses, setStatuses] = React.useState<ButtonStatus[]>(IDLE_STATUSES);
+  const [isCelebrationDone, setIsCelebrationDone] = React.useState(false);
 
   const stepRef = React.useRef(0);
   const isCompleteRef = React.useRef(false);
   const errorTimeoutRef = React.useRef<number | null>(null);
+  const celebrationTimeoutRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     return () => {
       if (errorTimeoutRef.current !== null) {
         window.clearTimeout(errorTimeoutRef.current);
       }
+      if (celebrationTimeoutRef.current !== null) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
     };
   }, []);
+
+  const litCount = statuses.filter((status) => status === 'correct').length;
+  const engineStatus: EngineStatus = isCelebrationDone
+    ? 'complete'
+    : litCount >= 4
+      ? 'rainbow'
+      : litCount === 3
+        ? 'hot'
+        : litCount === 2
+          ? 'warm'
+          : 'idle';
 
   function handlePointerDown(index: number) {
     if (isCompleteRef.current) {
@@ -114,6 +131,9 @@ function CodedLights({ hasWon, onComplete }: Props) {
       if (stepRef.current >= CORRECT_SEQUENCE.length) {
         isCompleteRef.current = true;
         onComplete();
+        celebrationTimeoutRef.current = window.setTimeout(() => {
+          setIsCelebrationDone(true);
+        }, 3000);
       }
 
       return;
@@ -151,7 +171,17 @@ function CodedLights({ hasWon, onComplete }: Props) {
         ))}
       </DiamondsWrapper>
       <EngineWrapper>
-        <Engine />
+        <Engine>
+          <Stripes data-status={engineStatus}>
+            {range(15).map((index) => (
+              <Stripe
+                key={index}
+                data-shade={index % 2 === 0 ? 'light' : 'dark'}
+                style={{ '--index': index }}
+              />
+            ))}
+          </Stripes>
+        </Engine>
       </EngineWrapper>
     </Wrapper>
   );
@@ -349,7 +379,27 @@ const EngineWrapper = styled.div`
   height: 16px;
 `;
 
+const rainbow = keyframes`
+  0%,
+  25% {
+    background-color: hsl(350deg 100% 50%);
+  }
+  25%,
+  50% {
+    background-color: hsl(45deg 100% 50%);
+  }
+  50%,
+  75% {
+    background-color: hsl(170deg 100% 60%);
+  }
+  75%,
+  100% {
+    background-color: hsl(240deg 100% 70%);
+  }
+`;
+
 const Engine = styled.div`
+  position: relative;
   height: 100%;
   border: 3px solid var(--color-gray-250);
   border-top-width: 2px;
@@ -358,21 +408,65 @@ const Engine = styled.div`
   border-bottom: none;
   border-radius: 3px 3px 0 0;
   transform: skewX(-45deg);
+`;
 
-  &::after {
-    --stripe-width: 3px;
+const Stripe = styled.div`
+  position: relative;
+  width: 3px;
+  height: 100%;
+  flex-shrink: 0;
+  background-color: var(--light);
+  transition: background-color 400ms;
+
+  &[data-shade='dark'] {
+    background-color: var(--dark);
+  }
+
+  &::before {
     content: '';
     position: absolute;
-    inset: 2px;
-    image-rendering: pixelated;
-    background: repeating-linear-gradient(
-      to right,
-      var(--color-gray-400) 0px var(--stripe-width),
-      transparent 2px calc(var(--stripe-width) * 2),
-      var(--color-gray-250) calc(var(--stripe-width) * 2)
-        calc(var(--stripe-width) * 3),
-      transparent calc(var(--stripe-width) * 3) calc(var(--stripe-width) * 4)
-    );
+    inset: -1px;
+    background: inherit;
+    filter: blur(3px);
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+`;
+
+const Stripes = styled.div`
+  --light: var(--color-gray-400);
+  --dark: var(--color-gray-250);
+  --cycle: 800ms;
+  --step: calc(var(--cycle) / 4);
+  position: absolute;
+  inset: 2px;
+  display: flex;
+  gap: 3px;
+
+  &[data-status='warm'] {
+    --light: var(--color-gray-900);
+    --dark: var(--color-gray-500);
+  }
+  &[data-status='hot'] {
+    --light: hsl(45deg 100% 75%);
+    --dark: hsl(40deg 100% 50%);
+  }
+  &[data-status='complete'] {
+    --light: hsl(145deg 100% 45%);
+    --dark: hsl(145deg 100% 45%);
+  }
+
+  &[data-status='hot'] ${Stripe},
+  &[data-status='rainbow'] ${Stripe},
+  &[data-status='complete'] ${Stripe} {
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &[data-status='rainbow'] ${Stripe} {
+    animation: ${rainbow} var(--cycle) infinite;
+    animation-delay: calc(var(--index) * var(--step) * -1);
   }
 `;
 
