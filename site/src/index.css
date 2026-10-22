@@ -102,6 +102,13 @@ a {
   font-style: normal;
   font-display: fallback;
 }
+@font-face {
+  font-family: 'wotfard';
+  src: url('/fonts/wotfard-medium.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: fallback;
+}
 
 @keyframes spin {
   to {

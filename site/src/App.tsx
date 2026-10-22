@@ -12,6 +12,7 @@ import MainDemo from '@/components/MainDemo/MainDemo';
 import AboutPhilosophy from '@/components/AboutPhilosophy/AboutPhilosophy';
 import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
 import BouncyLetters from '@/components/BouncyLetters/BouncyLetters';
+import Footer from '@/components/Footer/Footer';
 
 import { SOUNDS_PATH } from './constants';
 
@@ -51,12 +52,7 @@ function App() {
 
           <StyledAboutPhilosophy />
 
-          <footer>
-            <p>
-              MIT © Josh Comeau · built on{' '}
-              <a href="https://github.com/goldfire/howler.js">howler</a>
-            </p>
-          </footer>
+          <Footer />
           <CRTEffect strength={crtStrength} />
         </Wrapper>
       </Container>
@@ -75,7 +71,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   max-width: 60rem;
-  padding-block: 3rem;
+  padding-top: 3rem;
   margin-inline: auto;
 `;
 

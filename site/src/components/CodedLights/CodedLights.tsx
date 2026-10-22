@@ -44,7 +44,7 @@ interface Props {
 }
 
 function CodedLights({ hasWon, onComplete }: Props) {
-  const [play] = useSound('/sounds/easter-egg-notes.mp3?v=4', {
+  const [play] = useSound('/sounds/easter-egg-notes.mp3', {
     sprite: SPRITE_DATA,
   });
   const [statuses, setStatuses] = React.useState<ButtonStatus[]>(IDLE_STATUSES);
@@ -456,9 +456,12 @@ const Stripes = styled.div`
     --dark: hsl(145deg 100% 45%);
   }
 
-  &[data-status='hot'] ${Stripe},
-  &[data-status='rainbow'] ${Stripe},
-  &[data-status='complete'] ${Stripe} {
+  &[data-status='hot']
+    ${Stripe},
+    &[data-status='rainbow']
+    ${Stripe},
+    &[data-status='complete']
+    ${Stripe} {
     &::before {
       opacity: 1;
     }
