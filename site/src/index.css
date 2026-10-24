@@ -37,6 +37,11 @@
   );
   --spring-springy-duration: 1.5s;
 
+  /* Easing Wizard, 10 stiffness, 75 damping */
+  /* prettier-ignore */
+  --spring-smooth: linear(0, 0.013 1%, 0.051 2.2%, 0.404 9.8%, 0.51 12.6%, 0.602 15.5%, 0.683 18.7%, 0.754 22.2%, 0.813 26%, 0.861 30.2%, 0.9 34.8%, 0.931 40%, 0.972 52.7%, 0.992 70.2%, 1);
+  --spring-smooth-duration: 1000ms;
+
   color-scheme: dark;
   background: var(--color-background);
   font-family: var(--font-default);

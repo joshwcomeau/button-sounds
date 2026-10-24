@@ -24,24 +24,37 @@ function FadeOnChange({
 
   const wrapperRef = React.useRef<HTMLSpanElement | null>(null);
   const cachedChildren = React.useRef(children);
+  // The key that `cachedChildren` belongs to. While the key is unchanged, the children can update freely without triggering a fade.
+  const cachedKey = React.useRef(changeKey);
+
+  if (changeKey === cachedKey.current) {
+    cachedChildren.current = children;
+  }
 
   React.useEffect(() => {
-    // Ignore initial mount
-    if (children === cachedChildren.current) {
+    // Ignore initial mount, as well as the key flipping back before the fade-out finished.
+    if (changeKey === cachedKey.current) {
+      setStatus('idle');
       return;
     }
 
-    setStatus((s) => (s === 'idle' ? 'fading-out' : 'idle'));
-
-    function handleTransitionEnd() {
-      cachedChildren.current = children;
-      setStatus('idle');
-    }
+    setStatus('fading-out');
 
     const elem = wrapperRef.current;
 
     if (!elem) {
       return;
+    }
+
+    function handleTransitionEnd(event: TransitionEvent) {
+      // transitionend bubbles, so we need to ignore any transitions happening on descendants.
+      if (event.target !== elem || event.propertyName !== 'opacity') {
+        return;
+      }
+
+      cachedKey.current = changeKey;
+      cachedChildren.current = children;
+      setStatus('idle');
     }
 
     elem.addEventListener('transitionend', handleTransitionEnd);

@@ -35,7 +35,7 @@ const WAVEFORM_DATA = {
 const WAVEFORM_DURATION = 2300;
 
 function MultiSampleDemo(props: React.HTMLAttributes<HTMLDivElement>) {
-  const [isLocked, setIsLocked] = React.useState(false);
+  const [isLocked, setIsLocked] = React.useState(true);
   const [activeWaveformData, setActiveWaveformData] =
     React.useState<ActiveWaveformData | null>(null);
 

@@ -20,9 +20,16 @@ const DURATIONS_BY_ACTION: Record<Action, number> = {
 interface Props extends React.ComponentProps<'button'> {
   buttonAction: Action | null;
   setButtonAction: React.Dispatch<React.SetStateAction<Action | null>>;
+  // When true, the button sinks down into its housing, and the mascot rises up out of it.
+  isRetracted?: boolean;
 }
 
-function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
+function FancyButton({
+  buttonAction,
+  setButtonAction,
+  isRetracted = false,
+  ...props
+}: Props) {
   const wrapperRef = React.useRef<HTMLSpanElement>(null);
   const actionRef = React.useRef<Action | null>(null);
   React.useEffect(() => {
@@ -84,6 +91,7 @@ function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
   return (
     <OuterWrapper
       type="button"
+      inert={isRetracted}
       {...props}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -93,6 +101,7 @@ function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
     >
       <Wrapper
         data-action={buttonAction}
+        data-is-retracted={isRetracted}
         style={{
           '--transition-duration': transitionDuration + 'ms',
         }}
@@ -108,6 +117,16 @@ function FancyButton({ buttonAction, setButtonAction, ...props }: Props) {
             <BottomShadow />
           </Face>
         </Clipper>
+        <MascotClipper>
+          <picture aria-hidden="true">
+            <source srcSet="/images/josh-happy-dark.webp" type="image/webp" />
+            <Mascot
+              src="/images/josh-happy-dark.png"
+              alt=""
+              draggable={false}
+            />
+          </picture>
+        </MascotClipper>
       </Wrapper>
     </OuterWrapper>
   );
@@ -168,6 +187,24 @@ const Wrapper = styled.span`
     calc(var(--outer-radius) + var(--bw));
   corner-shape: inherit;
   background: var(--color-background);
+
+  /* Retracting and rising back up use different timings. These delays are choreographed with the MainDemo prize sequence: the button waits for the sidebars to start moving before sinking, and waits for the mascot to duck back down before rising. */
+  --retract-transition: 500ms ease 350ms;
+  --mascot-transition: var(--spring-smooth) var(--spring-smooth-duration);
+
+  &[data-is-retracted='true'] {
+    --retract-transition: 400ms ease 250ms;
+    --mascot-transition: var(--spring-smooth) var(--spring-smooth-duration)
+      650ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &[data-is-retracted='true'] {
+      --retract-transition: 0ms;
+      --mascot-transition: 0ms;
+    }
+  }
 `;
 
 const Front = styled.span`
@@ -186,6 +223,11 @@ const Front = styled.span`
       var(--light) var(--outer-radius) calc(100% - var(--outer-radius)),
       var(--dark) calc(100% - var(--outer-radius)) 100%
     );
+  transition: translate var(--retract-transition);
+
+  ${Wrapper}[data-is-retracted='true'] & {
+    translate: 0 30px;
+  }
 `;
 const Shaft = styled.span`
   --inset: 1px;
@@ -195,10 +237,11 @@ const Shaft = styled.span`
   top: var(--inset);
   left: var(--inset);
   right: var(--inset);
-  height: 50%;
+  height: 100%;
   border-radius: inherit;
   corner-shape: inherit;
   background:
+    linear-gradient(to top, hsl(210deg 15% 6% / 0.5), transparent),
     linear-gradient(to top, hsl(0deg 0% 0% / 0.2), transparent 4px),
     linear-gradient(
       to right,
@@ -227,17 +270,26 @@ const CastShadow = styled.span`
   border-radius: 0 0 var(--outer-radius) var(--outer-radius);
   corner-shape: inherit;
   opacity: 0.5;
-  transition: transform var(--transition-duration);
+  transition:
+    transform var(--transition-duration),
+    opacity var(--retract-transition);
   transform: translateY(var(--size));
   pointer-events: none;
-  animation: ${slideInShadow} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms
-    backwards;
 
   ${Wrapper}[data-action="hovering"] &, ${Wrapper}[data-action="releasing"] & {
     --size: 16px;
   }
   ${Wrapper}[data-action="pressing"] & {
     --size: 0px;
+  }
+  /* With the button sunk into its housing, there's nothing left to cast a shadow. */
+  ${Wrapper}[data-is-retracted='true'] & {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ${slideInShadow} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms
+      backwards;
   }
 `;
 
@@ -249,6 +301,12 @@ const Clipper = styled.span`
   overflow: hidden;
   border-radius: 0 0 var(--outer-radius) var(--outer-radius);
   corner-shape: inherit;
+  transition: opacity var(--retract-transition);
+
+  /* Fades out the Front and Face as they sink. */
+  ${Wrapper}[data-is-retracted='true'] & {
+    opacity: 0;
+  }
 `;
 
 const slideIn = keyframes`
@@ -285,13 +343,22 @@ const Face = styled.span`
     inset 0px 2px 4px var(--shadow-color),
     inset 0px 4px 8px var(--shadow-color),
     inset 0px 8px 16px var(--shadow-color);
-  transition:
-    color var(--transition-duration),
-    transform var(--transition-duration),
-    text-shadow var(--transition-duration),
-    border var(--transition-duration),
-    --shadow-color var(--transition-duration);
-  animation: ${slideIn} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms backwards;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      color var(--transition-duration),
+      transform var(--transition-duration),
+      text-shadow var(--transition-duration),
+      border var(--transition-duration),
+      --shadow-color var(--transition-duration),
+      translate var(--retract-transition);
+    animation: ${slideIn} 600ms cubic-bezier(0.07, 1, 0.325, 1) 250ms backwards;
+  }
+
+  /* The inverse of the slideIn animation: sink down a bit while the Clipper fades out. */
+  ${Wrapper}[data-is-retracted='true'] & {
+    translate: 0 30px;
+  }
 
   @property --shadow-color {
     syntax: '<color>';
@@ -341,6 +408,39 @@ const BottomShadow = styled.span`
 
   ${Wrapper}[data-action="pressing"] & {
     opacity: 1;
+  }
+`;
+
+// Like the Clipper, this hides everything below the bottom edge of the button, but it's tall enough that the mascot can stick up well above the top.
+const MascotClipper = styled.span`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 0 0 var(--outer-radius) var(--outer-radius);
+  corner-shape: inherit;
+  pointer-events: none;
+`;
+
+const Mascot = styled.img`
+  /* The bottom of the image stays tucked inside the housing. */
+  --hidden-amount: 90px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--hidden-amount) * -1);
+  width: calc(275px / 2);
+  height: calc(464px / 2);
+  max-width: none;
+  margin-inline: auto;
+  user-select: none;
+  translate: 0 100%;
+  transition: translate var(--mascot-transition);
+
+  ${Wrapper}[data-is-retracted='true'] & {
+    translate: 0 0;
   }
 `;
 

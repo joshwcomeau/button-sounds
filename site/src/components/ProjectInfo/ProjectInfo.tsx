@@ -1,6 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
+import { GITHUB_URL, NPM_URL } from '@/constants';
+
 import MultiSampleDemo from '@/components/MultiSampleDemo/MultiSampleDemo';
 import TextLink from '@/components/Link/TextLink';
 import InlineCode from '@/components/InlineCode/InlineCode';
@@ -85,7 +87,7 @@ function SomeComponent() {
 }
 `;
 
-function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
+function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <Wrapper {...props}>
       <h2>
@@ -121,8 +123,9 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
         realistic and organic.
       </p>
       <p>
-        Here's a little demo showing the difference. Try spamming the “Trigger”
-        button with and without locking it to the first sample:
+        Here's a little demo. Try spamming the “Trigger” button while locked to
+        the first sample, and then click the “Unlock” button and try again to
+        hear the difference:
       </p>
       <StyledMultiSampleDemo />
       <p>
@@ -149,14 +152,14 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
           Sounds are available either as{' '}
           <TextLink
             target="_blank"
-            href="https://github.com/joshwcomeau/button-sounds/tree/main/package/assets"
+            href={`${GITHUB_URL}/tree/main/package/assets`}
           >
             192kbps MP3 files
           </TextLink>{' '}
           or{' '}
           <TextLink
             target="_blank"
-            href="https://github.com/joshwcomeau/button-sounds/tree/main/package/audio"
+            href={`${GITHUB_URL}/tree/main/package/audio`}
           >
             lossless 48KHz .wav files
           </TextLink>
@@ -167,11 +170,8 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <h3>A super-convenient library</h3>
       <p>
         The other half of this project is the{' '}
-        <TextLink href="https://www.npmjs.com/package/button-sounds">
-          NPM package
-        </TextLink>{' '}
-        that makes it as easy as possible to start using these sounds in your
-        own projects.
+        <TextLink href={NPM_URL}>NPM package</TextLink> that makes it as easy as
+        possible to start using these sounds in your own projects.
       </p>
       <p>Here’s a quick “Hello World” example:</p>
       <Snippet lang="javascript">{VANILLA_JS_EXAMPLE}</Snippet>
@@ -198,11 +198,10 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
         </li>
       </ol>
       <p>
-        By default, the audio files will be loaded from NPM’s CDN, so you don’t
-        even need to host them yourself (though you can if you want, and there’s
-        an <TextLink href="">NPM script</TextLink> to make this easy). The files
-        are only loaded when you call <InlineCode>.wireUp</InlineCode>, which
-        means only the selected sound(s) will be downloaded.
+        By default, the audio files will be loaded from the JSDelivr CDN, so you
+        don’t even need to host them yourself (though you can if you’d prefer).
+        The files are only loaded when you call <InlineCode>.wireUp</InlineCode>
+        , which means only the selected sound(s) will be downloaded.
       </p>
       <p>
         The <InlineCode>button-sounds</InlineCode> package is tiny, only adding
@@ -259,12 +258,41 @@ function AboutPhilosophy(props: React.HTMLAttributes<HTMLDivElement>) {
       <h2>Going deeper</h2>
       <p>
         This has been a quick introduction to the library. If you want to learn
-        more, check out the{' '}
-        <TextLink href="https://github.com/joshwcomeau/button-sounds">
-          README on Github
-        </TextLink>{' '}
-        for the source code and documentation. You can also point your agent to
-        this README for better results.
+        more, there’s extensive documentation on Github:
+      </p>
+      <ul>
+        <li>
+          <TextLink href={`${GITHUB_URL}/blob/main/README.md`}>
+            Main Github README
+          </TextLink>
+        </li>
+        <li>
+          <TextLink href={`${GITHUB_URL}/blob/main/docs/raw-audio-files.md`}>
+            Working with raw audio sprites
+          </TextLink>
+        </li>
+        <li>
+          <TextLink href={`${GITHUB_URL}/blob/main/docs/vanilla-js.md`}>
+            Using the JavaScript API
+          </TextLink>
+        </li>
+        <li>
+          <TextLink href={`${GITHUB_URL}/blob/main/docs/react.md`}>
+            Using the React bindings
+          </TextLink>
+        </li>
+        <li>
+          <TextLink
+            href={`${GITHUB_URL}/blob/main/docs/self-hosting-audio-files.md`}
+          >
+            Self-hosting the audio files
+          </TextLink>
+        </li>
+      </ul>
+      <p>
+        I don’t have a docs page specifically for agents, but the links above
+        should inform both humans and robots alike, so feel free to point your
+        agent at the most relevant doc for your use case!
       </p>
     </Wrapper>
   );
@@ -275,6 +303,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-block: 3rem;
+  padding-inline: 1rem;
   max-width: 70ch;
   margin-inline: auto;
 
@@ -292,8 +321,9 @@ const Wrapper = styled.div`
     margin-bottom: 1rem;
   }
 
-  ol {
-    margin-bottom: 1rem;
+  ol,
+  ul {
+    margin-bottom: 2rem;
 
     ::marker {
       color: var(--color-primary);
@@ -307,4 +337,4 @@ const StyledMultiSampleDemo = styled(MultiSampleDemo)`
   margin-bottom: 3rem;
 `;
 
-export default AboutPhilosophy;
+export default ProjectInfo;

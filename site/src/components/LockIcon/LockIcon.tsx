@@ -80,18 +80,22 @@ const Svg = styled.svg`
 `;
 
 const Hinge = styled.path`
-  transition:
-    transform 200ms,
-    d 200ms 100ms;
   transform-origin: ${HINGE_INSET}px ${LOCK_TOP}px;
   vector-effect: non-scaling-stroke;
 
   &[data-is-locked='false'] {
-    transition:
-      transform 150ms,
-      d 0ms;
-
     transform: rotateY(120deg);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform 200ms,
+      d 200ms 100ms;
+    &[data-is-locked='false'] {
+      transition:
+        transform 150ms,
+        d 0ms;
+    }
   }
 
   &[data-is-pressing='true'] {

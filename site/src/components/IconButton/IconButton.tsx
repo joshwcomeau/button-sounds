@@ -1,3 +1,4 @@
+// NOTE: This component pretty much requires
 import * as React from 'react';
 import styled from 'styled-components';
 
@@ -129,11 +130,14 @@ const CastShadow = styled.span`
   border-radius: 0 0 ${OUTER_RADIUS}px ${OUTER_RADIUS}px;
   corner-shape: inherit;
   opacity: 0.5;
-  transition:
-    transform 150ms,
-    background 150ms;
   transform: translateY(var(--size));
   pointer-events: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform 150ms,
+      background 150ms;
+  }
 
   ${Wrapper}:hover & {
     --size: 8px;
@@ -161,7 +165,10 @@ const Slider = styled.span`
   height: 100%;
   border-radius: inherit;
   corner-shape: inherit;
-  transition: transform 150ms;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform 150ms;
+  }
 
   ${Wrapper}:hover & {
     transform: translateY(-2px);
@@ -199,7 +206,8 @@ const Face = styled.span`
   align-items: center;
   gap: var(--face-gap, 1rem);
   height: 100%;
-  padding-inline: 4px;
+  padding-left: 4px;
+  padding-right: var(--face-gap, 1rem);
   background: linear-gradient(
     to bottom,
     var(--color-gray-200),
@@ -219,7 +227,12 @@ const Face = styled.span`
     corner-shape: inherit;
     mix-blend-mode: multiply;
     opacity: 0;
-    transition: opacity 250ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &::after {
+      transition: opacity 250ms;
+    }
   }
 
   ${Wrapper}:active &, ${Wrapper}[data-is-depressed='true'] & {

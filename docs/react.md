@@ -123,3 +123,11 @@ The problem with having a parallel `pointerUp` listener is that it leads to two 
 By nesting the `pointerUp` listener, we ensure that the two sounds are connected, that we'll always get the 'release' sound when the button is released. Stray `pointerUp` events will be ignored.
 
 There are other valid solutions to this problem; for example, we could use a state variable or a ref to keep track of the button’s pressed state. I really like the nested approach since everything is contained in one spot. The `{ once: true }` parameter is super nice in situations like this! But really, this is a personal preference. Feel free to use a different approach if you prefer.
+
+## Hosting the audio files yourself
+
+By default, the .mp3 audio files will be downloaded directly from the JSDelivr CDN. For example:
+
+- https://cdn.jsdelivr.net/npm/button-sounds@0.0.0/assets/hi75-soft.mp3
+
+If you’d prefer, you can alternatively download the audio files yourself and point the library to your own copies of the files. You can learn more about this in the [“Self-hosting the audio files” docs](https://github.com/joshwcomeau/button-sounds/blob/main/docs/self-hosting-audio-files.md).

@@ -41,11 +41,18 @@ const ERROR_STATUSES: ButtonStatus[] = ['error', 'error', 'error', 'error'];
 interface Props {
   hasWon: boolean;
   onComplete: () => void;
+  onInteract?: () => void;
 }
 
-function CodedLights({ hasWon, onComplete }: Props) {
-  const [play] = useSound('/sounds/easter-egg-notes.mp3', {
+function CodedLights({ hasWon, onComplete, onInteract }: Props) {
+  const [play] = useSound('/sounds/misc/easter-egg-notes.mp3', {
     sprite: SPRITE_DATA,
+  });
+  const [playWinAudio] = useSound('/sounds/misc/win-arp.mp3', {
+    volume: 0.25,
+  });
+  const [playSparklers] = useSound('/sounds/misc/sparklers.mp3', {
+    volume: 0.25,
   });
   const [statuses, setStatuses] = React.useState<ButtonStatus[]>(IDLE_STATUSES);
   const [isCelebrationDone, setIsCelebrationDone] = React.useState(false);
@@ -77,7 +84,11 @@ function CodedLights({ hasWon, onComplete }: Props) {
           ? 'warm'
           : 'idle';
 
+  console.log({ engineStatus });
+
   function handlePointerDown(index: number) {
+    onInteract?.();
+
     if (isCompleteRef.current) {
       return;
     }
@@ -131,9 +142,15 @@ function CodedLights({ hasWon, onComplete }: Props) {
       if (stepRef.current >= CORRECT_SEQUENCE.length) {
         isCompleteRef.current = true;
         onComplete();
+        window.setTimeout(() => {
+          playWinAudio();
+        }, 200);
+        window.setTimeout(() => {
+          playSparklers();
+        }, 400);
         celebrationTimeoutRef.current = window.setTimeout(() => {
           setIsCelebrationDone(true);
-        }, 3000);
+        }, 5000);
       }
 
       return;
@@ -226,15 +243,6 @@ const ButtonWrapper = styled.div`
   width: 20px;
   height: 20px;
   aspect-ratio: 1 / 1;
-`;
-
-const oscillateUpDown = keyframes`
-  from {
-    transform: translateY(-5%);
-  }
-  to {
-    transform: translateY(5%);
-  }
 `;
 
 const growShrink = keyframes`
@@ -437,7 +445,7 @@ const Stripes = styled.div`
   --light: var(--color-gray-400);
   --dark: var(--color-gray-250);
   --cycle: 800ms;
-  --step: calc(var(--cycle) / 4);
+  --step: 75ms;
   position: absolute;
   inset: 2px;
   display: flex;
@@ -468,8 +476,10 @@ const Stripes = styled.div`
   }
 
   &[data-status='rainbow'] ${Stripe} {
-    animation: ${rainbow} var(--cycle) infinite;
-    animation-delay: calc(var(--index) * var(--step) * -1);
+    --light: hsl(45deg 100% 75%);
+    --dark: hsl(40deg 100% 50%);
+    animation: ${rainbow} var(--cycle) 4;
+    animation-delay: calc(var(--index) * var(--step));
   }
 `;
 

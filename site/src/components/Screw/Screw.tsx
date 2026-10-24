@@ -26,7 +26,7 @@ const Wrapper = styled.div`
   padding: 2px;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  box-shadow: 0px 0px -1px hsl(0deg 0% 0% / 0.25);
+  box-shadow: 0px 1px 0px hsl(0deg 0% 0% / 0.25);
 `;
 
 const Svg = styled.svg`

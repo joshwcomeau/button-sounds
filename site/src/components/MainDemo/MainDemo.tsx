@@ -12,8 +12,7 @@ import PatternDither from '@/components/BackgroundPatterns/PatternDither';
 import SampleSelector from '@/components/SampleSelector';
 import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
-import ToastWon from '@/components/ToastWon/ToastWon';
-import InPortal from '@/components/InPortal/InPortal';
+import CodedLights from '@/components/CodedLights/CodedLights';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
@@ -24,6 +23,10 @@ import Explanation from './Explanation';
 import { useSoundResourceLoading } from './useSoundResourceLoading';
 
 import type { SortOrder } from './MainDemo.helpers';
+
+// Three.js is hefty, so we only fetch it once someone starts playing the minigame.
+const loadCelebratoryShader = () => import('@/components/CelebratoryShader');
+const CelebratoryShader = React.lazy(loadCelebratoryShader);
 
 function orderSounds(
   sounds: readonly SoundName[],
@@ -77,7 +80,36 @@ function MainDemo() {
     number | undefined
   >();
   const [hasWonMinigame, setHasWonMinigame] = React.useState(false);
+  const [isCelebrating, setIsCelebrating] = React.useState(false);
+  // Bumped on restore, and used as the CodedLights key, so that the minigame remounts fresh and can be won again.
+  const [minigameRound, setMinigameRound] = React.useState(0);
   const { usingLofi, pitchVariation } = useSoundSettings();
+
+  const hasWonMinigameRef = useSyncedRef(hasWonMinigame);
+  const wasShowingPrizeRef = React.useRef(false);
+
+  const handleRestore = React.useCallback(() => {
+    setHasWonMinigame(false);
+    setIsCelebrating(false);
+    setMinigameRound((currentRound) => currentRound + 1);
+  }, []);
+
+  const handleCelebrationComplete = React.useCallback(() => {
+    setIsCelebrating(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (hasWonMinigame) {
+      wasShowingPrizeRef.current = true;
+      return;
+    }
+
+    // The restore button is about to unmount, so hand focus back to the big button rather than letting it fall to <body>.
+    if (wasShowingPrizeRef.current) {
+      wasShowingPrizeRef.current = false;
+      buttonRef.current?.focus({ preventScroll: true });
+    }
+  }, [hasWonMinigame]);
 
   const handleFilterClick = React.useCallback(
     (newFilter: string) => {
@@ -192,6 +224,11 @@ function MainDemo() {
         return;
       }
 
+      // The sound list is hidden while the prize is showing.
+      if (hasWonMinigameRef.current) {
+        return;
+      }
+
       const selectedSoundName =
         selectedSoundNameRef.current || relevantSounds[0];
 
@@ -225,7 +262,7 @@ function MainDemo() {
     return () => {
       wrapper.removeEventListener('keydown', handleKeyDown);
     };
-  }, [relevantSounds, selectedSoundNameRef]);
+  }, [relevantSounds, selectedSoundNameRef, hasWonMinigameRef]);
 
   const triggerPress = React.useCallback(() => {
     let index = selectedDownIndex;
@@ -315,11 +352,12 @@ function MainDemo() {
     <Container ref={wrapperRef}>
       <TitleOutline aria-hidden="true">Sound Playground</TitleOutline>
       <Border>
-        <Wrapper>
+        <Wrapper data-has-won-minigame={hasWonMinigame}>
           <StyledBackgroundPattern patternId="c" />
 
           <Title>Sound Playground</Title>
           <StyledSoundSelectSidebar
+            inert={hasWonMinigame}
             selectedSoundName={selectedSoundName}
             setSelectedSoundName={setSelectedSoundName}
             relevantSounds={relevantSounds}
@@ -335,22 +373,45 @@ function MainDemo() {
           <ButtonArea>
             <ButtonWrapper>
               <FancyButton
-                disabled={loadingStatus === 'loading'}
+                // While retracted, the mascot lives inside the button, so we don't want it faded by the disabled styles.
+                disabled={loadingStatus === 'loading' && !hasWonMinigame}
                 ref={buttonRef}
                 buttonAction={buttonAction}
                 setButtonAction={setButtonAction}
+                isRetracted={hasWonMinigame}
               />
             </ButtonWrapper>
-            {loadingStatus === 'loading' && <StyledSpinner />}
+            {loadingStatus === 'loading' && !hasWonMinigame && (
+              <StyledSpinner />
+            )}
           </ButtonArea>
 
           <StyledSoundInfo
             name={selectedSoundName}
             hasWonMinigame={hasWonMinigame}
-            onMinigameComplete={() => setHasWonMinigame(true)}
-          />
+            onRestore={handleRestore}
+          >
+            <CodedLights
+              key={minigameRound}
+              hasWon={hasWonMinigame}
+              onComplete={() => {
+                setHasWonMinigame(true);
+                setIsCelebrating(true);
+              }}
+              onInteract={loadCelebratoryShader}
+            />
+          </StyledSoundInfo>
 
-          <ConfigSidebar>
+          {isCelebrating && (
+            <React.Suspense fallback={null}>
+              <CelebratoryShader
+                key={minigameRound}
+                onComplete={handleCelebrationComplete}
+              />
+            </React.Suspense>
+          )}
+
+          <ConfigSidebar inert={hasWonMinigame}>
             <ConfigGrid>
               <SampleSelector
                 label="Press Sample"
@@ -377,12 +438,7 @@ function MainDemo() {
         <BLScrew />
         <BRScrew />
       </Border>
-      <Explanation />
-      {hasWonMinigame && (
-        <InPortal id="toast-container">
-          <ToastWon />
-        </InPortal>
-      )}
+      <Explanation isVisible={!hasWonMinigame} />
     </Container>
   );
 }
@@ -420,6 +476,10 @@ const Wrapper = styled.div`
   corner-shape: bevel;
   isolation: isolate;
   reading-flow: grid-rows;
+  /* When the minigame is won, the sidebars slide out past the edges. Only clip horizontally, since the Title sticks up above the top edge. */
+  overflow-x: clip;
+  --ease-in: cubic-bezier(0.6, 0, 0.6, 1);
+  --ease-out: cubic-bezier(0.17, 0.84, 0.44, 1);
 
   @media (max-width: 55rem) {
     grid-template-columns: 10fr 15fr;
@@ -436,6 +496,16 @@ const Wrapper = styled.div`
       'sound-sidebar'
       'sound-info'
       'config-sidebar';
+  }
+
+  /* On smaller screens, the sidebars are removed entirely while the prize is showing, so collapse down to only the areas that remain. */
+  @media (max-width: 55rem) {
+    &[data-has-won-minigame='true'] {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'button'
+        'sound-info';
+    }
   }
 `;
 
@@ -481,8 +551,35 @@ const TitleOutline = styled(Title)`
   z-index: 0;
 `;
 
+/*
+  The prize choreography is all CSS transitions. Rules under [data-has-won-minigame='true'] hold the timing for the win sequence (sidebars slide out → button sinks → Josh pops up, with the latter two handled inside FancyButton), while the base rules hold the timing for the restore sequence, which plays in reverse.
+  Visibility is transitioned alongside translate so that it flips to hidden only once the slide-out finishes, and flips to visible as soon as the slide-in starts.
+*/
 const StyledSoundSelectSidebar = styled(SoundSelectSidebar)`
   grid-area: sound-sidebar;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      translate 600ms var(--ease-out) 500ms,
+      visibility 600ms 500ms;
+  }
+
+  ${Wrapper}[data-has-won-minigame='true'] & {
+    translate: calc(-100% - 2rem) 0;
+    visibility: hidden;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        translate 500ms var(--ease-in),
+        visibility 500ms;
+    }
+  }
+
+  @media (max-width: 55rem) {
+    ${Wrapper}[data-has-won-minigame='true'] & {
+      display: none;
+    }
+  }
 `;
 
 const ButtonArea = styled.div`
@@ -553,6 +650,29 @@ const StyledSoundInfo = styled(SoundInfo)`
 const ConfigSidebar = styled.div`
   grid-area: config-sidebar;
   container-type: inline-size;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      translate 600ms var(--ease-out) 500ms,
+      visibility 600ms 500ms;
+  }
+
+  ${Wrapper}[data-has-won-minigame='true'] & {
+    translate: calc(100% + 2rem) 0;
+    visibility: hidden;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        translate 500ms var(--ease-in),
+        visibility 500ms;
+    }
+  }
+
+  @media (max-width: 55rem) {
+    ${Wrapper}[data-has-won-minigame='true'] & {
+      display: none;
+    }
+  }
 `;
 
 const ConfigGrid = styled.div`

@@ -183,6 +183,10 @@ const Playhead = styled.div`
   width: ${PLAYHEAD_WIDTH}px;
   left: calc(var(--playhead-progress) * (100% - ${PLAYHEAD_WIDTH}px));
   background: hsl(210deg 15% 95%);
+
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
 `;
 
 const Bars = styled.div`

@@ -38,6 +38,10 @@ export const Wrapper = styled.aside`
   border: 1px solid var(--color-gray-100);
   margin-top: 2rem;
   margin-bottom: 3rem;
+
+  @media (max-width: 50rem) {
+    margin-inline: 0;
+  }
 `;
 
 const Title = styled.p`

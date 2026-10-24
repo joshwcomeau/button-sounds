@@ -39,7 +39,7 @@ function LockToggle({ isLocked, setIsLocked }: Props) {
           <IconWrapper>
             <LockIcon isLocked={isLocked} isPressing={isPressing} />
           </IconWrapper>
-          <Label>{isLocked ? 'Locked' : 'Unlocked'}</Label>
+          <Label>{isLocked ? 'Unlock' : 'Lock'}</Label>
           <LockedGradient data-is-visible={isLocked} />
         </Content>
       </InnerBorder>
@@ -127,17 +127,28 @@ const LockedGradient = styled.span`
   border-radius: 5px;
   corner-shape: bevel;
   opacity: 0;
-  transform: translateX(-20%);
-  transition:
-    transform 200ms,
-    opacity 600ms;
+  transition: opacity 300ms;
 
   &[data-is-visible='true'] {
     opacity: 0.1;
-    transform: translateX(0);
     transition:
       transform 200ms,
       opacity 300ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateX(-20%);
+    transition:
+      transform 200ms,
+      opacity 600ms;
+
+    &[data-is-visible='true'] {
+      opacity: 0.1;
+      transform: translateX(0);
+      transition:
+        transform 200ms,
+        opacity 300ms;
+    }
   }
 `;
 
