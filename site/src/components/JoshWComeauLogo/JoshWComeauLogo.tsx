@@ -1,5 +1,6 @@
+// NOTE: I consider this component a part of my personal identity. Please don’t use this component in your own projects. <3
 import * as React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 
 import Link from '@/components/Link';
 

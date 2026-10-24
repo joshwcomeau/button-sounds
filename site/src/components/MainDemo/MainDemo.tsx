@@ -24,7 +24,7 @@ import { useSoundResourceLoading } from './useSoundResourceLoading';
 
 import type { SortOrder } from './MainDemo.helpers';
 
-// Three.js is hefty, so we only fetch it once someone starts playing the minigame.
+// There’s a secret celebratory effect that uses Three.js Shader Language, which is a heck of a large dependency for an easter egg most people won’t discover. So, we’ll load it lazily, only when someone starts interacting with the easter egg.
 const loadCelebratoryShader = () => import('@/components/CelebratoryShader');
 const CelebratoryShader = React.lazy(loadCelebratoryShader);
 
@@ -81,7 +81,7 @@ function MainDemo() {
   >();
   const [hasWonMinigame, setHasWonMinigame] = React.useState(false);
   const [isCelebrating, setIsCelebrating] = React.useState(false);
-  // Bumped on restore, and used as the CodedLights key, so that the minigame remounts fresh and can be won again.
+  // The minigame can be reset, and the simplest way to accomplish this is to swap out the key. So, this is an ever-incrementing number used to remount the CodedLights component:
   const [minigameRound, setMinigameRound] = React.useState(0);
   const { usingLofi, pitchVariation } = useSoundSettings();
 

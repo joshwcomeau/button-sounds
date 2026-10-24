@@ -61,6 +61,10 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
   const isCompleteRef = React.useRef(false);
   const errorTimeoutRef = React.useRef<number | null>(null);
   const celebrationTimeoutRef = React.useRef<number | null>(null);
+  const diamondsWrapperRef = React.useRef<HTMLDivElement>(null);
+  const keyboardPressRef = React.useRef<{ key: string; index: number } | null>(
+    null,
+  );
 
   React.useEffect(() => {
     return () => {
@@ -168,15 +172,70 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
     setStatuses(ERROR_STATUSES);
   }
 
+  // Natively, Enter triggers a click on keydown (and re-triggers it on every auto-repeat), while Space triggers a click on keyup. We take over both keys so that they mirror the pointer experience: press sound on keydown, release/result on keyup, and nothing while held.
+  function handleKeyDown(event: React.KeyboardEvent, index: number) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+
+      const buttons =
+        diamondsWrapperRef.current?.querySelectorAll('button') ?? [];
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (index + direction + buttons.length) % buttons.length;
+      buttons[nextIndex]?.focus();
+
+      return;
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    // Only Enter needs to be suppressed here. Leaving Space alone keeps the native `:active` styling while the key is held.
+    if (event.key === 'Enter') {
+      event.preventDefault();
+    }
+
+    if (event.repeat || keyboardPressRef.current !== null) {
+      return;
+    }
+
+    keyboardPressRef.current = { key: event.key, index };
+    handlePointerDown(index);
+  }
+
+  function handleKeyUp(event: React.KeyboardEvent, index: number) {
+    const keyboardPress = keyboardPressRef.current;
+    if (
+      !keyboardPress ||
+      keyboardPress.key !== event.key ||
+      keyboardPress.index !== index
+    ) {
+      return;
+    }
+
+    // Prevents Space’s native keyup click, since we’re triggering it ourselves.
+    event.preventDefault();
+
+    keyboardPressRef.current = null;
+    handleClick(index);
+  }
+
   return (
     <Wrapper>
-      <DiamondsWrapper>
+      <DiamondsWrapper ref={diamondsWrapperRef}>
         {range(0, 4).map((index) => (
           <ButtonWrapper key={index} style={{ '--index': index }}>
             <DiamondButton
               type="button"
               onPointerDown={() => handlePointerDown(index)}
               onClick={() => handleClick(index)}
+              // I want these 4 buttons to behave sorta like radio buttons, except they shouldn't get triggered automatically by moving to them. To simulate that, we'll disable tab focus for all but the first button. Navigation between them is handled with arrow keys in the subsequent event handlers
+              tabIndex={index === 0 ? 0 : -1}
+              onKeyDown={(event) => handleKeyDown(event, index)}
+              onKeyUp={(event) => handleKeyUp(event, index)}
+              onBlur={() => {
+                keyboardPressRef.current = null;
+              }}
               data-has-won={hasWon}
             >
               <DecorativeDiamond data-status={statuses[index]}>
