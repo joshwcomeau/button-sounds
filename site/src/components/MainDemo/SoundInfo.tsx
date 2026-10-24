@@ -6,13 +6,19 @@ import { SOUND_DATA } from '@/data';
 import BevelEdge from '@/components/BevelEdge';
 import OuterCorner from '@/components/OuterCorner';
 import PatternDither from '@/components/BackgroundPatterns/PatternDither';
-import CodedLights from '@/components/CodedLights/CodedLights';
+import FadeOnChange from '@/components/FadeOnChange/FadeOnChange';
+
+import PrizeContent from './PrizeContent';
 
 interface Props extends React.ComponentProps<'div'> {
   name: SoundName;
   hasWonMinigame: boolean;
-  onMinigameComplete: () => void;
+  onRestore: () => void;
+  // Rendered within the decorative strip along the bottom edge.
+  children?: React.ReactNode;
 }
+
+const TRANSITION_DELAY = 250;
 
 const TOP_RADIUS = 8;
 const MAIN_RADIUS = 16;
@@ -20,15 +26,29 @@ const MAIN_RADIUS = 16;
 function SoundInfo({
   name,
   hasWonMinigame,
-  onMinigameComplete,
+  onRestore,
+  children,
+  style = {},
   ...delegated
 }: Props) {
   const soundData = SOUND_DATA[name];
 
   return (
-    <Wrapper {...delegated}>
+    <Wrapper
+      style={{
+        ...style,
+        '--title-width': hasWonMinigame ? '15.5rem' : '12.5rem',
+        // When going from the won state back to the original state, the title shrinks, but it takes 250ms for the title content to change (thanks to FadeOnChange). If we start transitioning the width immediately, it briefly causes the title to split onto two lines.
+        '--title-width-transition-delay': hasWonMinigame
+          ? '0ms'
+          : `${TRANSITION_DELAY}ms`,
+      }}
+      {...delegated}
+    >
       <Title>
-        About This Sound
+        <FadeOnChange changeKey={hasWonMinigame} duration={TRANSITION_DELAY}>
+          {hasWonMinigame ? 'You cracked the code!' : 'About This Sound'}
+        </FadeOnChange>
         <BevelEdge
           side="top"
           color="var(--color-gray-700)"
@@ -41,7 +61,14 @@ function SoundInfo({
           borderColor="var(--color-gray-700)"
         />
       </Title>
-      <Main>{soundData.description}</Main>
+      <Main>
+        <Panel data-is-shown={!hasWonMinigame} inert={hasWonMinigame}>
+          {soundData.description}
+        </Panel>
+        <Panel data-is-shown={hasWonMinigame} inert={!hasWonMinigame}>
+          <PrizeContent isShown={hasWonMinigame} onRestore={onRestore} />
+        </Panel>
+      </Main>
       <StyledMainTopEdge
         side="top"
         color="var(--color-gray-700)"
@@ -51,7 +78,7 @@ function SoundInfo({
       <BevelEdge side="bottom" color="black" radius={MAIN_RADIUS} />
       <BottomDecoration>
         <StyledPattern patternId="b" />
-        <CodedLights hasWon={hasWonMinigame} onComplete={onMinigameComplete} />
+        {children}
       </BottomDecoration>
     </Wrapper>
   );
@@ -71,11 +98,10 @@ const Title = styled.h3`
   position: absolute;
   top: 0px;
   left: -1px;
-  width: 13rem;
-  padding: 0.5rem 1.5rem;
+  width: var(--title-width);
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   font-weight: 600;
-  text-align: center;
   color: var(--color-gray-1000);
   transform: translateY(-100%);
   background: inherit;
@@ -83,6 +109,9 @@ const Title = styled.h3`
   border-bottom: none;
   border-radius: ${TOP_RADIUS}px ${TOP_RADIUS}px 0 0;
   corner-shape: bevel;
+  transition: width 200ms ease var(--title-width-transition-delay);
+  /* Just in case there's a sync issue with the title transition, don't allow it to split onto two lines. */
+  white-space: nowrap;
 `;
 const StyledOuterCorner = styled(OuterCorner)`
   position: absolute;
@@ -106,8 +135,43 @@ const Main = styled.div`
   }
 `;
 
+/*
+  Both panels are always rendered, so that the swap can transition smoothly between their heights: the outgoing panel collapses from "auto" to 0 while the incoming panel grows from 0 to "auto". This relies on "interpolate-size: allow-keywords", set globally in reset.css. Browsers without it will snap to the new height instead.
+  The sequence: the outgoing panel fades out, then the heights transition, then the incoming panel fades in.
+  We use visibility rather than "display: none" for the hidden panel. Animating display would require @starting-style, which would also apply on page load and cause the initial description to grow in.
+*/
+const Panel = styled.div`
+  --fade-duration: 200ms;
+  --resize-duration: 400ms;
+  height: 0;
+  overflow: clip;
+  opacity: 0;
+  visibility: hidden;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      opacity var(--fade-duration),
+      height var(--resize-duration) var(--fade-duration),
+      visibility 0ms calc(var(--fade-duration) + var(--resize-duration));
+  }
+
+  &[data-is-shown='true'] {
+    height: auto;
+    opacity: 1;
+    visibility: visible;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        height var(--resize-duration) var(--fade-duration),
+        opacity var(--fade-duration)
+          calc(var(--fade-duration) + var(--resize-duration));
+    }
+  }
+`;
+
 const StyledMainTopEdge = styled(BevelEdge)`
-  left: calc(13rem + 5px);
+  left: calc(var(--title-width) + 5px);
+  transition: left 200ms ease var(--title-width-transition-delay);
 `;
 
 const BottomDecoration = styled.div`

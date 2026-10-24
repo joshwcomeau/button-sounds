@@ -34,8 +34,8 @@ const WAVEFORM_DATA = {
 
 const WAVEFORM_DURATION = 2300;
 
-function MultiSampleDemo() {
-  const [isLocked, setIsLocked] = React.useState(false);
+function MultiSampleDemo(props: React.HTMLAttributes<HTMLDivElement>) {
+  const [isLocked, setIsLocked] = React.useState(true);
   const [activeWaveformData, setActiveWaveformData] =
     React.useState<ActiveWaveformData | null>(null);
 
@@ -62,7 +62,7 @@ function MultiSampleDemo() {
   }, [isLocked, release]);
 
   return (
-    <Container>
+    <Container {...props}>
       <LockWrapper>
         <LockImg src={SPRITE_SRC} alt="" />
       </LockWrapper>
@@ -120,8 +120,13 @@ function MultiSampleDemo() {
             <StyledIconButton
               color="hsl(155deg 100% 30%)"
               icon={<Play size={16} strokeWidth={3} />}
-              onPointerDown={handlePointerDown}
-              onPointerUp={handlePointerUp}
+              onPointerDown={(event) => {
+                handlePointerDown();
+
+                window.addEventListener('pointerup', handlePointerUp, {
+                  once: true,
+                });
+              }}
               onKeyDown={(event) => {
                 if (event.repeat) {
                   return;

@@ -4,71 +4,78 @@ import Screw from '@/components/Screw/Screw';
 import Kbd from '@/components/Kbd/Kbd';
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
-function Explanation() {
+function Explanation({ isVisible }: { isVisible: boolean }) {
   return (
-    <OuterWrapper>
-      <Wrapper>
-        <BevelEdge side="top" color="var(--color-gray-500)" radius={18} />
-        <BevelEdge side="bottom" color="var(--color-gray-75)" radius={18} />
-        <TopLeftAttachment>
-          <Screw />
-        </TopLeftAttachment>
-        <TopRightAttachment>
-          <Screw />
-        </TopRightAttachment>
-        <DesktopOnly>
-          <p>
-            <strong>How it works:</strong> Click the big red button to play the
-            currently-selected sound. Browse the selection using the left-hand
-            sidebar (<em>protip:</em> after clicking the button, you can use the
-            up/down arrow keys,{' '}
-            <Kbd char="ArrowUp" aliases={['w']}>
-              ↑
-            </Kbd>{' '}
-            /{' '}
-            <Kbd char="ArrowDown" aliases={['s']}>
-              ↓
-            </Kbd>
-            , to quickly move between sounds!).
-          </p>
-          <p>
-            Each sound has a handful of individually-recorded samples that are
-            randomly selected on every click. The{' '}
-            <ConfigSidebarLocationLarge>
-              right-hand sidebar
-            </ConfigSidebarLocationLarge>{' '}
-            <ConfigSidebarLocationMedium>
-              config row along the bottom
-            </ConfigSidebarLocationMedium>{' '}
-            highlights the currently-playing sample, and you can click the
-            numbers to lock it.
-          </p>
-        </DesktopOnly>
-        <MobileOnly>
-          <p>
-            <strong>How it works:</strong> Click the big red button to play the
-            currently-selected sound. There are more than 50 sounds to choose
-            from in the “Select Sound” list; you can tap the up/down arrows to
-            move between them.
-          </p>
-          <p>
-            Each sound has a handful of individually-recorded samples that are
-            randomly selected on every tap and release. You can lock it to a
-            specific sample by tapping the numbers towards the bottom of the
-            demo.
-          </p>
-          <p>
-            I did my best to make this work well on mobile, but the experience
-            truly is better on desktop. So, if you’re near a computer, I’d
-            highly suggest giving it a shot there!
-          </p>
-        </MobileOnly>
-      </Wrapper>
-    </OuterWrapper>
+    <Clipper>
+      <OuterWrapper data-is-visible={isVisible}>
+        <Wrapper>
+          <BevelEdge side="top" color="var(--color-gray-500)" radius={18} />
+          <BevelEdge side="bottom" color="var(--color-gray-75)" radius={18} />
+          <TopLeftAttachment>
+            <Screw />
+          </TopLeftAttachment>
+          <TopRightAttachment>
+            <Screw />
+          </TopRightAttachment>
+          <DesktopOnly>
+            <p>
+              <strong>How it works:</strong> Click the big red button to play
+              the currently-selected sound. Browse the selection using the
+              left-hand sidebar (<em>protip:</em> after clicking the button, you
+              can use the up/down arrow keys,{' '}
+              <Kbd char="ArrowUp" aliases={['w']}>
+                ↑
+              </Kbd>{' '}
+              /{' '}
+              <Kbd char="ArrowDown" aliases={['s']}>
+                ↓
+              </Kbd>
+              , to quickly move between sounds!).
+            </p>
+            <p>
+              Each sound has a handful of individually-recorded samples that are
+              randomly selected on every click. The{' '}
+              <ConfigSidebarLocationLarge>
+                right-hand sidebar
+              </ConfigSidebarLocationLarge>{' '}
+              <ConfigSidebarLocationMedium>
+                config row along the bottom
+              </ConfigSidebarLocationMedium>{' '}
+              highlights the currently-playing sample, and you can click the
+              numbers to lock it.
+            </p>
+          </DesktopOnly>
+          <MobileOnly>
+            <p>
+              <strong>How it works:</strong> Click the big red button to play
+              the currently-selected sound. There are more than 50 sounds to
+              choose from in the “Select Sound” list; you can tap the up/down
+              arrows to move between them.
+            </p>
+            <p>
+              Each sound has a handful of individually-recorded samples that are
+              randomly selected on every tap and release. You can lock it to a
+              specific sample by tapping the numbers towards the bottom of the
+              demo.
+            </p>
+            <p>
+              I did my best to make this work well on mobile, but the experience
+              truly is better on desktop. So, if you’re near a computer, I’d
+              highly suggest giving it a shot there!
+            </p>
+          </MobileOnly>
+        </Wrapper>
+      </OuterWrapper>
+    </Clipper>
   );
 }
 
+const Clipper = styled.div`
+  overflow: hidden;
+`;
+
 const OuterWrapper = styled.div`
+  --return-delay: 500ms;
   width: fit-content;
   margin-inline: auto;
   padding: 2px;
@@ -76,6 +83,25 @@ const OuterWrapper = styled.div`
   outline-offset: -2px;
   border-radius: 19px;
   corner-shape: bevel;
+  transition: opacity 1000ms var(--return-delay);
+
+  &[data-is-visible='false'] {
+    opacity: 0;
+    transition: opacity 500ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      opacity 1000ms var(--return-delay),
+      transform 1200ms var(--return-delay) cubic-bezier(0.05, 1, 0, 0.99);
+
+    &[data-is-visible='false'] {
+      transform: translateY(-100%);
+      transition:
+        opacity 500ms,
+        transform 1000ms;
+    }
+  }
 
   @media (max-width: 53rem) {
     margin-top: 1rem;
@@ -153,6 +179,10 @@ const TopAttachment = styled.div`
   border-radius: 0 0 100px 100px;
   corner-shape: bevel;
   background: var(--color-gray-800);
+
+  @supports not (corner-shape: bevel) {
+    display: none;
+  }
 
   @media (max-width: 53rem) {
     display: none;

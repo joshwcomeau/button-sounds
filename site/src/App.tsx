@@ -1,6 +1,6 @@
 import * as React from 'react';
-import styled from 'styled-components';
-import ButtonSounds, { SOUND_NAMES, DEFAULT_NAME } from 'button-sounds';
+import styled, { keyframes } from 'styled-components';
+import ButtonSounds from 'button-sounds';
 import { highlightAll } from 'microlighter';
 import 'microlighter/themes/tokyo-night.css';
 
@@ -9,9 +9,10 @@ import CRTEffect from '@/components/CRTEffect/CRTEffect';
 import CRTControls from '@/components/CRTControls/CRTControls';
 import ProjectByJosh from '@/components/ProjectByJosh/ProjectByJosh';
 import MainDemo from '@/components/MainDemo/MainDemo';
-import AboutPhilosophy from '@/components/AboutPhilosophy/AboutPhilosophy';
+import ProjectInfo from '@/components/ProjectInfo/ProjectInfo';
 import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
 import BouncyLetters from '@/components/BouncyLetters/BouncyLetters';
+import Footer from '@/components/Footer/Footer';
 
 import { SOUNDS_PATH } from './constants';
 
@@ -49,18 +50,15 @@ function App() {
 
           <MainDemo />
 
-          <StyledAboutPhilosophy />
+          <StyledProjectInfo />
 
-          <footer>
-            <p>
-              MIT © Josh Comeau · built on{' '}
-              <a href="https://github.com/goldfire/howler.js">howler</a>
-            </p>
-          </footer>
+          <Footer />
+
+          <ShaderPortal id="celebratory-shader-wrapper" />
+
           <CRTEffect strength={crtStrength} />
         </Wrapper>
       </Container>
-      <div id="toast-container"></div>
     </SoundSettingsProvider>
   );
 }
@@ -75,8 +73,14 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   max-width: 60rem;
-  padding-block: 3rem;
+  padding-top: 3rem;
   margin-inline: auto;
+`;
+
+const scaleIn = keyframes`
+  from {
+    transform: scale(0.95);
+  }
 `;
 
 const Header = styled.header`
@@ -90,6 +94,13 @@ const Header = styled.header`
   margin-bottom: 4rem;
   padding-block: 4rem;
   text-align: center;
+  animation: fadeFromTransparent 400ms 100ms backwards;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation:
+      fadeFromTransparent 400ms 100ms backwards,
+      ${scaleIn} 300ms 100ms backwards;
+  }
 
   h1 {
     font-size: 4rem;
@@ -104,12 +115,19 @@ const Header = styled.header`
   }
 `;
 
-const StyledAboutPhilosophy = styled(AboutPhilosophy)`
+const StyledProjectInfo = styled(ProjectInfo)`
   margin-top: 8rem;
 `;
 
 const Free = styled(BouncyLetters)`
   font-weight: 700;
+`;
+
+const ShaderPortal = styled.div`
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  isolation: isolated;
 `;
 
 export default App;

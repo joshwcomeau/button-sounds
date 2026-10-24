@@ -9,6 +9,7 @@ import { range, sampleOne } from '@/utils';
 
 type SpriteMap = Record<string, [number, number]>;
 type ButtonStatus = 'idle' | 'correct' | 'error';
+type EngineStatus = 'idle' | 'warm' | 'hot' | 'rainbow' | 'complete';
 
 const CORRECT_SEQUENCE = [2, 0, 3, 1];
 
@@ -40,27 +41,58 @@ const ERROR_STATUSES: ButtonStatus[] = ['error', 'error', 'error', 'error'];
 interface Props {
   hasWon: boolean;
   onComplete: () => void;
+  onInteract?: () => void;
 }
 
-function CodedLights({ hasWon, onComplete }: Props) {
-  const [play] = useSound('/sounds/easter-egg-notes.mp3?v=4', {
+function CodedLights({ hasWon, onComplete, onInteract }: Props) {
+  const [play] = useSound('/sounds/misc/easter-egg-notes.mp3', {
     sprite: SPRITE_DATA,
   });
+  const [playWinAudio] = useSound('/sounds/misc/win-arp.mp3', {
+    volume: 0.25,
+  });
+  const [playSparklers] = useSound('/sounds/misc/sparklers.mp3', {
+    volume: 0.25,
+  });
   const [statuses, setStatuses] = React.useState<ButtonStatus[]>(IDLE_STATUSES);
+  const [isCelebrationDone, setIsCelebrationDone] = React.useState(false);
 
   const stepRef = React.useRef(0);
   const isCompleteRef = React.useRef(false);
   const errorTimeoutRef = React.useRef<number | null>(null);
+  const celebrationTimeoutRef = React.useRef<number | null>(null);
+  const diamondsWrapperRef = React.useRef<HTMLDivElement>(null);
+  const keyboardPressRef = React.useRef<{ key: string; index: number } | null>(
+    null,
+  );
 
   React.useEffect(() => {
     return () => {
       if (errorTimeoutRef.current !== null) {
         window.clearTimeout(errorTimeoutRef.current);
       }
+      if (celebrationTimeoutRef.current !== null) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
     };
   }, []);
 
+  const litCount = statuses.filter((status) => status === 'correct').length;
+  const engineStatus: EngineStatus = isCelebrationDone
+    ? 'complete'
+    : litCount >= 4
+      ? 'rainbow'
+      : litCount === 3
+        ? 'hot'
+        : litCount === 2
+          ? 'warm'
+          : 'idle';
+
+  console.log({ engineStatus });
+
   function handlePointerDown(index: number) {
+    onInteract?.();
+
     if (isCompleteRef.current) {
       return;
     }
@@ -114,6 +146,15 @@ function CodedLights({ hasWon, onComplete }: Props) {
       if (stepRef.current >= CORRECT_SEQUENCE.length) {
         isCompleteRef.current = true;
         onComplete();
+        window.setTimeout(() => {
+          playWinAudio();
+        }, 200);
+        window.setTimeout(() => {
+          playSparklers();
+        }, 400);
+        celebrationTimeoutRef.current = window.setTimeout(() => {
+          setIsCelebrationDone(true);
+        }, 5000);
       }
 
       return;
@@ -131,15 +172,70 @@ function CodedLights({ hasWon, onComplete }: Props) {
     setStatuses(ERROR_STATUSES);
   }
 
+  // Natively, Enter triggers a click on keydown (and re-triggers it on every auto-repeat), while Space triggers a click on keyup. We take over both keys so that they mirror the pointer experience: press sound on keydown, release/result on keyup, and nothing while held.
+  function handleKeyDown(event: React.KeyboardEvent, index: number) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+
+      const buttons =
+        diamondsWrapperRef.current?.querySelectorAll('button') ?? [];
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (index + direction + buttons.length) % buttons.length;
+      buttons[nextIndex]?.focus();
+
+      return;
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    // Only Enter needs to be suppressed here. Leaving Space alone keeps the native `:active` styling while the key is held.
+    if (event.key === 'Enter') {
+      event.preventDefault();
+    }
+
+    if (event.repeat || keyboardPressRef.current !== null) {
+      return;
+    }
+
+    keyboardPressRef.current = { key: event.key, index };
+    handlePointerDown(index);
+  }
+
+  function handleKeyUp(event: React.KeyboardEvent, index: number) {
+    const keyboardPress = keyboardPressRef.current;
+    if (
+      !keyboardPress ||
+      keyboardPress.key !== event.key ||
+      keyboardPress.index !== index
+    ) {
+      return;
+    }
+
+    // Prevents Space’s native keyup click, since we’re triggering it ourselves.
+    event.preventDefault();
+
+    keyboardPressRef.current = null;
+    handleClick(index);
+  }
+
   return (
     <Wrapper>
-      <DiamondsWrapper>
+      <DiamondsWrapper ref={diamondsWrapperRef}>
         {range(0, 4).map((index) => (
           <ButtonWrapper key={index} style={{ '--index': index }}>
             <DiamondButton
               type="button"
               onPointerDown={() => handlePointerDown(index)}
               onClick={() => handleClick(index)}
+              // I want these 4 buttons to behave sorta like radio buttons, except they shouldn't get triggered automatically by moving to them. To simulate that, we'll disable tab focus for all but the first button. Navigation between them is handled with arrow keys in the subsequent event handlers
+              tabIndex={index === 0 ? 0 : -1}
+              onKeyDown={(event) => handleKeyDown(event, index)}
+              onKeyUp={(event) => handleKeyUp(event, index)}
+              onBlur={() => {
+                keyboardPressRef.current = null;
+              }}
               data-has-won={hasWon}
             >
               <DecorativeDiamond data-status={statuses[index]}>
@@ -151,7 +247,17 @@ function CodedLights({ hasWon, onComplete }: Props) {
         ))}
       </DiamondsWrapper>
       <EngineWrapper>
-        <Engine />
+        <Engine>
+          <Stripes data-status={engineStatus}>
+            {range(15).map((index) => (
+              <Stripe
+                key={index}
+                data-shade={index % 2 === 0 ? 'light' : 'dark'}
+                style={{ '--index': index }}
+              />
+            ))}
+          </Stripes>
+        </Engine>
       </EngineWrapper>
     </Wrapper>
   );
@@ -196,15 +302,6 @@ const ButtonWrapper = styled.div`
   width: 20px;
   height: 20px;
   aspect-ratio: 1 / 1;
-`;
-
-const oscillateUpDown = keyframes`
-  from {
-    transform: translateY(-5%);
-  }
-  to {
-    transform: translateY(5%);
-  }
 `;
 
 const growShrink = keyframes`
@@ -349,7 +446,27 @@ const EngineWrapper = styled.div`
   height: 16px;
 `;
 
+const rainbow = keyframes`
+  0%,
+  25% {
+    background-color: hsl(350deg 100% 50%);
+  }
+  25%,
+  50% {
+    background-color: hsl(45deg 100% 50%);
+  }
+  50%,
+  75% {
+    background-color: hsl(170deg 100% 60%);
+  }
+  75%,
+  100% {
+    background-color: hsl(240deg 100% 70%);
+  }
+`;
+
 const Engine = styled.div`
+  position: relative;
   height: 100%;
   border: 3px solid var(--color-gray-250);
   border-top-width: 2px;
@@ -358,21 +475,70 @@ const Engine = styled.div`
   border-bottom: none;
   border-radius: 3px 3px 0 0;
   transform: skewX(-45deg);
+`;
 
-  &::after {
-    --stripe-width: 3px;
+const Stripe = styled.div`
+  position: relative;
+  width: 3px;
+  height: 100%;
+  flex-shrink: 0;
+  background-color: var(--light);
+  transition: background-color 400ms;
+
+  &[data-shade='dark'] {
+    background-color: var(--dark);
+  }
+
+  &::before {
     content: '';
     position: absolute;
-    inset: 2px;
-    image-rendering: pixelated;
-    background: repeating-linear-gradient(
-      to right,
-      var(--color-gray-400) 0px var(--stripe-width),
-      transparent 2px calc(var(--stripe-width) * 2),
-      var(--color-gray-250) calc(var(--stripe-width) * 2)
-        calc(var(--stripe-width) * 3),
-      transparent calc(var(--stripe-width) * 3) calc(var(--stripe-width) * 4)
-    );
+    inset: -1px;
+    background: inherit;
+    filter: blur(3px);
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+`;
+
+const Stripes = styled.div`
+  --light: var(--color-gray-400);
+  --dark: var(--color-gray-250);
+  --cycle: 800ms;
+  --step: 75ms;
+  position: absolute;
+  inset: 2px;
+  display: flex;
+  gap: 3px;
+
+  &[data-status='warm'] {
+    --light: var(--color-gray-900);
+    --dark: var(--color-gray-500);
+  }
+  &[data-status='hot'] {
+    --light: hsl(45deg 100% 75%);
+    --dark: hsl(40deg 100% 50%);
+  }
+  &[data-status='complete'] {
+    --light: hsl(145deg 100% 45%);
+    --dark: hsl(145deg 100% 45%);
+  }
+
+  &[data-status='hot']
+    ${Stripe},
+    &[data-status='rainbow']
+    ${Stripe},
+    &[data-status='complete']
+    ${Stripe} {
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &[data-status='rainbow'] ${Stripe} {
+    --light: hsl(45deg 100% 75%);
+    --dark: hsl(40deg 100% 50%);
+    animation: ${rainbow} var(--cycle) 4;
+    animation-delay: calc(var(--index) * var(--step));
   }
 `;
 

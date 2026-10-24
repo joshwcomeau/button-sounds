@@ -67,7 +67,7 @@ function TaughtByJosh() {
             </AvatarWrapper>
           </AvatarButton>
           <div>
-            A project by{' '}
+            A project from{' '}
             <JoshLink
               draggable={false}
               target="_blank"
@@ -136,6 +136,13 @@ const JoshLink = styled.a`
   text-decoration: none;
   border-radius: 2px;
   corner-shape: bevel;
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--color-primary);
+  }
 `;
 
 const AvatarButton = styled.button`
@@ -221,8 +228,6 @@ const Avatar = styled.img`
   object-fit: cover;
   object-position: 100% 0;
   transition: opacity 800ms var(--spring) 200ms;
-  animation: ${riseIn} 1000ms calc(var(--enter-delay) - 100ms) var(--spring)
-    backwards;
 
   pointer-events: none;
   transform-origin: 50% 75%;
@@ -231,6 +236,8 @@ const Avatar = styled.img`
     transition:
       transform 500ms var(--spring),
       opacity 800ms var(--spring) 200ms;
+    animation: ${riseIn} 1000ms calc(var(--enter-delay) - 100ms) var(--spring)
+      backwards;
   }
 `;
 
