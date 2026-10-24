@@ -19,11 +19,11 @@ I’m currently taking a bit of a sabbatical from [my blog](https://www.joshwcom
 
 You can browse the sounds and hear the effect of using multiple samples [on the project website](https://buttons.joshwcomeau.com).
 
-## Using the sounds yourself
+## Using the audio files directly
 
 If you’re not a JavaScript developer or wish to use the sounds in a non-JS context, you can learn more about how to use the raw audio here:
 
-- [Using the raw audio files](/TODO)
+- [Using the raw audio files](https://github.com/joshwcomeau/button-sounds/blob/main/docs/raw-audio-files.md)
 
 ## Installation instructions
 
@@ -33,9 +33,13 @@ If you have a JavaScript application, the easiest way to use these sounds is thr
 $ npm install button-sounds
 ```
 
-The same package is used for both the vanilla JavaScript version and the React bindings. The React bindings will only get bundled into your application code if you use them, as long as your bundler supports tree-shaking.
+The same package is used for both the vanilla JavaScript version and the React bindings. The React bindings should only get bundled into your application code if you import them somewhere; modern bundlers will strip away any modules that aren’t needed.
+
+## Usage instructions
 
 To keep things simple, I’ve created two separate sets of docs depending on which version you use:
 
-- [Vanilla JS documentation](/)
-- [React hook documentation](/)
+- [Vanilla JS documentation](https://github.com/joshwcomeau/button-sounds/blob/main/docs/vanilla-js.md)
+- [React documentation](https://github.com/joshwcomeau/button-sounds/blob/main/docs/react.md)
+
+I also have a separate doc that goes over [self-hosting the audio files](https://github.com/joshwcomeau/button-sounds/blob/main/docs/self-hosting-audio-files.md) in case you don’t want to depend on a CDN for the MP3 files.
