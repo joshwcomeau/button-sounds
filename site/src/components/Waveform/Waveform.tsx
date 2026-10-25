@@ -56,8 +56,7 @@ function Waveform(props: React.CanvasHTMLAttributes<HTMLCanvasElement>) {
 
       let min = 0;
       let max = 0;
-      for (let i = start; i < end; i++) {
-        const sample = samples[i];
+      for (const sample of samples.subarray(start, end)) {
         if (sample < min) {
           min = sample;
         }
@@ -132,10 +131,9 @@ function mixChannels(audioBuffer: AudioBuffer) {
   const channelCount = audioBuffer.numberOfChannels;
 
   for (let channel = 0; channel < channelCount; channel++) {
-    const data = audioBuffer.getChannelData(channel);
-    for (let i = 0; i < length; i++) {
-      mixed[i] += data[i] / channelCount;
-    }
+    audioBuffer.getChannelData(channel).forEach((value, i) => {
+      mixed[i] = (mixed[i] ?? 0) + value / channelCount;
+    });
   }
 
   return mixed;

@@ -5,19 +5,20 @@ interface Props extends React.HTMLAttributes<HTMLSpanElement> {
   children: string;
   as?: React.ElementType;
   duration?: number;
+  offset?: number;
   stagger?: number;
 }
 
 function BouncyLetters({
   children,
-  as = 'span',
+  as: Wrapper = 'span',
   duration = 3000,
   stagger = 300,
   offset = 3,
   ...delegated
 }: Props) {
   return (
-    <Wrapper as={as} {...delegated}>
+    <Wrapper {...delegated}>
       {children.split('').map((letter, index) => (
         <Letter
           key={index}
@@ -33,8 +34,6 @@ function BouncyLetters({
     </Wrapper>
   );
 }
-
-const Wrapper = styled.span``;
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(calc(var(--offset) * -1px)); }

@@ -55,12 +55,12 @@ describe('preloading', () => {
 
   it('wireUp fetches the sound when called', async () => {
     setPath(`/sounds/wire-${Math.random()}/`);
-    wireUp(fakeElement(), 'halo-kbd-soft');
+    wireUp(fakeElement(), 'halo-soft');
 
     await vi.waitFor(() => {
       expect(constructed).toHaveLength(1);
     });
-    expect(constructed[0]?.src[0]).toMatch(/halo-kbd-soft\.mp3$/);
+    expect(constructed[0]?.src[0]).toMatch(/halo-soft\.mp3$/);
   });
 
   it('load ignores unknown names', () => {

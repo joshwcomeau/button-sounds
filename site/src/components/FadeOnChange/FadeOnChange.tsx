@@ -3,12 +3,13 @@
  * Needs to be better-thought-out before general usage.
  */
 import React from 'react';
-import styled from 'styled-components';
+import styled, { type ExecutionProps } from 'styled-components';
 
-interface Props extends React.HTMLAttributes<HTMLSpanElement> {
-  as?: React.ElementType;
+interface Props extends React.HTMLAttributes<HTMLElement> {
+  // Weirdly I was getting a 'Union type too complex' error from TypeScript when I tried to set this to React.ElementType. Evidently that's broader than what styled-components really uses. So we'll nab the true `as` type from the library and use it.
+  as?: ExecutionProps['as'];
   duration?: number;
-  changeKey: any;
+  changeKey: unknown;
   children: React.ReactNode;
 }
 
@@ -20,9 +21,9 @@ function FadeOnChange({
   style = {},
   ...delegated
 }: Props) {
-  const [status, setStatus] = React.useState('idle');
+  const [status, setStatus] = React.useState<'idle' | 'fading-out'>('idle');
 
-  const wrapperRef = React.useRef<HTMLSpanElement | null>(null);
+  const wrapperRef = React.useRef<HTMLElement | null>(null);
   const cachedChildren = React.useRef(children);
   // The key that `cachedChildren` belongs to. While the key is unchanged, the children can update freely without triggering a fade.
   const cachedKey = React.useRef(changeKey);

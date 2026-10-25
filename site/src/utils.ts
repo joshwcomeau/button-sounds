@@ -224,16 +224,12 @@ export function requestAnimationFramePromise() {
   return new Promise((resolve) => window.requestAnimationFrame(resolve));
 }
 
+// NOTE: In most cases I should do this in CSS with `text-transform: capitalize`.
 export const capitalize = (value: string) =>
-  value[0].toUpperCase() + value.slice(1);
+  value.charAt(0).toUpperCase() + value.slice(1);
 
 export const capitalizeSentence = (value: string) => {
-  return value
-    .split(' ')
-    .map((word) => {
-      return word[0].toUpperCase() + word.slice(1);
-    })
-    .join(' ');
+  return value.split(' ').map(capitalize).join(' ');
 };
 
 export const deleteCookie = (key: string) => {
@@ -358,7 +354,10 @@ export const convertDegreesToRadians = (angle: number) =>
 export const convertRadiansToDegrees = (angle: number) =>
   (angle * 180) / Math.PI;
 
-export const convertCartesianToPolar = (point: Point, centerPoint = [0, 0]) => {
+export const convertCartesianToPolar = (
+  point: Point,
+  centerPoint: Point = [0, 0],
+) => {
   const pointRelativeToCenter: Point = [
     point[0] - centerPoint[0],
     point[1] - centerPoint[1],
@@ -735,13 +734,12 @@ const CSS_VARIABLE_PATTERN = /^var\(\s*(--[^,)]+)(?:\s*,\s*(.+))?\s*\)$/;
 export function resolveCssVariable(value: string, element: Element): string {
   const trimmed = value.trim();
 
-  const match = trimmed.match(CSS_VARIABLE_PATTERN);
+  const [, varName, fallback] = trimmed.match(CSS_VARIABLE_PATTERN) ?? [];
 
-  if (!match) {
+  if (!varName) {
     throw new Error(`Invalid CSS variable: ${value}`);
   }
 
-  const [, varName, fallback] = match;
   const resolved = getComputedStyle(element).getPropertyValue(varName).trim();
 
   if (resolved) {
