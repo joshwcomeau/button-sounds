@@ -3,44 +3,41 @@ import styled, { keyframes } from 'styled-components';
 
 import { MAIN_RADIUS, TITLE_HEIGHT, TOP_RADIUS } from './SoundInfo.constants';
 
-const SHIMMER_DELAY = 3500;
-const SHIMMER_DURATION = 3000;
+const SHIMMER_DELAY = 4100;
+const SHIMMER_DURATION = 3600;
 const SHIMMER_FADE_OUT_DURATION = 200;
 
 function WinShimmer({ isActive }: { isActive: boolean }) {
   const [runId, setRunId] = React.useState(0);
   const [isRendered, setIsRendered] = React.useState(false);
-  const [isFadingOut, setIsFadingOut] = React.useState(false);
+  const [prevIsActive, setPrevIsActive] = React.useState(isActive);
 
-  React.useEffect(() => {
-    if (!isActive) {
-      return;
+  if (isActive !== prevIsActive) {
+    setPrevIsActive(isActive);
+    if (isActive) {
+      setIsRendered(true);
+      setRunId((id) => id + 1);
     }
-    setIsFadingOut(false);
-    setIsRendered(true);
-    setRunId((id) => id + 1);
-  }, [isActive]);
-
-  React.useEffect(() => {
-    if (isActive || !isRendered) {
-      return;
-    }
-
-    setIsFadingOut(true);
-    const timeoutId = window.setTimeout(() => {
-      setIsRendered(false);
-      setIsFadingOut(false);
-    }, SHIMMER_FADE_OUT_DURATION);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [isActive, isRendered]);
+  }
 
   if (!isRendered) {
     return null;
   }
 
   return (
-    <ShimmerWrapper style={{ opacity: isFadingOut ? 0 : 1 }}>
+    <ShimmerWrapper
+      style={{ opacity: isActive ? 1 : 0 }}
+      onTransitionEnd={(event) => {
+        if (
+          event.target !== event.currentTarget ||
+          event.propertyName !== 'opacity' ||
+          isActive
+        ) {
+          return;
+        }
+        setIsRendered(false);
+      }}
+    >
       <Shimmer key={runId} />
     </ShimmerWrapper>
   );
@@ -65,6 +62,7 @@ const ShimmerWrapper = styled.div`
   z-index: 2;
   overflow: clip;
   pointer-events: none;
+  mix-blend-mode: overlay;
   transition: opacity ${SHIMMER_FADE_OUT_DURATION}ms ease;
   /*
     Clip to the exact silhouette of the box, traced clockwise as 12 straight lines starting from the title tab's top-left bevel:
@@ -108,8 +106,6 @@ const Shimmer = styled.div`
     hsl(0deg 0% 100% / 0.4) 50%,
     transparent 58%
   );
-  opacity: 0.5;
-  mix-blend-mode: overlay;
   animation: ${slideThrough} ${SHIMMER_DURATION}ms ease-in-out
     ${SHIMMER_DELAY}ms both;
 `;
