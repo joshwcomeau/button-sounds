@@ -96,8 +96,6 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
           ? 'warm'
           : 'idle';
 
-  console.log({ engineStatus });
-
   function handlePointerDown(index: number) {
     onInteract?.();
 

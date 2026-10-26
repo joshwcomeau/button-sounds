@@ -31,6 +31,8 @@ export function useSoundResourceLoading(name: SoundName): LoadingStatus {
   );
   const [loadedName, setLoadedName] = React.useState<SoundName | null>(null);
 
+  console.log(name, loadedName, wasAlreadyLoaded);
+
   React.useEffect(() => {
     if (wasAlreadyLoaded) {
       return;

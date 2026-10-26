@@ -29,6 +29,10 @@ const useRequestAnimationFrameLoop = (
       }
     };
   }, [isRunning]);
+
+  // We return the animation frame ID so that we have the option of canceling it elsewhere. ESLint doesn't like it since it means accessing refs in render, but really it’s fine.
+  // eslint-disable-next-line
+  return animationFrameId.current;
 };
 
 export default useRequestAnimationFrameLoop;

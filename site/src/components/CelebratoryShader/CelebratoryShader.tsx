@@ -86,11 +86,10 @@ function Effects({ onComplete }: Props) {
   const elapsedRef = React.useRef(0);
   const hasCompletedRef = React.useRef(false);
 
-  // Three.js uniforms are mutable by design, and updating one doesn’t affect React rendering.
-  // eslint-disable-next-line react-hooks/immutability
   useFrame((_, delta) => {
     // Clamp the delta so that the effects don’t skip ahead if the tab was backgrounded.
     elapsedRef.current += Math.min(delta, 1 / 20);
+    // Three.js uniforms are mutable by design, and updating one doesn’t affect React rendering.
     // eslint-disable-next-line react-hooks/immutability
     uTime.value = elapsedRef.current;
 

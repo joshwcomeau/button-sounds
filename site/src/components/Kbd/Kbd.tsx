@@ -14,24 +14,27 @@ interface Props extends React.ComponentProps<'kbd'> {
 function Kbd({ char, aliases, children, ...delegated }: Props) {
   const [isDepressed, setIsDepressed] = React.useState(false);
 
+  const handleKeyDown = React.useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === char || aliases?.includes(event.key)) {
+      setIsDepressed(true);
+    }
+  });
+
+  const handleKeyUp = React.useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === char || aliases?.includes(event.key)) {
+      setIsDepressed(false);
+    }
+  });
+
   React.useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === char || aliases?.includes(event.key)) {
-        setIsDepressed(true);
-      }
-    }
-    function handleKeyUp(event: KeyboardEvent) {
-      if (event.key === char || aliases?.includes(event.key)) {
-        setIsDepressed(false);
-      }
-    }
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [char, aliases]);
+  }, []);
 
   return (
     <Wrapper {...delegated}>

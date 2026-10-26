@@ -33,9 +33,7 @@ function Tooltip({
   children,
   placement = 'top',
 }: Props) {
-  const [arrowElement, setArrowElement] = React.useState<HTMLDivElement | null>(
-    null,
-  );
+  const arrowRef = React.useRef<HTMLDivElement>(null);
   const tooltipId = React.useId();
 
   const {
@@ -55,7 +53,9 @@ function Tooltip({
       offset(Math.round(CARET_SIZE / 2) + CARET_GAP),
       flip(),
       shift({ padding: 8 }),
-      arrow({ element: arrowElement, padding: ARROW_PADDING }),
+      // Technically I shouldn't use a ref for this, but the alternative is to store an `arrowElement` in state, and that would introduce a double-re-render whenever Tooltip’s props change, and where’s the pleasure in that? This seems to work fine.
+      // eslint-disable-next-line react-hooks/refs
+      arrow({ element: arrowRef, padding: ARROW_PADDING }),
     ],
   });
 
@@ -101,7 +101,7 @@ function Tooltip({
                 <Content>{content}</Content>
               </Bubble>
               <Caret
-                ref={setArrowElement}
+                ref={arrowRef}
                 data-side={side}
                 style={
                   side === 'top' || side === 'bottom'
