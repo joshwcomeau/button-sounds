@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useButtonSounds } from 'button-sounds/react';
+import type { LucideIcon } from 'lucide-react';
 
 import { range } from '@/utils';
 
@@ -14,7 +15,7 @@ interface Props extends React.ComponentProps<'button'> {
   isFirst: boolean;
   isLast: boolean;
   filterId: string;
-  Icon: any;
+  Icon: LucideIcon;
   isSelected: boolean;
   handleClick: (filterId: string) => void;
 }

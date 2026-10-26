@@ -1,9 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import {
-  useButtonSounds,
-  useImperativeButtonSounds,
-} from 'button-sounds/react';
+import { useImperativeButtonSounds } from 'button-sounds/react';
 import { Play } from 'lucide-react';
 
 import { random } from '@/utils';
@@ -120,7 +117,7 @@ function MultiSampleDemo(props: React.HTMLAttributes<HTMLDivElement>) {
             <StyledIconButton
               color="hsl(155deg 100% 30%)"
               icon={<Play size={16} strokeWidth={3} />}
-              onPointerDown={(event) => {
+              onPointerDown={() => {
                 handlePointerDown();
 
                 window.addEventListener('pointerup', handlePointerUp, {

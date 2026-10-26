@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 
 interface PixelateSvgFilterProps {
-  id: string;
+  id?: string;
   size?: number;
   crossLayers?: boolean;
 }

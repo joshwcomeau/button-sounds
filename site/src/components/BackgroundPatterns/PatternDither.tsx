@@ -76,11 +76,6 @@ function PatternDither({
 }: Props) {
   const reactId = React.useId();
   const pattern = PATTERNS[patternId];
-
-  if (!pattern) {
-    throw new Error(`Pattern ${patternId} not found`);
-  }
-
   const svgPatternId = `dither-pattern-${patternId}-${reactId}`;
   const maskId = `dither-mask-${reactId}`;
   const gradientId = `dither-gradient-${reactId}`;
@@ -121,8 +116,8 @@ function PatternDither({
             x2={coords.x2}
             y2={coords.y2}
           >
-            <stop offset="0%" stopColor={gradient?.from} />
-            <stop offset="100%" stopColor={gradient?.to ?? 'transparent'} />
+            <stop offset="0%" stopColor={gradient.from} />
+            <stop offset="100%" stopColor={gradient.to ?? 'transparent'} />
           </linearGradient>
         )}
       </defs>

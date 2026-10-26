@@ -39,15 +39,10 @@ function WaveformHighlighter({
   const hasFinished = !sprite || fadeElapsed >= FADE_DURATION;
   const isRunning = Boolean(activeWaveformData) && !hasFinished;
 
+  // When new data arrives, `now` is older than its timestamp, so `elapsed` clamps to 0 and the loop starts up and refreshes `now` right away.
   useRequestAnimationFrameLoop(() => {
     setNow(performance.now());
   }, isRunning);
-
-  React.useEffect(() => {
-    if (activeWaveformData) {
-      setNow(performance.now());
-    }
-  }, [activeWaveformData]);
 
   const left = sprite ? (sprite[0] / waveformDuration) * 100 : 0;
   const width = sprite ? (duration / waveformDuration) * 100 : 0;

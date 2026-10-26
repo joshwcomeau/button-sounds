@@ -23,7 +23,9 @@ function App() {
 
   React.useEffect(() => {
     document.body.dataset.syntaxTheme = 'tokyo-night';
-    highlightAll();
+    highlightAll().catch((error: unknown) => {
+      console.error(error);
+    });
   }, []);
 
   return (

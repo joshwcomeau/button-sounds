@@ -27,11 +27,11 @@ function Link({
   const [isHovering, setIsHovering] = React.useState(false);
 
   let linkDestination: LinkDestination = 'internal';
-  if (href.match(/^#/)) {
+  if (/^#/.exec(href)) {
     linkDestination = 'hash';
-  } else if (href.match(/^http/i) || target === '_blank') {
+  } else if (/^http/i.exec(href) || target === '_blank') {
     linkDestination = 'external';
-  } else if (href.match(/^mailto/)) {
+  } else if (/^mailto/.exec(href)) {
     linkDestination = 'mailto';
   }
 

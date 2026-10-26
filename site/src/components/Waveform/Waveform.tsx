@@ -112,13 +112,13 @@ function Waveform(props: React.CanvasHTMLAttributes<HTMLCanvasElement>) {
       }
     }
 
-    load();
+    void load();
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
-      audioContext.close();
+      void audioContext.close();
     };
   }, [draw]);
 

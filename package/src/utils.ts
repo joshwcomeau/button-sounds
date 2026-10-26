@@ -1,4 +1,4 @@
-export const range = (start: number, end?: number, step: number = 1) => {
+export const range = (start: number, end?: number, step = 1) => {
   const output = [];
   if (typeof end === 'undefined') {
     end = start;
@@ -10,7 +10,8 @@ export const range = (start: number, end?: number, step: number = 1) => {
   return output;
 };
 
-export function sampleOne<T>(arr: readonly T[]): T {
+export function sampleOne<T>(arr: ReadonlyArray<T>): T {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- The index is always within bounds.
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
 

@@ -31,7 +31,7 @@ function Kbd({ char, aliases, children, ...delegated }: Props) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [char]);
+  }, [char, aliases]);
 
   return (
     <Wrapper {...delegated}>

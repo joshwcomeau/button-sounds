@@ -28,6 +28,8 @@ function useBoopMinimal(
       return;
     }
 
+    // Obviously not ideal to sync one state variable to another inside an effect, but the whole point of `useBoopMinimal` is that it doesn’t own the hover state, since it's designed for more-complex use cases. The double-render isn't the end of the world.
+    // eslint-disable-next-line
     setIsBooped(true);
   }, [isHovering, prefersReducedMotion]);
 

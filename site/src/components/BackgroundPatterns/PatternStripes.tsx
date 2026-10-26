@@ -46,20 +46,10 @@ function PatternStripes({
           height={period}
           patternTransform={`rotate(${angle})`}
         >
-          <rect
-            x={0}
-            y={0}
-            width={period}
-            height={lineWidth}
-            fill="white"
-          />
+          <rect x={0} y={0} width={period} height={lineWidth} fill="white" />
         </pattern>
         <mask id={maskId}>
-          <rect
-            width="100%"
-            height="100%"
-            fill={`url(#${svgPatternId})`}
-          />
+          <rect width="100%" height="100%" fill={`url(#${svgPatternId})`} />
         </mask>
         {hasGradient && (
           <linearGradient
@@ -71,12 +61,12 @@ function PatternStripes({
             y2={coords.y2}
           >
             <stop
-              offset={gradient?.fromOffset ?? '0%'}
-              stopColor={gradient?.from}
+              offset={gradient.fromOffset ?? '0%'}
+              stopColor={gradient.from}
             />
             <stop
-              offset={gradient?.toOffset ?? '100%'}
-              stopColor={gradient?.to ?? 'transparent'}
+              offset={gradient.toOffset ?? '100%'}
+              stopColor={gradient.to ?? 'transparent'}
             />
           </linearGradient>
         )}

@@ -33,7 +33,9 @@ function Tooltip({
   children,
   placement = 'top',
 }: Props) {
-  const arrowRef = React.useRef<HTMLDivElement>(null);
+  const [arrowElement, setArrowElement] = React.useState<HTMLDivElement | null>(
+    null,
+  );
   const tooltipId = React.useId();
 
   const {
@@ -53,7 +55,7 @@ function Tooltip({
       offset(Math.round(CARET_SIZE / 2) + CARET_GAP),
       flip(),
       shift({ padding: 8 }),
-      arrow({ element: arrowRef, padding: ARROW_PADDING }),
+      arrow({ element: arrowElement, padding: ARROW_PADDING }),
     ],
   });
 
@@ -72,6 +74,8 @@ function Tooltip({
     <>
       <Anchor
         {...getReferenceProps({
+          // Floating UI’s ref setters are declared as methods, but they don’t use `this`.
+          // eslint-disable-next-line @typescript-eslint/unbound-method
           ref: refs.setReference,
           'aria-describedby': isOpen ? tooltipId : undefined,
         })}
@@ -82,6 +86,7 @@ function Tooltip({
         <FloatingPortal>
           <Positioner
             {...getFloatingProps({
+              // eslint-disable-next-line @typescript-eslint/unbound-method
               ref: refs.setFloating,
               id: tooltipId,
               role: 'tooltip',
@@ -96,7 +101,7 @@ function Tooltip({
                 <Content>{content}</Content>
               </Bubble>
               <Caret
-                ref={arrowRef}
+                ref={setArrowElement}
                 data-side={side}
                 style={
                   side === 'top' || side === 'bottom'

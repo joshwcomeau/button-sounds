@@ -1,8 +1,8 @@
 import React from 'react';
 
 const useRequestAnimationFrameLoop = (
-  callback: () => any,
-  isRunning: boolean = true,
+  callback: () => void,
+  isRunning = true,
 ) => {
   const animationFrameId = React.useRef<number | null>(null);
   const savedCallback = React.useRef(callback);
@@ -17,10 +17,6 @@ const useRequestAnimationFrameLoop = (
     }
 
     const tick = () => {
-      if (typeof savedCallback.current !== 'function') {
-        return;
-      }
-
       savedCallback.current();
       animationFrameId.current = window.requestAnimationFrame(tick);
     };
@@ -33,9 +29,6 @@ const useRequestAnimationFrameLoop = (
       }
     };
   }, [isRunning]);
-
-  // eslint-disable-next-line
-  return animationFrameId.current;
 };
 
 export default useRequestAnimationFrameLoop;

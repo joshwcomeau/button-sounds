@@ -25,7 +25,7 @@ const FILTER_TYPES = [
 interface Props extends React.ComponentProps<'div'> {
   selectedSoundName: SoundName | undefined;
   setSelectedSoundName: (name: SoundName) => void;
-  relevantSounds: SoundName[];
+  relevantSounds: Array<SoundName>;
   selectedFilter: string | null;
   sortOrder: SortOrder;
   triggerPress: () => void;
@@ -109,7 +109,7 @@ function SoundSelectSidebar({
       </ListFrame>
       <Divider />
       <BottomHeader>
-        <FilterName>{selectedFilter || 'Filter'}</FilterName>
+        <FilterName>{selectedFilter ?? 'Filter'}</FilterName>
         <BottomHeaderEdge />
         <Actions>
           <SortBtnWrapper>
