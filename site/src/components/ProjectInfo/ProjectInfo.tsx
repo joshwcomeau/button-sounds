@@ -176,7 +176,12 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
       <p>Here’s a quick “Hello World” example:</p>
       <Snippet lang="javascript">{VANILLA_JS_EXAMPLE}</Snippet>
       <p>
-        That <InlineCode>wireUp</InlineCode> function is doing <em>a bunch</em>{' '}
+        In this example, I’m loading the <InlineCode>hi75-soft</InlineCode>{' '}
+        sound, but you can pick any of the sounds listed in the playground
+        above!
+      </p>
+      <p>
+        The <InlineCode>wireUp</InlineCode> function is doing <em>a bunch</em>{' '}
         of stuff under the hood, including:
       </p>
       <ol>
@@ -186,8 +191,11 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
         </li>
         <li>
           Adding event handlers to the button so that the correct sounds trigger
-          at the right times. There are some subtle gotchas here that the
-          library takes care of.
+          at the right times. There are some{' '}
+          <TextLink href="https://github.com/joshwcomeau/button-sounds/blob/main/docs/vanilla-js.md#nested-event-handlers">
+            subtle gotchas
+          </TextLink>{' '}
+          here that the library takes care of automatically.
         </li>
         <li>
           Picking random samples on every press/release, and optionally adding a
@@ -204,9 +212,13 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
         , which means only the selected sound(s) will be downloaded.
       </p>
       <p>
-        The <InlineCode>button-sounds</InlineCode> package is tiny, only adding
-        ~2kB gzip to your bundle (though it does asynchronously load Howler, a
-        ~12kB JS library for playing sounds).
+        On the JS side, the <InlineCode>button-sounds</InlineCode> package is
+        tiny, only adding{' '}
+        <TextLink href="https://bundlephobia.com/package/button-sounds">
+          ~3kB gzip
+        </TextLink>{' '}
+        to your bundle (though it does asynchronously load Howler, a ~10kB JS
+        library for playing sounds).
       </p>
       <h3>The lower-level API</h3>
       <p>

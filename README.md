@@ -43,3 +43,22 @@ To keep things simple, I’ve created two separate sets of docs depending on whi
 - [React documentation](https://github.com/joshwcomeau/button-sounds/blob/main/docs/react.md)
 
 I also have a separate doc that goes over [self-hosting the audio files](https://github.com/joshwcomeau/button-sounds/blob/main/docs/self-hosting-audio-files.md) in case you don’t want to depend on a CDN for the MP3 files.
+
+## Respecting user preferences
+
+Sound remains relatively rare on the web, outside of video playback and not all users are receptive to sound effects. As far as I know, there is no explicit preference for this, like there is for motion with `prefers-reduced-motion`.
+
+Here’s how I suggest going about this:
+
+1. **Play sounds quietly.** I typically play UI sound effects between 25% and 50% of max volume. This reduces the likelihood that we’ll startle someone who has forgotten their sound is enabled.
+2. **Allow users to opt out.** My [blog](https://www.joshwcomeau.com/) has a mute button in the top-right, next to the dark/light toggle. This allows users to silence my website without muting their entire device.
+
+## Troubleshooting
+
+### The sounds aren’t playing consistently! Sometimes they don’t trigger.
+
+Over the past few years, a war has been raging between internet marketers who want to expose you to auto-playing advertisements and browsers who want to shield you from them. Unfortunately, fans of tactile user interaction like us sometimes get caught in the crossfire.
+
+It used to be that sounds could reliably be played as long as they were in direct response to a user action, like clicking something. These days, however, the whole thing is much more complex; browsers calculate a “Media Engagement Index” that tracks how the user engages with our site and how much trust it should be given as a result. The specific heuristics vary between browsers and are always changing.
+
+So, unfortunately, there’s no way to _guarantee_ that our sounds will trigger 100% of the time. But I don’t think that’s the end of the world. Button UI sounds are a nice-to-have, and it’s fine if they don’t always exist.
