@@ -57,6 +57,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "lint:pkg": "pnpm run build && publint && attw --pack --profile node16",
     "prepack": "node ../scripts/package-docs.mjs copy",
     "postpack": "node ../scripts/package-docs.mjs clean",

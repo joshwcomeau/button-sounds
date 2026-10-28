@@ -2,10 +2,10 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import { range } from '@/utils';
-import useRequestAnimationFrameLoop from '@/hooks/use-request-animation-frame';
+
+import Playhead from './Playhead';
 
 const FADE_DURATION = 250;
-const PLAYHEAD_WIDTH = 2;
 
 export interface ActiveWaveformData {
   variant: 'press' | 'release';
@@ -28,32 +28,32 @@ function WaveformHighlighter({
   activeWaveformData,
   barFrequency,
 }: Props) {
-  const [now, setNow] = React.useState(() => performance.now());
+  const [finishedTimestamp, setFinishedTimestamp] = React.useState<
+    number | null
+  >(null);
 
   const sprite = getSprite(waveformData, activeWaveformData);
-  const elapsed = activeWaveformData
-    ? Math.max(0, now - activeWaveformData.timestamp)
-    : 0;
   const duration = sprite?.[1] ?? 0;
-  const fadeElapsed = elapsed - duration;
-  const hasFinished = !sprite || fadeElapsed >= FADE_DURATION;
-  const isRunning = Boolean(activeWaveformData) && !hasFinished;
+  const hasFinished =
+    !sprite || finishedTimestamp === activeWaveformData?.timestamp;
 
-  useRequestAnimationFrameLoop(() => {
-    setNow(performance.now());
-  }, isRunning);
-
+  const timestamp = activeWaveformData?.timestamp;
   React.useEffect(() => {
-    if (activeWaveformData) {
-      setNow(performance.now());
+    if (typeof timestamp !== 'number' || !sprite) {
+      return;
     }
-  }, [activeWaveformData]);
+
+    const endsAt = timestamp + duration + FADE_DURATION;
+    const timeoutId = window.setTimeout(
+      () => setFinishedTimestamp(timestamp),
+      Math.max(0, endsAt - performance.now()),
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [timestamp, sprite, duration]);
 
   const left = sprite ? (sprite[0] / waveformDuration) * 100 : 0;
   const width = sprite ? (duration / waveformDuration) * 100 : 0;
-  const playheadProgress = duration > 0 ? Math.min(1, elapsed / duration) : 0;
-  const opacity =
-    fadeElapsed <= 0 ? 1 : Math.max(0, 1 - fadeElapsed / FADE_DURATION);
 
   const numOfBars = Math.floor(waveformDuration / barFrequency);
   const barWidth = 100 / numOfBars;
@@ -96,12 +96,14 @@ function WaveformHighlighter({
           style={{
             '--left': `${left}%`,
             '--width': `${width}%`,
-            '--playhead-progress': playheadProgress,
-            '--opacity': opacity,
+            '--fade-delay': `${duration}ms`,
           }}
         >
           <Region>
-            <Playhead />
+            <Playhead
+              startedAt={activeWaveformData.timestamp}
+              duration={duration}
+            />
           </Region>
         </Overlay>
       )}
@@ -134,8 +136,9 @@ const Overlay = styled.div`
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: var(--opacity);
-  animation: fadeFromTransparent 100ms;
+  animation:
+    fadeFromTransparent 100ms,
+    fadeToTransparent ${FADE_DURATION}ms linear var(--fade-delay) forwards;
 `;
 
 const Region = styled.div`
@@ -173,19 +176,6 @@ const Label = styled.span`
     &[data-is-active='false'] {
       display: none;
     }
-  }
-`;
-
-const Playhead = styled.div`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: ${PLAYHEAD_WIDTH}px;
-  left: calc(var(--playhead-progress) * (100% - ${PLAYHEAD_WIDTH}px));
-  background: hsl(210deg 15% 95%);
-
-  @media (prefers-reduced-motion: reduce) {
-    display: none;
   }
 `;
 

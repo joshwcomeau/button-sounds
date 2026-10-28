@@ -73,7 +73,10 @@ export function useImperativeButtonSounds(
   options: TriggerOptions = {},
 ): UseImperativeButtonSoundsResult {
   const latestRef = React.useRef({ name, options });
-  latestRef.current = { name, options };
+
+  React.useEffect(() => {
+    latestRef.current = { name, options };
+  }, [name, options]);
 
   React.useEffect(() => {
     load(name);

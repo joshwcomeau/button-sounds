@@ -29,7 +29,7 @@ const loadCelebratoryShader = () => import('@/components/CelebratoryShader');
 const CelebratoryShader = React.lazy(loadCelebratoryShader);
 
 function orderSounds(
-  sounds: readonly SoundName[],
+  sounds: ReadonlyArray<SoundName>,
   sortOrder: SortOrder,
   shuffleKey: number,
 ) {
@@ -55,7 +55,7 @@ function MainDemo() {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   const [selectedSoundName, setSelectedSoundName] = React.useState<SoundName>(
-    SOUND_NAMES[0] || 'hi75-soft',
+    SOUND_NAMES[0] ?? 'hi75-soft',
   );
   const [selectedFilter, setSelectedFilter] = React.useState<string | null>(
     null,
@@ -64,7 +64,7 @@ function MainDemo() {
   const [shuffleKey, setShuffleKey] = React.useState(() =>
     Math.floor(Math.random() * 100000),
   );
-  const [relevantSounds, setRelevantSounds] = React.useState<SoundName[]>(
+  const [relevantSounds, setRelevantSounds] = React.useState<Array<SoundName>>(
     () => [...SOUND_NAMES],
   );
 
@@ -111,38 +111,60 @@ function MainDemo() {
     }
   }, [hasWonMinigame]);
 
+  // The list's DOM only reflects a new filter/sort after the commit, so the handlers stash the sound to reveal here and the effect below scrolls to it.
+  const soundToRevealRef = React.useRef<SoundName | null>(null);
+
+  React.useEffect(() => {
+    const soundToReveal = soundToRevealRef.current;
+    if (!soundToReveal) {
+      return;
+    }
+    soundToRevealRef.current = null;
+
+    const button = document.querySelector<HTMLButtonElement>(
+      `[data-button-id="${soundToReveal}"]`,
+    );
+    button?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [relevantSounds]);
+
   const handleFilterClick = React.useCallback(
     (newFilter: string) => {
       const nextFilter = newFilter === selectedFilter ? null : newFilter;
-      setSelectedFilter(nextFilter);
 
-      setRelevantSounds((currentSounds) => {
-        // Filter the current list so an active sort stays put. If that list is already another category, it won’t contain the sounds we need, so start from the full catalog and apply the current sort.
-        const canFilterCurrentList =
-          nextFilter !== null &&
-          (selectedFilter === null ||
-            currentSounds.some(
-              (name) => SOUND_DATA[name].category === nextFilter,
-            ));
-
-        if (canFilterCurrentList) {
-          return currentSounds.filter(
+      // Filter the current list so an active sort stays put. If that list is already another category, it won’t contain the sounds we need, so start from the full catalog and apply the current sort.
+      const canFilterCurrentList =
+        nextFilter !== null &&
+        (selectedFilter === null ||
+          relevantSounds.some(
             (name) => SOUND_DATA[name].category === nextFilter,
-          );
-        }
+          ));
 
-        return orderSounds(
-          nextFilter
-            ? SOUND_NAMES.filter(
-                (name) => SOUND_DATA[name].category === nextFilter,
-              )
-            : SOUND_NAMES,
-          sortOrder,
-          shuffleKey,
-        );
-      });
+      const nextSounds = canFilterCurrentList
+        ? relevantSounds.filter(
+            (name) => SOUND_DATA[name].category === nextFilter,
+          )
+        : orderSounds(
+            nextFilter
+              ? SOUND_NAMES.filter(
+                  (name) => SOUND_DATA[name].category === nextFilter,
+                )
+              : SOUND_NAMES,
+            sortOrder,
+            shuffleKey,
+          );
+
+      const nextSelectedSoundName = nextSounds.includes(selectedSoundName)
+        ? selectedSoundName
+        : nextSounds[0];
+
+      setSelectedFilter(nextFilter);
+      setRelevantSounds(nextSounds);
+      if (nextSelectedSoundName) {
+        setSelectedSoundName(nextSelectedSoundName);
+        soundToRevealRef.current = nextSelectedSoundName;
+      }
     },
-    [selectedFilter, sortOrder, shuffleKey],
+    [selectedFilter, relevantSounds, selectedSoundName, sortOrder, shuffleKey],
   );
 
   const handleSortOrderClick = React.useCallback(
@@ -157,19 +179,13 @@ function MainDemo() {
       }
 
       setSortOrder(nextSortOrder);
-      setRelevantSounds((currentSounds) => {
-        return orderSounds(currentSounds, nextSortOrder, nextShuffleKey);
-      });
+      setRelevantSounds(
+        orderSounds(relevantSounds, nextSortOrder, nextShuffleKey),
+      );
+      soundToRevealRef.current = selectedSoundName;
     },
-    [shuffleKey],
+    [relevantSounds, selectedSoundName, shuffleKey],
   );
-
-  React.useEffect(() => {
-    const firstSound = relevantSounds[0];
-    if (firstSound) {
-      setSelectedSoundName(firstSound);
-    }
-  }, [relevantSounds]);
 
   const selectedSoundNameRef = useSyncedRef(selectedSoundName);
 
@@ -214,7 +230,6 @@ function MainDemo() {
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      console.log(event.key);
       if (
         event.key !== 'ArrowUp' &&
         event.key !== 'ArrowDown' &&
@@ -229,15 +244,12 @@ function MainDemo() {
         return;
       }
 
-      const selectedSoundName =
-        selectedSoundNameRef.current || relevantSounds[0];
+      const selectedSoundName = selectedSoundNameRef.current;
 
       event.preventDefault();
 
       const direction = event.key === 'ArrowUp' || event.key === 'w' ? -1 : 1;
-      const currentIndex = relevantSounds.indexOf(
-        selectedSoundName as SoundName,
-      );
+      const currentIndex = relevantSounds.indexOf(selectedSoundName);
       // JS remainder keeps the sign of the dividend, so stepping backward from 0 would otherwise land on -1.
       const nextIndex =
         (currentIndex + direction + relevantSounds.length) %
@@ -253,7 +265,7 @@ function MainDemo() {
         `[data-button-id="${nextSoundName}"]`,
       );
 
-      btn?.focus?.();
+      btn?.focus();
 
       setSelectedSoundName(nextSoundName);
     }
@@ -398,7 +410,11 @@ function MainDemo() {
                 setHasWonMinigame(true);
                 setIsCelebrating(true);
               }}
-              onInteract={loadCelebratoryShader}
+              onInteract={() => {
+                loadCelebratoryShader().catch(() => {
+                  // This is only a preload. If it fails, React.lazy will surface the error when the shader renders.
+                });
+              }}
             />
           </StyledSoundInfo>
 

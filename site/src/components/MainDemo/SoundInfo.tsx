@@ -1,3 +1,4 @@
+import * as React from 'react';
 import styled from 'styled-components';
 import type { SoundName } from 'button-sounds';
 
@@ -9,6 +10,8 @@ import PatternDither from '@/components/BackgroundPatterns/PatternDither';
 import FadeOnChange from '@/components/FadeOnChange/FadeOnChange';
 
 import PrizeContent from './PrizeContent';
+import WinShimmer from './WinShimmer';
+import { MAIN_RADIUS, TOP_RADIUS } from './SoundInfo.constants';
 
 interface Props extends React.ComponentProps<'div'> {
   name: SoundName;
@@ -19,9 +22,6 @@ interface Props extends React.ComponentProps<'div'> {
 }
 
 const TRANSITION_DELAY = 250;
-
-const TOP_RADIUS = 8;
-const MAIN_RADIUS = 16;
 
 function SoundInfo({
   name,
@@ -80,6 +80,7 @@ function SoundInfo({
         <StyledPattern patternId="b" />
         {children}
       </BottomDecoration>
+      <WinShimmer isActive={hasWonMinigame} />
     </Wrapper>
   );
 }

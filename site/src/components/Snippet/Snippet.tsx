@@ -1,7 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import RaisedContainer from '@/components/RaisedContainer';
 import BevelEdge from '../BevelEdge';
 
 type Language = 'javascript';

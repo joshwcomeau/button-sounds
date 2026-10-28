@@ -103,7 +103,7 @@ function FancyButton({
         data-action={buttonAction}
         data-is-retracted={isRetracted}
         style={{
-          '--transition-duration': transitionDuration + 'ms',
+          '--transition-duration': `${transitionDuration}ms`,
         }}
 
         ref={wrapperRef}

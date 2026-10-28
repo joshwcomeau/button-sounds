@@ -66,9 +66,9 @@ type HowlGainNode = GainNode & {
   bufferSource?: AudioBufferSourceNode;
 };
 
-type HowlSound = {
+interface HowlSound {
   _node: HowlGainNode;
-};
+}
 
 type HowlWithInternals = Howl & {
   _soundById: (id: number) => HowlSound | null;
@@ -117,6 +117,8 @@ export function prepareLofi(ctx: AudioContext | undefined): Promise<void> {
   return pending;
 }
 
+// We use AudioWorklet by default, which has been supported by all major browsers since 2020, but AudioWorklet also only works in HTTPS and can be disabled with strict CSPs. So, we use ScriptProcessorNode as a fallback option, which requires silencing ESLint.
+/* eslint-disable @typescript-eslint/no-deprecated */
 function createScriptBitcrusher(
   ctx: AudioContext,
   options: Required<LofiOptions>,
@@ -126,7 +128,7 @@ function createScriptBitcrusher(
   // Small buffer so a ~200ms click doesn’t pick up a huge slug of extra latency.
   const node = ctx.createScriptProcessor(256, 2, 2);
   let phase = 0;
-  const last: number[] = [];
+  const last: Array<number> = [];
   const step = Math.pow(0.5, options.bits);
   const { downsample } = options;
 
@@ -149,7 +151,7 @@ function createScriptBitcrusher(
         );
         const outputData = output.getChannelData(ch);
         if (take) {
-          last[ch] = step * Math.floor(inputData[i]! / step + 0.5);
+          last[ch] = step * Math.floor((inputData[i] ?? 0) / step + 0.5);
         }
         outputData[i] = last[ch] ?? 0;
       }
@@ -158,12 +160,13 @@ function createScriptBitcrusher(
 
   return node;
 }
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 function createBitcrusher(
   ctx: AudioContext,
   options: Required<LofiOptions>,
 ): AudioNode | null {
-  if (ctx.audioWorklet) {
+  if (typeof ctx.audioWorklet !== 'undefined') {
     try {
       const node = new AudioWorkletNode(ctx, PROCESSOR_NAME, {
         numberOfInputs: 1,
@@ -234,7 +237,11 @@ export function applyLofi(
     return;
   }
 
-  howl.once('play', () => {
-    insertBitcrusher(ctx, howl, soundId, options);
-  }, soundId);
+  howl.once(
+    'play',
+    () => {
+      insertBitcrusher(ctx, howl, soundId, options);
+    },
+    soundId,
+  );
 }

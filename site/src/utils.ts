@@ -1,7 +1,7 @@
 type Timeout = ReturnType<typeof setTimeout>;
 type PlainObject = Record<string, any>;
 
-export const range = (start: number, end?: number, step: number = 1) => {
+export const range = (start: number, end?: number, step = 1) => {
   const output = [];
   if (typeof end === 'undefined') {
     end = start;
@@ -17,7 +17,7 @@ export function sampleOne<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
-export function sample<T>(arr: Array<T>, len = 1): Array<T> {
+export function sample<T>(arr: T[], len = 1): T[] {
   const output = [];
 
   for (let i = 0; i < len; i++) {
@@ -46,10 +46,10 @@ export const random = (
   }
 };
 
-export const sum = (values: Array<number>) =>
+export const sum = (values: number[]) =>
   values.reduce((sum, value) => sum + value, 0);
 
-export const mean = (values: Array<number>) => sum(values) / values.length;
+export const mean = (values: number[]) => sum(values) / values.length;
 
 export const clamp = (value: number, min = 0, max = 1) => {
   // We might be passing in "inverted" values, eg:
@@ -70,60 +70,46 @@ export const roundToNearest = (value: number, step: number) =>
   Math.round(value / step) * step;
 
 export const debounce =
-  (callback: any, wait: number, timeoutId: Timeout | null = null) =>
-  (...args: Array<any>) => {
-    if (typeof timeoutId === 'number') {
-      window.clearTimeout(timeoutId);
+  <Args extends Array<unknown>>(
+    callback: (...args: Args) => void,
+    wait: number,
+    timeoutId: Timeout | null = null,
+  ) =>
+  (...args: Args) => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
     }
 
     timeoutId = setTimeout(() => {
-      callback.apply(null, args);
+      callback(...args);
     }, wait);
   };
 
-export const throttle = (func: Function, limit: number) => {
-  let lastFunc: Timeout;
-  let lastRan: number;
-  let returnedValue: any;
-
-  return function (...args: any) {
-    if (!lastRan) {
-      returnedValue = func.apply(null, args);
-      lastRan = Date.now();
-    } else {
-      clearTimeout(lastFunc);
-      lastFunc = setTimeout(
-        function () {
-          if (Date.now() - lastRan >= limit) {
-            returnedValue = func.apply(null, args);
-            lastRan = Date.now();
-          }
-        },
-        limit - (Date.now() - lastRan),
-      );
-    }
-
-    return returnedValue;
-  };
-};
+export const throttle = <Args extends Array<unknown>, Return>(
+  func: (...args: Args) => Return,
+  limit: number,
+) => throttleV2(func, limit)[0];
 
 // This version of `throttle` returns a `cancel` function I can call if I want to cancel the throttle.
 // NOTE: I don't *need* to use this to avoid memory leaks. Even if a component unmounts mid-throttle, it will only trigger 1 more time, and won't set a new `setTimeout`. So it should be used only when I really want to prevent the throttle from running 1 more time.
-export const throttleV2 = (func: Function, limit: number) => {
-  let timeoutId: Timeout;
-  let lastRan: number;
-  let returnedValue: any;
+export const throttleV2 = <Args extends Array<unknown>, Return>(
+  func: (...args: Args) => Return,
+  limit: number,
+) => {
+  let timeoutId: Timeout | undefined;
+  let lastRan: number | null = null;
+  let returnedValue: Return | undefined;
 
-  const wrappedFunc = function (...args: any) {
-    if (!lastRan) {
-      returnedValue = func.apply(null, args);
+  const wrappedFunc = function (...args: Args) {
+    if (lastRan === null) {
+      returnedValue = func(...args);
       lastRan = Date.now();
     } else {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(
         function () {
-          if (Date.now() - lastRan >= limit) {
-            returnedValue = func.apply(null, args);
+          if (lastRan !== null && Date.now() - lastRan >= limit) {
+            returnedValue = func(...args);
             lastRan = Date.now();
           }
         },
@@ -138,7 +124,7 @@ export const throttleV2 = (func: Function, limit: number) => {
     clearTimeout(timeoutId);
   }
 
-  return [wrappedFunc, cancel];
+  return [wrappedFunc, cancel] as const;
 };
 
 export const slugify = (str = '') => {
@@ -170,7 +156,7 @@ export const dashToCamelCase = (val: string) => {
   return val.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 };
 
-export const pick = (obj: PlainObject, keys: Array<string>) => {
+export const pick = (obj: PlainObject, keys: string[]) => {
   const o: PlainObject = {};
   let i = 0;
   let key;
@@ -188,7 +174,7 @@ export const pick = (obj: PlainObject, keys: Array<string>) => {
 export const omit = function (obj: PlainObject, key: string) {
   const newObj: PlainObject = {};
 
-  for (var name in obj) {
+  for (const name in obj) {
     if (name !== key) {
       newObj[name] = obj[name];
     }
@@ -197,7 +183,7 @@ export const omit = function (obj: PlainObject, key: string) {
   return newObj;
 };
 
-export const convertArrayToMap = (arr: Array<any>) =>
+export const convertArrayToMap = (arr: any[]) =>
   arr.reduce(
     (acc, item) => ({
       ...acc,
@@ -209,15 +195,15 @@ export const convertArrayToMap = (arr: Array<any>) =>
 // Either removes or adds an item to an array
 // EXAMPLE: toggleInArray([1, 2], 3) -> [1, 2, 3]
 // EXAMPLE: toggleInArray([1, 2], 2) -> [1]
-export const toggleInArray = (arr: Array<any>, item: any) =>
+export const toggleInArray = (arr: any[], item: any) =>
   arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
 
 // Combines 2 arrays, removing duplicates.
 // EXAMPLE: mergeUnique([1, 2], [2, 3]) -> [1, 2, 3]
-export const mergeUnique = (arr1: Array<any>, arr2: Array<any>) =>
-  arr1.concat(arr2.filter((item) => arr1.indexOf(item) === -1));
+export const mergeUnique = (arr1: any[], arr2: any[]) =>
+  arr1.concat(arr2.filter((item) => !arr1.includes(item)));
 
-export const findRight = (arr: Array<any>, predicate: (val: any) => boolean) =>
+export const findRight = (arr: any[], predicate: (val: any) => boolean) =>
   arr.slice().reverse().find(predicate);
 
 export function requestAnimationFramePromise() {
@@ -325,9 +311,9 @@ export const exponentialNormalize = (
   value: number,
   currentScaleMin: number,
   currentScaleMax: number,
-  newScaleMin: number = 0,
-  newScaleMax: number = 1,
-  exponent: number = 2,
+  newScaleMin = 0,
+  newScaleMax = 1,
+  exponent = 2,
 ): number => {
   const normalizedInput =
     (value - currentScaleMin) / (currentScaleMax - currentScaleMin);
@@ -339,7 +325,10 @@ export const exponentialNormalize = (
 
 // TODO: Use a single `Point` type!
 type Point = [number, number];
-type PointObj = { x: number; y: number };
+interface PointObj {
+  x: number;
+  y: number;
+}
 
 export const getDistanceBetweenPoints = (p1: PointObj, p2: PointObj) => {
   const deltaX = Math.abs(p2.x - p1.x);
@@ -415,7 +404,7 @@ export const splitCommaSeparatedArray = (value: string) => {
 };
 
 export function hash(value: string) {
-  var hash = 0,
+  let hash = 0,
     i,
     chr;
   if (value.length === 0) return hash;
@@ -561,8 +550,8 @@ export const getYValueForBezier = function (
   x2: number,
   y2: number,
 ) {
-  var xTolerance = 0.0001;
-  var myBezier = function (t: number) {
+  const xTolerance = 0.0001;
+  const myBezier = function (t: number) {
     return getValuesForBezierCurve(
       {
         startPoint: [0, 0],
@@ -577,11 +566,11 @@ export const getYValueForBezier = function (
   // Binary search to find an approximation for `X`
 
   //establish bounds
-  var lower = 0;
-  var upper = 1;
-  var percent = (upper + lower) / 2;
+  let lower = 0;
+  let upper = 1;
+  let percent = (upper + lower) / 2;
 
-  var x = myBezier(percent)[0];
+  let x = myBezier(percent)[0];
 
   while (Math.abs(xTarget - x) > xTolerance) {
     if (xTarget > x) lower = percent;
@@ -598,6 +587,11 @@ export function moveCursorWithinInput(
   input: HTMLInputElement,
   position: number,
 ) {
+  // Super old browsers (like, IE?) don't support this.
+  if (!input.setSelectionRange) {
+    return;
+  }
+
   // Super old browsers (like, IE?) don't support this.
   if (!input.setSelectionRange) {
     return;
@@ -689,7 +683,7 @@ export const wrapCircularValue = (value: number, min: number, max: number) => {
   return returnValue - offset;
 };
 
-export const mix = (v1: number, v2: number, ratio: number = 0.5): number =>
+export const mix = (v1: number, v2: number, ratio = 0.5): number =>
   v1 * (1 - ratio) + v2 * ratio;
 
 export function mixAngles(
@@ -734,7 +728,7 @@ const CSS_VARIABLE_PATTERN = /^var\(\s*(--[^,)]+)(?:\s*,\s*(.+))?\s*\)$/;
 export function resolveCssVariable(value: string, element: Element): string {
   const trimmed = value.trim();
 
-  const [, varName, fallback] = trimmed.match(CSS_VARIABLE_PATTERN) ?? [];
+  const [, varName, fallback] = CSS_VARIABLE_PATTERN.exec(trimmed) ?? [];
 
   if (!varName) {
     throw new Error(`Invalid CSS variable: ${value}`);

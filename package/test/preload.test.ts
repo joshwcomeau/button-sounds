@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SoundName } from '../src/index';
 
-const constructed: Array<{ src: string[] }> = [];
+const constructed: Array<{ src: Array<string> }> = [];
 
 vi.mock('howler', () => ({
   Howl: class {
-    constructor(options: { src: string[] }) {
+    constructor(options: { src: Array<string> }) {
       constructed.push(options);
     }
   },

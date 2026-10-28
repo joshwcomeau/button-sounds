@@ -25,15 +25,16 @@ function hasResourceTimingEntry(name: SoundName): boolean {
 type LoadingStatus = 'loading' | 'ready';
 
 export function useSoundResourceLoading(name: SoundName): LoadingStatus {
-  const [status, setStatus] = React.useState<LoadingStatus>(() =>
-    hasResourceTimingEntry(name) ? 'ready' : 'loading',
+  const wasAlreadyLoaded = React.useMemo(
+    () => hasResourceTimingEntry(name),
+    [name],
   );
+  const [loadedName, setLoadedName] = React.useState<SoundName | null>(null);
+
+  console.log(name, loadedName, wasAlreadyLoaded);
 
   React.useEffect(() => {
-    setStatus('loading');
-
-    if (hasResourceTimingEntry(name)) {
-      setStatus('ready');
+    if (wasAlreadyLoaded) {
       return;
     }
 
@@ -43,12 +44,14 @@ export function useSoundResourceLoading(name: SoundName): LoadingStatus {
         .getEntries()
         .some((entry) => matchesSoundUrl(entry.name, url));
       if (found) {
-        setStatus('ready');
+        setLoadedName(name);
       }
     });
     observer.observe({ type: 'resource', buffered: true });
-    return () => observer.disconnect();
-  }, [name]);
+    return () => {
+      observer.disconnect();
+    };
+  }, [name, wasAlreadyLoaded]);
 
-  return status;
+  return wasAlreadyLoaded || loadedName === name ? 'ready' : 'loading';
 }

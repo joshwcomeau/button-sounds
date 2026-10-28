@@ -35,8 +35,13 @@ const SPRITE_DATA: SpriteMap = {
   cancel: [11000, 1000],
 };
 
-const IDLE_STATUSES: ButtonStatus[] = ['idle', 'idle', 'idle', 'idle'];
-const ERROR_STATUSES: ButtonStatus[] = ['error', 'error', 'error', 'error'];
+const IDLE_STATUSES: Array<ButtonStatus> = ['idle', 'idle', 'idle', 'idle'];
+const ERROR_STATUSES: Array<ButtonStatus> = [
+  'error',
+  'error',
+  'error',
+  'error',
+];
 
 interface Props {
   hasWon: boolean;
@@ -54,7 +59,8 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
   const [playSparklers] = useSound('/sounds/misc/sparklers.mp3', {
     volume: 0.25,
   });
-  const [statuses, setStatuses] = React.useState<ButtonStatus[]>(IDLE_STATUSES);
+  const [statuses, setStatuses] =
+    React.useState<Array<ButtonStatus>>(IDLE_STATUSES);
   const [isCelebrationDone, setIsCelebrationDone] = React.useState(false);
 
   const stepRef = React.useRef(0);
@@ -68,7 +74,9 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
 
   React.useEffect(() => {
     return () => {
+      // These refs hold timeout IDs, not DOM nodes, so reading the latest value on unmount is intended.
       if (errorTimeoutRef.current !== null) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         window.clearTimeout(errorTimeoutRef.current);
       }
       if (celebrationTimeoutRef.current !== null) {
@@ -87,8 +95,6 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
         : litCount === 2
           ? 'warm'
           : 'idle';
-
-  console.log({ engineStatus });
 
   function handlePointerDown(index: number) {
     onInteract?.();
@@ -205,11 +211,7 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
 
   function handleKeyUp(event: React.KeyboardEvent, index: number) {
     const keyboardPress = keyboardPressRef.current;
-    if (
-      !keyboardPress ||
-      keyboardPress.key !== event.key ||
-      keyboardPress.index !== index
-    ) {
+    if (keyboardPress?.key !== event.key || keyboardPress.index !== index) {
       return;
     }
 
@@ -263,7 +265,7 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
   );
 }
 
-interface DiamondButtonProps extends React.ComponentProps<'button'> {}
+type DiamondButtonProps = React.ComponentProps<'button'>;
 
 function DiamondButton({ children, ...delegated }: DiamondButtonProps) {
   const btnRef = React.useRef<HTMLButtonElement>(null);

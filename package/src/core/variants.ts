@@ -4,13 +4,13 @@ import { sampleOne } from '../utils';
 type SpriteMap = Record<string, [number, number]>;
 
 const trailingNumber = (id: string): number =>
-  Number(id.match(/\d+$/)?.[0] ?? 0);
+  Number(/\d+$/.exec(id)?.[0] ?? 0);
 
 // The sprite sample ids for a given variant, ordered by their trailing number (down1, down2, … for a press; up1, up2, … for a release).
 export function getVariantIds(
   spriteMap: SpriteMap,
   variant: SoundVariant,
-): string[] {
+): Array<string> {
   const prefix = variant === 'press' ? 'down' : 'up';
   return Object.keys(spriteMap)
     .filter((id) => id.startsWith(prefix))

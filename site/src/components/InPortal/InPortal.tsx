@@ -11,7 +11,7 @@ const InPortal = ({ id, children, parent }: Props) => {
   const [hostElement, setHostElement] = React.useState<Element | null>(null);
 
   React.useEffect(() => {
-    const actualParent = parent || document.body;
+    const actualParent = parent ?? document.body;
 
     const elm = id
       ? document.querySelector(`#${id}`)
@@ -21,6 +21,8 @@ const InPortal = ({ id, children, parent }: Props) => {
       return;
     }
 
+    // The host element can only be looked up/created once we’re mounted in the DOM.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHostElement(elm);
 
     if (!id) {

@@ -95,6 +95,6 @@ export const SPRITE_DATA = {
 export type SoundName = keyof typeof SPRITE_DATA;
 
 // Every selectable sound name.
-export const SOUND_NAMES = Object.keys(SPRITE_DATA) as SoundName[];
+export const SOUND_NAMES = Object.keys(SPRITE_DATA) as Array<SoundName>;
 // The name used when none is specified.
 export const DEFAULT_NAME: SoundName = 'uhk-soft';

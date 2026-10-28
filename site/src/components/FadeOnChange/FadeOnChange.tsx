@@ -21,25 +21,23 @@ function FadeOnChange({
   style = {},
   ...delegated
 }: Props) {
-  const [status, setStatus] = React.useState<'idle' | 'fading-out'>('idle');
-
   const wrapperRef = React.useRef<HTMLElement | null>(null);
-  const cachedChildren = React.useRef(children);
-  // The key that `cachedChildren` belongs to. While the key is unchanged, the children can update freely without triggering a fade.
-  const cachedKey = React.useRef(changeKey);
+  // The key whose children are currently on screen. While the key is unchanged, the children can update freely without triggering a fade.
+  const [settledKey, setSettledKey] = React.useState(changeKey);
+  // The last children rendered for `settledKey`, kept on screen while they fade out.
+  const [settledChildren, setSettledChildren] = React.useState(children);
 
-  if (changeKey === cachedKey.current) {
-    cachedChildren.current = children;
+  const isFadingOut = changeKey !== settledKey;
+
+  if (!isFadingOut && children !== settledChildren) {
+    setSettledChildren(children);
   }
 
   React.useEffect(() => {
-    // Ignore initial mount, as well as the key flipping back before the fade-out finished.
-    if (changeKey === cachedKey.current) {
-      setStatus('idle');
+    // Nothing to do on initial mount, or if the key flipped back before the fade-out finished.
+    if (!isFadingOut) {
       return;
     }
-
-    setStatus('fading-out');
 
     const elem = wrapperRef.current;
 
@@ -53,19 +51,15 @@ function FadeOnChange({
         return;
       }
 
-      cachedKey.current = changeKey;
-      cachedChildren.current = children;
-      setStatus('idle');
+      setSettledKey(changeKey);
     }
 
     elem.addEventListener('transitionend', handleTransitionEnd);
 
     return () => {
-      elem?.removeEventListener('transitionend', handleTransitionEnd);
+      elem.removeEventListener('transitionend', handleTransitionEnd);
     };
-    // I only want to do the unmount-fade dance when the `changeKey` changes. The bug of outdated UI is actually a feature in this case.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changeKey]);
+  }, [changeKey, isFadingOut]);
 
   return (
     <Wrapper
@@ -73,12 +67,12 @@ function FadeOnChange({
       ref={wrapperRef}
       style={{
         ...style,
-        opacity: status === 'fading-out' ? 0 : 1,
+        opacity: isFadingOut ? 0 : 1,
         '--duration': `${duration}ms`,
       }}
       {...delegated}
     >
-      {cachedChildren.current}
+      {isFadingOut ? settledChildren : children}
     </Wrapper>
   );
 }

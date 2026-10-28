@@ -9,7 +9,8 @@
     "prebuild": "node ../scripts/copy-demo-sounds.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",

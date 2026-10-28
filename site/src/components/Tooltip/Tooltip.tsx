@@ -53,6 +53,8 @@ function Tooltip({
       offset(Math.round(CARET_SIZE / 2) + CARET_GAP),
       flip(),
       shift({ padding: 8 }),
+      // Technically I shouldn't use a ref for this, but the alternative is to store an `arrowElement` in state, and that would introduce a double-re-render whenever Tooltip’s props change, and where’s the pleasure in that? This seems to work fine.
+      // eslint-disable-next-line react-hooks/refs
       arrow({ element: arrowRef, padding: ARROW_PADDING }),
     ],
   });
@@ -72,6 +74,8 @@ function Tooltip({
     <>
       <Anchor
         {...getReferenceProps({
+          // Floating UI’s ref setters are declared as methods, but they don’t use `this`.
+          // eslint-disable-next-line @typescript-eslint/unbound-method
           ref: refs.setReference,
           'aria-describedby': isOpen ? tooltipId : undefined,
         })}
@@ -82,6 +86,7 @@ function Tooltip({
         <FloatingPortal>
           <Positioner
             {...getFloatingProps({
+              // eslint-disable-next-line @typescript-eslint/unbound-method
               ref: refs.setFloating,
               id: tooltipId,
               role: 'tooltip',

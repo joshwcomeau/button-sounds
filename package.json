@@ -13,6 +13,8 @@
     "dev:site": "pnpm --filter site dev",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "lint:pkg": "pnpm --filter button-sounds lint:pkg",
     "convert-audio": "node scripts/convert-audio.mjs",
     "format": "prettier --write .",
@@ -21,7 +23,13 @@
     "build-storybook": "pnpm --filter button-sounds build-storybook"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "npm-run-all2": "^9.0.3",
-    "prettier": "^3.9.8"
+    "prettier": "^3.9.8",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.72.0"
   }
 }
