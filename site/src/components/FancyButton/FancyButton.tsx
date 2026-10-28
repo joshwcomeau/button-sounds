@@ -143,6 +143,8 @@ const OuterWrapper = styled.button`
   padding: 0;
   corner-shape: bevel;
   border-radius: 16px;
+  /* BottomShadow uses mix-blend-mode. Without its own blending group, Safari re-composites the whole demo on every press, which makes the sound sidebar jitter and flicker. */
+  isolation: isolate;
 
   &::before {
     content: '';
@@ -338,6 +340,8 @@ const Face = styled.span`
   text-shadow: 0px 1px 0px hsl(350deg 100% 10% / 0.25);
   overflow: hidden;
   user-select: none;
+  /* Keeps the Face on a permanent compositor layer, so Safari doesn’t rebuild the layer tree when the press transform kicks in. */
+  will-change: transform;
   box-shadow:
     inset 0px 1px 2px var(--shadow-color),
     inset 0px 2px 4px var(--shadow-color),

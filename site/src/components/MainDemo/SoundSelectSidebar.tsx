@@ -174,6 +174,9 @@ const ListFrame = styled.div`
   position: relative;
   flex: 1;
   min-height: 0;
+  /* Safari was flickering on mobile. This seems to fix it. */
+  isolation: isolate;
+  will-change: transform;
 `;
 
 const List = styled.ul`
