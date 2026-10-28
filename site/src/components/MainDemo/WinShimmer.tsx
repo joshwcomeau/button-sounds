@@ -100,11 +100,27 @@ const Shimmer = styled.div`
   /* I want the stripe to be nice and wide, and not cut off at each end, so it needs to be wider than the parent container */
   width: 200%;
   height: 100%;
+  /*
+    15-stop ease-in-out mix of transparent → white → transparent, so the stripe doesn’t have the hard edges of a 3-stop linear gradient.
+    Hopefully easing gradients become a thing in CSS at some point!
+  */
   background: linear-gradient(
     115deg,
-    transparent 42%,
+    hsl(0deg 0% 100% / 0) 42%,
+    hsl(0deg 0% 100% / 0.0164) 43.14%,
+    hsl(0deg 0% 100% / 0.0679) 44.29%,
+    hsl(0deg 0% 100% / 0.1514) 45.43%,
+    hsl(0deg 0% 100% / 0.2486) 46.57%,
+    hsl(0deg 0% 100% / 0.3321) 47.71%,
+    hsl(0deg 0% 100% / 0.3836) 48.86%,
     hsl(0deg 0% 100% / 0.4) 50%,
-    transparent 58%
+    hsl(0deg 0% 100% / 0.3836) 51.14%,
+    hsl(0deg 0% 100% / 0.3321) 52.29%,
+    hsl(0deg 0% 100% / 0.2486) 53.43%,
+    hsl(0deg 0% 100% / 0.1514) 54.57%,
+    hsl(0deg 0% 100% / 0.0679) 55.71%,
+    hsl(0deg 0% 100% / 0.0164) 56.86%,
+    hsl(0deg 0% 100% / 0) 58%
   );
   animation: ${slideThrough} ${SHIMMER_DURATION}ms ease-in-out
     ${SHIMMER_DELAY}ms both;
