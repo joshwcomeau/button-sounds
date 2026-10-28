@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { SOUND_NAMES, type SoundName } from 'button-sounds';
+import type { SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
 import useSyncedRef from '@/hooks/use-synced-ref';
@@ -28,6 +28,8 @@ import type { SortOrder } from './MainDemo.helpers';
 const loadCelebratoryShader = () => import('@/components/CelebratoryShader');
 const CelebratoryShader = React.lazy(loadCelebratoryShader);
 
+const DEFAULT_SOUND_ORDER = Object.keys(SOUND_DATA) as Array<SoundName>;
+
 function orderSounds(
   sounds: ReadonlyArray<SoundName>,
   sortOrder: SortOrder,
@@ -39,12 +41,14 @@ function orderSounds(
 
   if (sortOrder === 'shuffle') {
     const included = new Set(sounds);
-    return seededShuffle(SOUND_NAMES, shuffleKey).filter((name) =>
+    return seededShuffle(DEFAULT_SOUND_ORDER, shuffleKey).filter((name) =>
       included.has(name),
     );
   }
 
-  const defaultIndex = new Map(SOUND_NAMES.map((name, index) => [name, index]));
+  const defaultIndex = new Map(
+    DEFAULT_SOUND_ORDER.map((name, index) => [name, index]),
+  );
   return [...sounds].sort(
     (a, b) => (defaultIndex.get(a) ?? 0) - (defaultIndex.get(b) ?? 0),
   );
@@ -55,7 +59,7 @@ function MainDemo() {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   const [selectedSoundName, setSelectedSoundName] = React.useState<SoundName>(
-    SOUND_NAMES[0] ?? 'hi75-soft',
+    DEFAULT_SOUND_ORDER[0] ?? 'hi75-soft',
   );
   const [selectedFilter, setSelectedFilter] = React.useState<string | null>(
     null,
@@ -65,7 +69,7 @@ function MainDemo() {
     Math.floor(Math.random() * 100000),
   );
   const [relevantSounds, setRelevantSounds] = React.useState<Array<SoundName>>(
-    () => [...SOUND_NAMES],
+    () => [...DEFAULT_SOUND_ORDER],
   );
 
   const [buttonAction, setButtonAction] = React.useState<Action | null>(null);
@@ -145,10 +149,10 @@ function MainDemo() {
           )
         : orderSounds(
             nextFilter
-              ? SOUND_NAMES.filter(
+              ? DEFAULT_SOUND_ORDER.filter(
                   (name) => SOUND_DATA[name].category === nextFilter,
                 )
-              : SOUND_NAMES,
+              : DEFAULT_SOUND_ORDER,
             sortOrder,
             shuffleKey,
           );

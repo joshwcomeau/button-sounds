@@ -133,6 +133,17 @@ const Main = styled.div`
       font-weight: 700;
       color: hsl(45deg 100% 60%);
     }
+
+    code,
+    kbd {
+      padding: 3px 8px;
+      margin-inline: -4px;
+      font-family: inherit;
+      background: hsl(210deg 100% 5% / 0.2);
+      border-radius: 4px;
+      corner-shape: bevel;
+      font-weight: 600;
+    }
   }
 `;
 

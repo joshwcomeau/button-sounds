@@ -28,43 +28,18 @@ interface SoundData {
   description: React.ReactNode;
 }
 
+// NOTE: The order here is a custom order based on what I think showcases the library best. It's not really consistent in any way.
 export const SOUND_DATA: Record<SoundName, SoundData> = {
   'hi75-soft': {
     title: 'EPOMAKER x LEOBOG Hi75 (gentle)',
     category: 'keyboard',
     description: (
-      <>
-        <p>
-          If you fall deep enough into the mechanical keyboard rabbit hole,
-          you’ll start to hear terms like “creamy” and “thocky”. This keyboard
-          from <a href={hi75Href}>Leobog</a> with custom “Reaper” switches is
-          supposedly one of the thockiest.
-        </p>
-      </>
-    ),
-  },
-  'hi75-medium': {
-    title: 'EPOMAKER x LEOBOG Hi75 (medium)',
-    category: 'keyboard',
-    description: (
-      <>
-        <p>
-          Slightly harder keypresses on my aforementioned{' '}
-          <a href={hi75Href}>Hi75</a> mechanical keyboard with Reaoer switches.
-        </p>
-      </>
-    ),
-  },
-  'hi75-hard': {
-    title: 'EPOMAKER x LEOBOG Hi75 (hard)',
-    category: 'keyboard',
-    description: (
-      <>
-        <p>
-          Downright savage keypresses on my{' '}
-          <a href={hi75Href}>Hi75 mechanical keyboard</a>.
-        </p>
-      </>
+      <p>
+        If you fall deep enough into the mechanical keyboard rabbit hole, you’ll
+        start hearing terms like “creamy” and “thocky”. This keyboard from{' '}
+        <a href={hi75Href}>Leobog</a> with custom “Reaper” switches is
+        supposedly one of the thockiest.
+      </p>
     ),
   },
   'hi75-space': {
@@ -73,9 +48,10 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     description: (
       <>
         <p>
-          Tapping the spacebar on my{' '}
-          <a href={hi75Href}>Hi75 mechanical keyboard</a>, which has a distinct
-          sound compared to the other keys.
+          As you might expect, the <kbd>Space</kbd> key has a bit of a different
+          timbre from the other keys, since it’s so much wider. This recording
+          captures the spacebar on my <a href={hi75Href}>Hi75</a> mechanical
+          keyboard.
         </p>
       </>
     ),
@@ -93,13 +69,94 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
 
-  'low-thumps': {
-    title: 'Rubber Buttons',
+  'heated-blanket': {
+    title: 'Heated Blanket',
     category: 'misc',
     description: (
       <p>
-        Pressing soft rubber buttons on the remote control for my standing desk.
+        Tactile buttons on a heated blanket remote control. Honestly not the
+        most interesting sound in the world, but sometimes you just need a basic
+        button sound!
       </p>
+    ),
+  },
+  'led-blacklight': {
+    title: 'LED Blacklight',
+    category: 'misc',
+    description: (
+      <p>
+        My partner has a handheld LED blacklight, used to check the fluorescence
+        of gemstones. It has a satisfyingly deep on/off switch, captured in this
+        recording.
+      </p>
+    ),
+  },
+  'popper-dice': {
+    title: 'Dice Popper',
+    category: 'misc',
+    description: (
+      <>
+        <p>
+          This is kind of a fun one. The board game <i>Trouble®</i> uses a
+          plastic-domed dice popper to generate random numbers, by depressing a
+          metal diaphragm that snaps back to roll a die.
+        </p>
+        <p>
+          I imagine this being useful for any sort of randomize/shuffle UI
+          interaction.
+        </p>
+      </>
+    ),
+  },
+  'popper-empty': {
+    title: 'Dice Popper (empty)',
+    category: 'misc',
+    description: (
+      <p>
+        Like the <code>popper-dice</code> sound, this recording captures a
+        plastic-domed dice popper, but this time without the die inside! This
+        version doesn't include the rattling tail from the rolling die.
+      </p>
+    ),
+  },
+  'ps4-dull': {
+    title: 'PS4 (dull)',
+    category: 'gamepad',
+    description: (
+      <p>
+        There are a whole lot of buttons on a Playstation DualSense controller,
+        and I recorded quite a few! This sound captures the main 4 action
+        buttons (x, circle, square, and triangle)
+      </p>
+    ),
+  },
+  'ps4-paddle': {
+    title: 'PS4 (paddle)',
+    category: 'gamepad',
+    description: (
+      <p>
+        The back trigger buttons (L2/R2) on a Playstation DualSense controller
+        are spring-loaded, and when they’re released quickly, they snap back
+        into place. This creates a neat sound where the <i>release</i> is louder
+        than the <i>press</i>.
+      </p>
+    ),
+  },
+  'ps4-double': {
+    title: 'PS4 (double)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          Instead of gently pressing and releasing the back trigger buttons
+          (L2/R2) on a Playstation DualSense controller, I also tried tapping
+          them aggressively, from a distance.
+        </p>
+        <p>
+          This creates an interesting two-step sound where you can hear my
+          finger hit the trigger, and then the trigger hit the controller.
+        </p>
+      </>
     ),
   },
   'ps4-clicky': {
@@ -111,37 +168,6 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </p>
     ),
   },
-  'ps4-double': {
-    title: 'PS4 (double)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Tapping the back trigger buttons (L2/R2) on a Playstation DualSense
-        controller from a distance to create a stepped double click.
-      </p>
-    ),
-  },
-  'ps4-dull': {
-    title: 'PS4 (dull)',
-    category: 'gamepad',
-    description: (
-      <p>
-        Pressing the main 4 action buttons on a Playstation DualSense
-        controller.
-      </p>
-    ),
-  },
-  'ps4-paddle': {
-    title: 'PS4 (paddle)',
-    category: 'gamepad',
-    description: (
-      <p>
-        The back trigger buttons (L2/R2) on a Playstation DualSense controller
-        are spring-loaded, and when they’re released quickly, they snap back
-        into place.
-      </p>
-    ),
-  },
   'ps4-snappy': {
     title: 'PS4 (snappy)',
     category: 'gamepad',
@@ -150,6 +176,23 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
         Pressing the emblematic “PS” button in the center of my Playstation
         DualSense controller.
       </p>
+    ),
+  },
+  'asus-mouse': {
+    title: 'ASUS Mouse',
+    category: 'mouse',
+    description: (
+      <>
+        <p>
+          So you know when you buy a budget pre-built desktop PC, they come
+          bundled with the worst possible mouse/keyboard combo? This is one of
+          those terrible included mice.
+        </p>
+        <p>
+          The mouse <em>feels</em> pretty cheap, but it <em>sounds</em> decent
+          enough!
+        </p>
+      </>
     ),
   },
   'halo-soft': {
@@ -187,8 +230,10 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     category: 'keyboard',
     description: (
       <p>
-        Pressing the shift key on my <a href={haloHref}>NuPhy Halo75 V2</a>{' '}
-        mechanical keyboard with Raspberry (46gf) switches.
+        The <kbd>Shift</kbd> key on my <a href={haloHref}>NuPhy Halo75 V2</a>{' '}
+        mechanical keyboard produces a sound somewhere between the normal keys
+        and the spacebar. Honestly, this might be the perfect Goldilocks middle
+        ground!
       </p>
     ),
   },
@@ -210,7 +255,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <p>
         Pressing the keys on my{' '}
         <a href={uhkHref}>Ultimate Hacking Keyboard 60 v2</a> with a moderate
-        amount of force. Mechanical keyboard with “Silent Pink” switches.
+        amount of force.
       </p>
     ),
   },
@@ -219,9 +264,20 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     category: 'keyboard',
     description: (
       <p>
-        Really smacking the keys on my{' '}
+        Hitting the <kbd>Space</kbd> key on my{' '}
         <a href={uhkHref}>Ultimate Hacking Keyboard 60 v2</a> mechanical
-        keyboard. “Silent Pink” switches.
+        keyboard with “Silent Pink” switches.
+      </p>
+    ),
+  },
+  'low-thumps': {
+    title: 'Rubber Buttons',
+    category: 'misc',
+    description: (
+      <p>
+        The remote control for my standing desk has these soft rubber buttons.
+        They don’t really produce much sound, but with a really-close microphone
+        and a lot of noise reduction, we get these satisfying low thumps.
       </p>
     ),
   },
@@ -258,6 +314,90 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </>
     ),
   },
+
+  'sd-standard': {
+    title: 'Steam Deck (Standard)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          The main A/B/X/Y buttons on the <a href={steamDeckHref}>Steam Deck</a>
+          , a handheld gaming PC. Soft and clicky.
+        </p>
+      </>
+    ),
+  },
+  'sd-squelchy': {
+    title: 'Steam Deck (Squelchy)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          Pressing the four directional buttons on my{' '}
+          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC.
+          Interestingly, each direction has a slightly different sound, so
+          there's quite a lot of variety in this recording.
+        </p>
+      </>
+    ),
+  },
+  'sd-resonant': {
+    title: 'Steam Deck (Resonant)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          Tapping and gently releasing the back trigger buttons (L2/R2) on the{' '}
+          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. The snap
+          back produces a pitched, resonant sound.
+        </p>
+        <p>
+          Try cranking the “Random Pitch” to around 0.25 for a fun musical
+          effect!
+        </p>
+      </>
+    ),
+  },
+  'sd-distorted': {
+    title: 'Steam Deck (Distorted)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          Smacking and flicking the back trigger buttons (L2/R2) on the{' '}
+          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. This
+          wound up being quite an aggressive sound, which could be useful for
+          industrial/mechanical designs.
+        </p>
+      </>
+    ),
+  },
+  'sd-metallic': {
+    title: 'Steam Deck (Metallic)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          Tapping the shoulder buttons (L1/R1) on the{' '}
+          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. For some
+          reason, this sounds metallic and tinkly, like tapping the side of a
+          kettle.
+        </p>
+      </>
+    ),
+  },
+  'sd-clicky': {
+    title: 'Steam Deck (Clicky)',
+    category: 'gamepad',
+    description: (
+      <>
+        <p>
+          The analog joysticks on the <a href={steamDeckHref}>Steam Deck</a> can
+          be pushed in, creating a sharp clicky sound.
+        </p>
+      </>
+    ),
+  },
   'carson-microflip': {
     title: 'Carson MicroFlip',
     category: 'misc',
@@ -269,17 +409,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </p>
     ),
   },
-  'heated-blanket': {
-    title: 'Heated Blanket',
-    category: 'misc',
-    description: (
-      <p>
-        Tactile buttons on a heated blanket remote control. Honestly not the
-        most interesting sound in the world, but sometimes you just need a basic
-        button sound!
-      </p>
-    ),
-  },
+
   'asus-kbd-soft': {
     title: 'ASUS Keyboard (soft)',
     category: 'keyboard',
@@ -287,8 +417,9 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <>
         <p>
           In contrast to the other mechanical keyboards in this set, I also
-          recorded the buttons on a cheap rubber-dome ASUS keyboard, the kind
-          that comes included with budget desktop PCs.
+          recorded the buttons on a cheap rubber-dome ASUS keyboard. This one
+          came bundled with a budget desktop PC, alongside the mouse used for
+          the <code>asus-mouse</code> sound.
         </p>
       </>
     ),
@@ -318,16 +449,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <p>Pressing the spacebar on a cheap rubber-dome ASUS keyboard.</p>
     ),
   },
-  'asus-mouse': {
-    title: 'ASUS Mouse',
-    category: 'mouse',
-    description: (
-      <p>
-        This recording captures the sound of the left click on a very cheap ASUS
-        mouse, the kind that comes included with budget desktop PCs.
-      </p>
-    ),
-  },
+
   'rival-3': {
     title: 'Steelseries Rival 3 (left click)',
     category: 'mouse',
@@ -394,48 +516,50 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </p>
     ),
   },
-  'led-blacklight': {
-    title: 'LED Blacklight',
-    category: 'misc',
-    description: (
-      <p>
-        My partner has a handheld LED blacklight, used to check the fluorescence
-        of gemstones. It has a satisfyingly deep on/off switch, captured in this
-        recording.
-      </p>
-    ),
-  },
+
   'treadmill-sharp': {
     title: 'Treadmill Remote (sharp)',
     category: 'misc',
     description: (
-      <p>
-        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-        control with several buttons. They all have a slightly different
-        character, so I recorded all three!
-      </p>
+      <>
+        <p>
+          My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+          control with several buttons. They all have a slightly different
+          character, so I recorded all three!
+        </p>
+        <p>This one feels tight and sharp to me.</p>
+      </>
     ),
   },
   'treadmill-pitched': {
     title: 'Treadmill Remote (pitched)',
     category: 'misc',
     description: (
-      <p>
-        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-        control with several buttons. They all have a slightly different
-        character, so I recorded all three!
-      </p>
+      <>
+        <p>
+          My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+          control with several buttons. They all have a slightly different
+          character, so I recorded all three!
+        </p>
+        <p>This one has a tiny bit of a musical lilt to it.</p>
+      </>
     ),
   },
   'treadmill-flinty': {
     title: 'Treadmill Remote (flinty)',
     category: 'misc',
     description: (
-      <p>
-        My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-        control with several buttons. They all have a slightly different
-        character, so I recorded all three!
-      </p>
+      <>
+        <p>
+          My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
+          control with several buttons. They all have a slightly different
+          character, so I recorded all three!
+        </p>
+        <p>
+          I think this last one has some dust stuck in it or something, since
+          some of the samples are a bit gritty.
+        </p>
+      </>
     ),
   },
   'camera-latch': {
@@ -447,86 +571,6 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
           My partner has an ancient camera with a latch that pops open the film
           compartment. It’s not really a button persay, but it sounded too cool
           not to include. 😄
-        </p>
-      </>
-    ),
-  },
-
-  'sd-standard': {
-    title: 'Steam Deck (Standard)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          The main A/B/X/Y buttons on the <a href={steamDeckHref}>Steam Deck</a>
-          , a handheld gaming PC. Soft and clicky.
-        </p>
-      </>
-    ),
-  },
-  'sd-squelchy': {
-    title: 'Steam Deck (Squelchy)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          Pressing the four directional buttons on my{' '}
-          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC.
-          Interestingly, each direction has a slightly different sound, so
-          there's quite a lot of variety in this recording.
-        </p>
-      </>
-    ),
-  },
-  'sd-resonant': {
-    title: 'Steam Deck (Resonant)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          Tapping and gently releasing the back trigger buttons (L2/R2) on the{' '}
-          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. The snap
-          back produces a pitched, resonant sound.
-        </p>
-      </>
-    ),
-  },
-  'sd-distorted': {
-    title: 'Steam Deck (Distorted)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          Smacking and flicking the back trigger buttons (L2/R2) on the{' '}
-          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. This
-          wound up being quite an aggressive sound, which could be useful for
-          industrial/mechanical designs.
-        </p>
-      </>
-    ),
-  },
-  'sd-metallic': {
-    title: 'Steam Deck (Metallic)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          Tapping the shoulder buttons (L1/R1) on the{' '}
-          <a href={steamDeckHref}>Steam Deck</a>, a handheld gaming PC. For some
-          reason, this sounds metallic and tinkly, like tapping the side of a
-          kettle.
-        </p>
-      </>
-    ),
-  },
-  'sd-clicky': {
-    title: 'Steam Deck (Clicky)',
-    category: 'gamepad',
-    description: (
-      <>
-        <p>
-          The analog joysticks on the <a href={steamDeckHref}>Steam Deck</a> can
-          be pushed in, creating a sharp clicky sound.
         </p>
       </>
     ),
@@ -544,25 +588,27 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       </p>
     ),
   },
-  'popper-dice': {
-    title: 'Dice Popper',
-    category: 'misc',
+
+  'hi75-medium': {
+    title: 'EPOMAKER x LEOBOG Hi75 (medium)',
+    category: 'keyboard',
     description: (
       <p>
-        The board game Trouble® uses a plastic-domed dice popper to generate
-        random numbers, by depressing a metal diaphragm that snaps back to roll
-        a die. It's a pretty unique sound!
+        In addition to the light-touch samples in <code>hi75-soft</code>, I also
+        recorded some slightly harder keypresses on my{' '}
+        <a href={hi75Href}>Hi75</a> mechanical keyboard. Honestly the difference
+        is quite subtle unless you’re using a good set of speakers/headphones.
       </p>
     ),
   },
-  'popper-empty': {
-    title: 'Dice Popper (empty)',
-    category: 'misc',
+  'hi75-hard': {
+    title: 'EPOMAKER x LEOBOG Hi75 (hard)',
+    category: 'keyboard',
     description: (
       <p>
-        Like the previous sound, this recording captures a plastic-domed dice
-        popper, but this time without the die inside! This version doesn't
-        include the rattling tail from the rolling die.
+        Like <code>hi75-soft</code> and <code>hi75-medium</code>, this sound
+        captures the sound of my <a href={hi75Href}>Hi75</a> mechanical
+        keyboard. This time, though, I hit the keys with reckless abandon.
       </p>
     ),
   },
@@ -573,7 +619,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <p>
         My <a href={revstarHref}>Yamaha Revstar</a> electric guitar has a toggle
         to switch between pickups. Switching to the bridge pickup produces a
-        bright clap-like sound, which can work for something being toggled on.
+        bright clap-like sound.
       </p>
     ),
   },
@@ -581,11 +627,18 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     title: 'Guitar Toggle (off)',
     category: 'toggle',
     description: (
-      <p>
-        My <a href={revstarHref}>Yamaha Revstar</a> electric guitar has a toggle
-        to switch between pickups. Switching to the neck pickup produces a
-        duller knock-type sound, which can work for something being toggled off.
-      </p>
+      <>
+        <p>
+          My <a href={revstarHref}>Yamaha Revstar</a> electric guitar has a
+          toggle to switch between pickups. Switching to the neck pickup
+          produces a duller knock-type sound.
+        </p>
+        <p>
+          I know it sounds quite similar to <code>guitar-toggle-on</code>, but
+          pay attention to the <i>release</i> sound specifically. The “on” sound
+          gets brighter, while the “off” sound gets darker.
+        </p>
+      </>
     ),
   },
   'tonal-on': {
@@ -617,9 +670,9 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     category: 'toggle',
     description: (
       <p>
-        Using granular and FM synthesis, I created a button sound in Ableton
-        Live. The “release” sound goes up in pitch, making this sound suitable
-        for turning a toggle on.
+        Using the <em>Current</em> VST synth, I created a button sound in
+        Ableton Live. The “release” sound goes up in pitch, making this sound
+        suitable for turning a toggle on.
       </p>
     ),
   },
@@ -628,9 +681,9 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     category: 'toggle',
     description: (
       <p>
-        Using granular and FM synthesis, I created a button sound in Ableton
-        Live. The “release” sound goes down in pitch, making this sound suitable
-        for toggling something off.
+        Using the <em>Current</em> VST synth, I created a button sound in
+        Ableton Live. The “release” sound goes down in pitch, making this sound
+        suitable for toggling something off.
       </p>
     ),
   },
