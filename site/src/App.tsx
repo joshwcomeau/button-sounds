@@ -105,12 +105,15 @@ const Header = styled.header`
   }
 
   h1 {
+    padding-inline: 1rem;
     font-size: 4rem;
     letter-spacing: -1px;
-    /* font-family: var(--font-segment); */
+    /* Smaller line-height because the font size is so big: */
+    line-height: 1.1;
   }
 
   p {
+    padding-inline: 1rem;
     text-wrap: balance;
     margin-bottom: 2rem;
     font-size: 1.125rem;

@@ -56,7 +56,7 @@ function SoundSelectSidebar({
   // I have scroll-indicating gradients at the top/bottom of the sound list, and they animate smoothly using animation-timeline (aside from Firefox). The trouble is that sometimes, when filtering, all of the sounds fit within the container, so there's no overflow to scroll through.
   // This tracks whether the list is scrollable or not, so that we can hide the gradients when all of the sounds fit in the container.
   // NOTE: In the future, I can use @container scroll-state for this! But it's not available in Safari yet, so we need to do it in JS.
-  useResizeObserver(listRef, () => {
+  const updateCanScroll = React.useCallback(() => {
     const scrollList = listRef.current;
     if (!scrollList) {
       return;
@@ -66,7 +66,14 @@ function SoundSelectSidebar({
     setCanScroll((current) =>
       current === nextCanScroll ? current : nextCanScroll,
     );
-  });
+  }, []);
+
+  useResizeObserver(listRef, updateCanScroll);
+
+  // The list’s own box doesn’t change size when filtering, only its contents, so the ResizeObserver won’t catch this.
+  React.useLayoutEffect(() => {
+    updateCanScroll();
+  }, [relevantSounds, updateCanScroll]);
 
   return (
     <Wrapper title="Select Sound" {...delegated}>
