@@ -56,7 +56,12 @@ const Wrapper = styled.div`
   display: flex;
   align-items: flex-start;
 
+  /*
+    The controls are intended to be anchored to the top of the viewport, as though stuck to the browser UI itself. Unfortunately, iOS Safari threw out decades of precedent when they moved the address bar to the bottom, and decided to allow the page to remain visible above the top of the viewport.
+    As a result, it weirdly feels like these controls are anchored to nothing, so we'll need to hide the anchoring screws (below) and make it seem like it's meant to be floating.
+  */
   @media (max-width: 57rem) {
+    top: 8px;
     left: 0;
     right: 0;
     margin-inline: auto;
@@ -85,6 +90,10 @@ const ScrewWrapper = styled.div`
     justify-content: flex-start;
     padding-left: var(--inline-inset);
   }
+
+  @media (max-width: 57rem) {
+    display: none;
+  }
 `;
 
 const Main = styled.div`
@@ -93,12 +102,13 @@ const Main = styled.div`
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
+  border: 3px solid var(--color-outline);
+  border-top: none;
   background: black;
   border-radius: 0 0 16px 16px;
   corner-shape: bevel;
-  border: 3px solid var(--color-outline);
-  border-top: none;
 
+  /* Soft white glow along the top, giving it a glassy effect */
   &::before {
     --inset: 0px;
     content: '';
@@ -114,6 +124,11 @@ const Main = styled.div`
     opacity: 0.2;
     mix-blend-mode: hard-light;
   }
+
+  @media (max-width: 57rem) {
+    border-top: 3px solid var(--color-outline);
+    border-radius: 4px 4px 16px 16px;
+  }
 `;
 
 const InnerEdge = styled.div`
@@ -124,6 +139,12 @@ const InnerEdge = styled.div`
   border-top: none;
   border-radius: 0 0 14px 14px;
   corner-shape: inherit;
+
+  @media (max-width: 57rem) {
+    top: 1px;
+    border-top: 1px solid var(--color-gray-75);
+    border-radius: 2px 2px 14px 14px;
+  }
 `;
 
 const Label = styled.label`
