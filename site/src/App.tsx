@@ -41,10 +41,7 @@ function App() {
         <Wrapper>
           <ShapeLayer layer="background" />
           <Header>
-            <h1>
-              Button Sounds
-              {window.devicePixelRatio}
-            </h1>
+            <h1>Button Sounds</h1>
             <p>
               A <Free>free</Free> collection of 50+ professionally-recorded
               multi-sampled clicks and toggles. Distributed as an NPM package
