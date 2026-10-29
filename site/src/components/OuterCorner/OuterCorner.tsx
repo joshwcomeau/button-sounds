@@ -42,6 +42,11 @@ const Wrapper = styled.div`
   corner-shape: bevel;
   pointer-events: none;
 
+  /* It just looks weird to have quarter-circle outer corners. Skip them entirely. */
+  @supports not (corner-shape: bevel) {
+    display: none;
+  }
+
   &[data-corner='top-left'] {
     border-top-left-radius: var(--border-radius);
     border-top: var(--border-width) solid var(--border-color);

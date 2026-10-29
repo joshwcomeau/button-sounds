@@ -93,6 +93,8 @@ const Wrapper = styled.button`
   background: black;
   corner-shape: bevel;
   cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 
   &:disabled {
     opacity: 0.5;

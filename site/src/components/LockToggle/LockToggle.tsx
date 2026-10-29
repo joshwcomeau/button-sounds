@@ -61,6 +61,7 @@ const Wrapper = styled.button`
     var(--color-gray-250)
   );
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
 
   &:active {
