@@ -1,10 +1,21 @@
 import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
+
+function devFavicon(): Plugin {
+  return {
+    name: 'dev-favicon',
+    apply: 'serve',
+    transformIndexHtml(html) {
+      return html.replace('href="/favicon.png"', 'href="/favicon-dev-new.png"');
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
+    devFavicon(),
     react(),
     // React Compiler has to run before other Babel plugins so it sees the original source.
     babel({

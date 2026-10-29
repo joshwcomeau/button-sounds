@@ -8,12 +8,10 @@ interface Props {
   gapHeight?: number;
 }
 
-function Scanlines({ strength, lineHeight = 1, gapHeight = 1 }: Props) {
+function Scanlines({ strength }: Props) {
   return (
     <Stripes
       style={{
-        '--line-height': `${lineHeight}px`,
-        '--gap-height': `${gapHeight}px`,
         opacity: normalize(strength, 0, 1, 0, 0.3),
       }}
     />
@@ -21,6 +19,8 @@ function Scanlines({ strength, lineHeight = 1, gapHeight = 1 }: Props) {
 }
 
 const Stripes = styled.div`
+  --line-height: 1px;
+  --gap-height: 1px;
   position: fixed;
   inset: 0;
   width: 100%;
@@ -33,6 +33,12 @@ const Stripes = styled.div`
   );
   mix-blend-mode: hard-light;
   pointer-events: none;
+
+  /* On Android Chrome, the lines get a bit glitchy, and even on iOS Safari, the lines are so tiny that it's hard to make them out. Double the size on smaller screens: */
+  @media (max-width: 32rem) {
+    --line-height: 2px;
+    --gap-height: 2px;
+  }
 `;
 
 export default Scanlines;
