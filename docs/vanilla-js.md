@@ -98,6 +98,7 @@ button.addEventListener('pointerdown', () => {
     () => {
       release('iidx');
     },
+    // Automatically cancel the event listener after a single use:
     { once: true },
   );
 });
@@ -105,12 +106,30 @@ button.addEventListener('pointerdown', () => {
 
 The problem with having a parallel `pointerUp` listener is that it leads to two weird edge-cases:
 
-1. Suppose the user is selecting some text on the page, and they happen to release the cursor while it's hovering over the button. A `pointerUp` event handler would play the 'up' sound even though the button was never depressed.
-1. Suppose the user presses down on the button, but shifts a few pixels off of the button before releasing it. The button would visually shift from `:active` back to normal, but the sound wouldn’t play, since technically the `pointerUp` event didn't trigger on the button.
+1. Suppose the user is selecting some text on the page, and they happen to release the cursor while it's hovering over the button. They never actually clicked the button, but since the cursor is resting on top of it, it triggers a `pointerUp` event, which would play the “release” sound.
+2. Suppose the user presses down on the button, but happens to shift a few pixels off of the button before releasing it. The button would visually shift from `:active` back to normal, but the sound wouldn’t play, since technically the `pointerUp` event didn't trigger on the button.
 
-By nesting the `pointerUp` listener, we ensure that the two sounds are connected, that we'll always get the 'release' sound when the button is released. Stray `pointerUp` events will be ignored.
+By nesting the `pointerUp` listener, we ensure that the two sounds are linked. We’ll always hear the button pop back up when it’s been depressed, and stray `pointerUp` events will be ignored.
 
-There are other valid solutions to this problem; for example, we could use a variable to keep track of the button’s pressed state. I really like the nested approach since everything is contained in one spot. The `{ once: true }` parameter is super nice in situations like this! But really, this is a personal preference. Feel free to use a different approach if you prefer.
+Alternatively, we could use a variable to keep track of whether the button is pressed or not, and conditionally trigger the “release” sound:
+
+```js
+let isButtonPressed = false;
+
+button.addEventListener('pointerdown', () => {
+  isButtonPressed = true;
+  press('iidx');
+});
+
+window.addEventListener('pointerup', () => {
+  if (isButtonPressed) {
+    release('iidx');
+    isButtonPressed = false;
+  }
+});
+```
+
+Personally, I prefer the nested approach because everything is contained in one spot, but either approach works. There are probably other valid solutions as well. The most important thing is that we handle the aforementioned edge cases; I'm not too fussy about the particular implementation.
 
 ## Hosting the audio files yourself
 
