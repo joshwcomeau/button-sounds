@@ -3,6 +3,7 @@ import babel from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
+// Serve a different favicon on localhost so that I can easily tell whether a tab is development vs. production:
 function devFavicon(): Plugin {
   return {
     name: 'dev-favicon',
