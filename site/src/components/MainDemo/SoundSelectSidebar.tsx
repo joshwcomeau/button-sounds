@@ -70,7 +70,9 @@ function SoundSelectSidebar({
 
   useResizeObserver(listRef, updateCanScroll);
 
-  // The list’s own box doesn’t change size when filtering, only its contents, so the ResizeObserver won’t catch this.
+  // When changing the filter, we need to check whether we should still display the top/bottom <EdgeFade> scroll indicators. Otherwise, when enabling a filter with a small # of sounds, the scroll indicators will still show even though there's nothing to scroll.
+  // This isn’t caught automatically by ResizeObserver since the container itself doesn’t change size.
+  // NOTE: This causes a double-render (first render changes `relevantSounds` when filtering, second render changes `canScroll`). I don't think it’s avoidable, though: we won't know whether to display scroll indicators until *after* the UI has updated and we can tell whether there's room to scroll or not, so we need to sequence it like this. This can all be removed once `@container scroll-state` is widely available!
   React.useLayoutEffect(() => {
     updateCanScroll();
   }, [relevantSounds, updateCanScroll]);
