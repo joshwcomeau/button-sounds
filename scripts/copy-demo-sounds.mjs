@@ -1,4 +1,4 @@
-// Copies the package's .mp3 sounds into the demo site's static folder so the site can play them locally via baseUrl: '/sounds/'. This mirrors what `npx button-sounds copy ./public/sounds` does for real consumers — the demo self-hosts rather than depending on the (unpublished) CDN version.
+// Copies the package's .mp3 sounds into the demo site's static folder so the site can play them locally via baseUrl: '/button-sounds/'. This mirrors what `npx button-sounds copy ./public/sounds` does for real consumers — the demo self-hosts rather than depending on the CDN version.
 
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(repoRoot, 'package/assets');
-const destDir = join(repoRoot, 'site/public/sounds');
+const destDir = join(repoRoot, 'site/public/button-sounds');
 
 const mp3s = readdirSync(assetsDir).filter((file) =>
   file.toLowerCase().endsWith('.mp3'),

@@ -16,7 +16,7 @@
     "@floating-ui/react": "^0.27.20",
     "@react-three/fiber": "^9.8.2",
     "button-sounds": "workspace:*",
-    "lucide-react": "^1.48.0",
+    "lucide-react": "^1.70.0",
     "microlighter": "^2.2.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

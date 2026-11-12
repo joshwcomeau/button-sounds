@@ -1,0 +1,1 @@
+NOTE: the `/button-sounds` directory is automatically generated from the audio files in `/package/assets` in a prebuild script. Don't put anything in there, it’ll get erased on deploy or when starting a dev server.
