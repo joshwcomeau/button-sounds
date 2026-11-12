@@ -6,7 +6,8 @@ That said, you may want to self-host the audio files. There are a few potential 
 
 1. You don’t want to rely on a third-party service which could eventually become unavailable or unreliable.
 2. You’re building a desktop application (eg. with Electron) which needs to work offline.
-3. You want to tweak the audio files themselves, or replace them with your own versions!
+3. You need all assets to be served from your main origin, to comply with either technical or organizational requirements.
+4. You want to tweak the audio files themselves, or replace them with your own versions!
 
 This document shares how you can achieve this.
 
@@ -14,20 +15,20 @@ This document shares how you can achieve this.
 
 First, you’ll need to grab the raw MP3 files themselves and store them alongside your other assets.
 
-The MP3 files are distributed along with the NPM package, so if you have the package installed, the easiest way to do this is with the CLI’s `cp` (copy) command:
+I’ve created a handy little NPM script that will copy the files:
 
 ```bash
-# From your project root:
-$ cp -r node_modules/button-sounds/assets [destination-directory]
+# From your project root
+$ npx button-sounds copy [destination-directory]
 ```
 
 For example, if you want to store the MP3s in `/public/sounds/btn`, you would do it like this:
 
 ```bash
-$ cp -r node_modules/button-sounds/assets ./public/sounds/btn
+$ npx button-sounds copy ./public/sounds/btn
 ```
 
-If you’re not super comfortable with the command line, you can alternatively [download the Git repository](https://github.com/joshwcomeau/button-sounds), which includes all of the MP3 files in `/package/assets`. You can drag-and-drop this directory into your project
+Alternatively, you can [download the Git repository](https://github.com/joshwcomeau/button-sounds), which includes all of the MP3 files in `/package/assets`, and then drag-and-drop this directory into your project
 
 ## Pointing the library to your files
 

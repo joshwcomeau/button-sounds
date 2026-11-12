@@ -50,13 +50,13 @@ interface Props {
 }
 
 function CodedLights({ hasWon, onComplete, onInteract }: Props) {
-  const [play] = useSound('/sounds/misc/easter-egg-notes.mp3', {
+  const [play] = useSound('/sounds/easter-egg-notes.mp3', {
     sprite: SPRITE_DATA,
   });
-  const [playWinAudio] = useSound('/sounds/misc/win-arp.mp3', {
+  const [playWinAudio] = useSound('/sounds/win-arp.mp3', {
     volume: 0.25,
   });
-  const [playSparklers] = useSound('/sounds/misc/sparklers.mp3', {
+  const [playSparklers] = useSound('/sounds/sparklers.mp3', {
     volume: 0.25,
   });
   const [statuses, setStatuses] =

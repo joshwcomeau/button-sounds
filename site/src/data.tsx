@@ -500,8 +500,8 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
         <a href="https://www.logitech.com/en-ca/shop/p/mx-master-3s.910-007500">
           Logitech MX Master 3
         </a>{' '}
-        has been my daily driver for years. This recording captures the sound of
-        its left click.
+        has been my daily driver mouse for years. This recording captures the
+        sound of its left click.
       </p>
     ),
   },
@@ -524,7 +524,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <>
         <p>
           My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-          control with several buttons. They all have a slightly different
+          control with three buttons. They all have a slightly different
           character, so I recorded all three!
         </p>
         <p>This one feels tight and sharp to me.</p>
@@ -538,7 +538,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <>
         <p>
           My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-          control with several buttons. They all have a slightly different
+          control with three buttons. They all have a slightly different
           character, so I recorded all three!
         </p>
         <p>This one has a tiny bit of a musical lilt to it.</p>
@@ -552,7 +552,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
       <>
         <p>
           My <a href={urevoHref}>Urevo</a> walking pad came with a basic remote
-          control with several buttons. They all have a slightly different
+          control with three buttons. They all have a slightly different
           character, so I recorded all three!
         </p>
         <p>
@@ -645,24 +645,36 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     title: 'Tonal (on)',
     category: 'toggle',
     description: (
-      <p>
-        By plucking a muted nylon string on my{' '}
-        <a href={godinHref}>Godin Concert</a> guitar, I created a soft tonal
-        sound that could work for certain UI interactions. The “release” sound
-        goes up in pitch, confirming that something is activated.
-      </p>
+      <>
+        <p>
+          By plucking a muted nylon string on my{' '}
+          <a href={godinHref}>Godin Concert</a> guitar, I created a soft tonal
+          sound that could work for certain UI interactions. The “release” sound
+          goes up in pitch, confirming that something is activated.
+        </p>
+        <p>
+          This one works best without random pitch (or a <em>very</em> small
+          amount, like 0.02).
+        </p>
+      </>
     ),
   },
   'tonal-off': {
     title: 'Tonal (off)',
     category: 'toggle',
     description: (
-      <p>
-        By plucking a muted nylon string on my{' '}
-        <a href={godinHref}>Godin Concert</a> guitar, I created a soft tonal
-        sound that could work for certain UI interactions. The “release” sound
-        goes down in pitch, indicating that something is deactivated.
-      </p>
+      <>
+        <p>
+          By plucking a muted nylon string on my{' '}
+          <a href={godinHref}>Godin Concert</a> guitar, I created a soft tonal
+          sound that could work for certain UI interactions. The “release” sound
+          goes down in pitch, indicating that something is deactivated.
+        </p>
+        <p>
+          This one works best without random pitch (or a <em>very</em> small
+          amount, like 0.02).
+        </p>
+      </>
     ),
   },
   'synth-on': {
