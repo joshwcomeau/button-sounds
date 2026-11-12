@@ -59,8 +59,8 @@ function SoundSelectBtn({
       }}
       {...delegated}
     >
-      <BevelEdge side="top" color="var(--top-edge)" radius={5} />
-      <BevelEdge side="bottom" color="var(--bottom-edge)" radius={5} />
+      <BevelEdge side="top" color="var(--top-edge)" radius={4} />
+      <BevelEdge side="bottom" color="var(--bottom-edge)" radius={4} />
 
       <ActiveIndicator>
         {range(10).map((index) => (
