@@ -1,74 +1,53 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import useResizeObserver from '@/hooks/use-resize-observer';
-
 const DIAMOND_SIZE = 5;
-const IDEAL_GAP = 2;
+const GAP = 2;
 const STROKE_WIDTH = 2;
-// Room around each diamond for its stroke. With mitered 90° corners, the stroke pokes out ~0.71px past each vertex, so half the stroke width isn’t enough.
+// Room above/below each diamond for its stroke. With mitered 90° corners, the stroke pokes out ~0.71× its width past each vertex, so half the stroke width isn’t enough.
 const MARGIN = STROKE_WIDTH;
 const HEIGHT = 4;
+
+const TILE_WIDTH = DIAMOND_SIZE + GAP;
+const TILE_HEIGHT = DIAMOND_SIZE + MARGIN * 2;
+const PATTERN_X = -GAP / 2;
+const PATTERN_Y = HEIGHT / 2 - TILE_HEIGHT / 2;
+
+const half = DIAMOND_SIZE / 2;
+const centerX = TILE_WIDTH / 2;
+const centerY = TILE_HEIGHT / 2;
+const DIAMOND_PATH = `
+  M ${centerX},${centerY - half}
+  L ${centerX + half},${centerY}
+  L ${centerX},${centerY + half}
+  L ${centerX - half},${centerY}
+  Z
+`;
 
 function Divider(props: React.SVGProps<SVGSVGElement>) {
   const reactId = React.useId();
   const svgPatternId = `divider-pattern-${reactId}`;
 
-  const ref = React.useRef<SVGSVGElement>(null);
-  const [width, setWidth] = React.useState<number | null>(null);
-
-  useResizeObserver(ref, ([entry]) => {
-    if (entry) {
-      setWidth(entry.contentRect.width);
-    }
-  });
-
-  // Stretch the gaps so that the first diamond starts at the left edge and the last one ends at the right edge. Rounding down means the gap is never smaller than IDEAL_GAP.
-  const idealTileWidth = DIAMOND_SIZE + IDEAL_GAP;
-  let tileWidth = idealTileWidth;
-  if (width !== null && width > DIAMOND_SIZE) {
-    const numOfGaps = Math.max(
-      1,
-      Math.floor((width - DIAMOND_SIZE) / idealTileWidth),
-    );
-    tileWidth = (width - DIAMOND_SIZE) / numOfGaps;
-  }
-
-  const half = DIAMOND_SIZE / 2;
-  const center = MARGIN + half;
-  const diamondPath = `
-    M ${center},${MARGIN}
-    L ${center + half},${center}
-    L ${center},${center + half}
-    L ${center - half},${center}
-    Z
-  `;
-
-  const patternY = HEIGHT / 2 - center;
-
   return (
-    <Svg ref={ref} {...props}>
+    <Svg {...props}>
       <defs>
         <pattern
           id={svgPatternId}
           patternUnits="userSpaceOnUse"
-          x={-MARGIN}
-          y={patternY}
-          width={tileWidth}
-          height={DIAMOND_SIZE + MARGIN * 2}
+          x={PATTERN_X}
+          y={PATTERN_Y}
+          width={TILE_WIDTH}
+          height={TILE_HEIGHT}
         >
-          <Diamond d={diamondPath} />
+          <Diamond d={DIAMOND_PATH} />
         </pattern>
       </defs>
-      {width !== null && (
-        <rect
-          x={-MARGIN}
-          y={patternY}
-          width={width + MARGIN * 2}
-          height={DIAMOND_SIZE + MARGIN * 2}
-          fill={`url(#${svgPatternId})`}
-        />
-      )}
+      <Rect
+        x={PATTERN_X}
+        y={PATTERN_Y}
+        height={TILE_HEIGHT}
+        fill={`url(#${svgPatternId})`}
+      />
     </Svg>
   );
 }
@@ -78,6 +57,10 @@ const Svg = styled.svg`
   width: 100%;
   height: ${HEIGHT}px;
   overflow: visible;
+`;
+
+const Rect = styled.rect`
+  width: calc(100% + ${GAP}px);
 `;
 
 const Diamond = styled.path`
