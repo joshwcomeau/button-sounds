@@ -14,6 +14,7 @@ import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
 import CodedLights from '@/components/CodedLights/CodedLights';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
+import { useBGMSetters } from '@/components/BGMProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
@@ -88,6 +89,7 @@ function MainDemo() {
   // The minigame can be reset, and the simplest way to accomplish this is to swap out the key. So, this is an ever-incrementing number used to remount the CodedLights component:
   const [minigameRound, setMinigameRound] = React.useState(0);
   const { usingLofi, pitchVariation } = useSoundSettings();
+  const { stopWithFade: stopBGMWithFade } = useBGMSetters();
 
   const hasWonMinigameRef = useSyncedRef(hasWonMinigame);
   const wasShowingPrizeRef = React.useRef(false);
@@ -411,6 +413,7 @@ function MainDemo() {
               key={minigameRound}
               hasWon={hasWonMinigame}
               onComplete={() => {
+                stopBGMWithFade(1000);
                 setHasWonMinigame(true);
                 setIsCelebrating(true);
               }}

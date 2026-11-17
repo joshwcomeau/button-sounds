@@ -17,6 +17,7 @@ import VisuallyHidden from '@/components/VisuallyHidden';
 
 import MediaBtn from './MediaBtn';
 import MediaPlayerSmallSlider from './MediaPlayerSmallSlider';
+import MediaPlayerScrubber from './MediaPlayerScrubber';
 
 const TITLE = 'Actuator Jam – Josh W. Comeau (1:17)';
 // The trailing space keeps the end of one loop from butting up against the start of the next.
@@ -35,8 +36,9 @@ interface Props {
 }
 
 function MediaPlayer({ handleClose }: Props) {
-  const { volume, panning } = useBGMState();
-  const { setVolume, setPanning } = useBGMSetters();
+  const { volume, panning, timestamp, duration } = useBGMState();
+  const { play, pause, stop, rewind, seek, setVolume, setPanning } =
+    useBGMSetters();
 
   const [draggingSlider, setDraggingSlider] = React.useState<Slider | null>(
     null,
@@ -158,13 +160,22 @@ function MediaPlayer({ handleClose }: Props) {
             </TopSliders>
           </TrackInfo>
         </TopSection>
-        <ScrubberWrapper>TODO</ScrubberWrapper>
+        <ScrubberWrapper>
+          <MediaPlayerScrubber
+            aria-label="Playback position"
+            aria-valuetext={`${formatTime(timestamp)} of ${formatTime(duration)}`}
+            value={timestamp}
+            min={0}
+            max={duration}
+            onCommit={seek}
+          />
+        </ScrubberWrapper>
         <BottomSection>
           <Buttons>
-            <MediaBtn icon="rewind" onClick={noop} />
-            <MediaBtn icon="play" onClick={noop} />
-            <MediaBtn icon="pause" onClick={noop} />
-            <MediaBtn icon="stop" onClick={noop} />
+            <MediaBtn icon="rewind" onClick={rewind} />
+            <MediaBtn icon="play" onClick={play} />
+            <MediaBtn icon="pause" onClick={pause} />
+            <MediaBtn icon="stop" onClick={stop} />
           </Buttons>
         </BottomSection>
       </Wrapper>
@@ -175,7 +186,11 @@ function MediaPlayer({ handleClose }: Props) {
   );
 }
 
-function noop() {}
+function formatTime(seconds: number) {
+  const wholeSeconds = Math.floor(seconds);
+  const minutes = Math.floor(wholeSeconds / 60);
+  return `${minutes}:${String(wholeSeconds % 60).padStart(2, '0')}`;
+}
 
 function getBalanceLabel(panning: number) {
   const percentage = Math.round(Math.abs(panning) * 100);
@@ -257,6 +272,9 @@ const OuterWrapper = styled.div`
 const Wrapper = styled.div`
   --r: calc(var(--outer-radius) - 2px);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: linear-gradient(
     0deg,
     var(--w-primary-600),

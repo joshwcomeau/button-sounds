@@ -1,48 +1,203 @@
 import * as React from 'react';
 import { Howl } from 'howler';
 
+const INITIAL_VOLUME = 0.25;
+
 // Load the sounds ASAP
 const bgm = new Howl({
   src: ['/sounds/actuator.mp3'],
   loop: true,
-  volume: 0.25,
+  volume: INITIAL_VOLUME,
 });
+// Calling `play()` without an ID starts a new, overlapping instance, so we hold onto the first one and reuse it.
+let soundId: number | undefined;
+// Set while a fade-out is in progress. Calling it abandons the fade and restores the sound’s volume, so the next `play()` isn’t silent.
+let cancelFadeOut: (() => void) | null = null;
+
+const TIMESTAMP_POLL_INTERVAL_MS = 1000;
+
+// With a single argument, Howler treats anything that isn’t a known sound ID as a seek position, so we can’t pass `soundId` through when it’s undefined.
+function getPlaybackPosition() {
+  return soundId === undefined ? 0 : bgm.seek(soundId);
+}
 
 interface BGMContextType {
   isPlaying: boolean;
   volume: number;
   panning: number;
+  // Seconds into the song
+  timestamp: number;
+  // Seconds. 0 until the file has loaded.
+  duration: number;
 }
 interface BGMContextSetter {
-  setIsPlaying: (value: boolean) => void;
-  setVolume: React.Dispatch<React.SetStateAction<number>>;
-  setPanning: React.Dispatch<React.SetStateAction<number>>;
+  play: () => void;
+  pause: () => void;
+  stop: () => void;
+  stopWithFade: (duration: number) => void;
+  rewind: () => void;
+  seek: (timestamp: number) => void;
+  setVolume: (value: number) => void;
+  setPanning: (value: number) => void;
 }
 
 const BGMContext = React.createContext<BGMContextType>({
   isPlaying: false,
-  volume: 0.25,
+  volume: INITIAL_VOLUME,
   // -1 (full left) to 1 (full right)
   panning: 0,
+  timestamp: 0,
+  duration: 0,
 });
 const BGMSetterContext = React.createContext<BGMContextSetter>({
-  setIsPlaying: () => {},
+  play: () => {},
+  pause: () => {},
+  stop: () => {},
+  stopWithFade: () => {},
+  rewind: () => {},
+  seek: () => {},
   setVolume: () => {},
   setPanning: () => {},
 });
 
 function BGMProvider({ children }: { children: React.ReactNode }) {
-  const [isPlaying, rawSetIsPlaying] = React.useState(false);
+  const [isPlaying, setIsPlaying] = React.useState(false);
   const [volume, rawSetVolume] = React.useState(bgm.volume());
   const [panning, rawSetPanning] = React.useState(0);
+  const [timestamp, setTimestamp] = React.useState(0);
+  const [duration, setDuration] = React.useState(bgm.duration());
 
-  const setIsPlaying = React.useCallback((value: boolean) => {
-    if (value) {
-      bgm.play();
-    } else {
-      bgm.stop();
+  // Lets the first `play()` honor a position the user scrubbed to before any sound instance existed.
+  const timestampRef = React.useRef(timestamp);
+  React.useEffect(() => {
+    timestampRef.current = timestamp;
+  }, [timestamp]);
+
+  React.useEffect(() => {
+    if (bgm.state() === 'loaded') {
+      return;
     }
-    rawSetIsPlaying(value);
+
+    function handleLoad() {
+      setDuration(bgm.duration());
+    }
+
+    bgm.once('load', handleLoad);
+
+    return () => {
+      bgm.off('load', handleLoad);
+    };
+  }, []);
+
+  // With `loop: true`, Howler fires `end` every time the song wraps around.
+  React.useEffect(() => {
+    function handleLoop() {
+      setTimestamp(0);
+    }
+
+    bgm.on('end', handleLoop);
+
+    return () => {
+      bgm.off('end', handleLoop);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!isPlaying) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setTimestamp(getPlaybackPosition());
+    }, TIMESTAMP_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isPlaying]);
+
+  const play = React.useCallback(() => {
+    cancelFadeOut?.();
+    const isFirstPlay = soundId === undefined;
+    soundId = bgm.play(soundId);
+    if (isFirstPlay && timestampRef.current > 0) {
+      bgm.seek(timestampRef.current, soundId);
+    }
+    setIsPlaying(true);
+  }, []);
+
+  const pause = React.useCallback(() => {
+    cancelFadeOut?.();
+    bgm.pause(soundId);
+    setTimestamp(getPlaybackPosition());
+    setIsPlaying(false);
+  }, []);
+
+  const stop = React.useCallback(() => {
+    cancelFadeOut?.();
+    bgm.stop(soundId);
+    setTimestamp(0);
+    setIsPlaying(false);
+  }, []);
+
+  const stopWithFade = React.useCallback(
+    (duration: number) => {
+      const id = soundId;
+      if (id === undefined || !bgm.playing(id)) {
+        stop();
+        return;
+      }
+
+      cancelFadeOut?.();
+
+      const handleFadeEnd = () => {
+        cancelFadeOut = null;
+        bgm.stop(id);
+        bgm.volume(bgm.volume(), id);
+        setTimestamp(0);
+      };
+
+      cancelFadeOut = () => {
+        cancelFadeOut = null;
+        bgm.off('fade', handleFadeEnd, id);
+        // Setting the volume also halts Howler’s in-progress fade.
+        bgm.volume(bgm.volume(), id);
+      };
+
+      bgm.once('fade', handleFadeEnd, id);
+      bgm.fade(bgm.volume(), 0, duration, id);
+      setIsPlaying(false);
+    },
+    [stop],
+  );
+
+  const rewind = React.useCallback(() => {
+    if (soundId !== undefined) {
+      bgm.seek(0, soundId);
+    }
+    setTimestamp(0);
+  }, []);
+
+  const seek = React.useCallback((value: number) => {
+    if (soundId !== undefined) {
+      bgm.seek(value, soundId);
+    }
+    setTimestamp(value);
+  }, []);
+
+  const setVolume = React.useCallback((value: number) => {
+    // Changing the volume would interrupt a fade-out, so finish the stop right away.
+    if (cancelFadeOut) {
+      cancelFadeOut();
+      bgm.stop(soundId);
+    }
+    bgm.volume(value);
+    rawSetVolume(value);
+  }, []);
+
+  const setPanning = React.useCallback((value: number) => {
+    bgm.stereo(value);
+    rawSetPanning(value);
   }, []);
 
   const value = React.useMemo(
@@ -50,18 +205,24 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       isPlaying,
       volume,
       panning,
+      timestamp,
+      duration,
     }),
-    [isPlaying, volume, panning],
+    [isPlaying, volume, panning, timestamp, duration],
   );
 
   const setters = React.useMemo(
     () => ({
-      setIsPlaying,
-      // TODO: Implement these
-      setVolume: rawSetVolume,
-      setPanning: rawSetPanning,
+      play,
+      pause,
+      stop,
+      stopWithFade,
+      rewind,
+      seek,
+      setVolume,
+      setPanning,
     }),
-    [setIsPlaying],
+    [play, pause, stop, stopWithFade, rewind, seek, setVolume, setPanning],
   );
 
   return (

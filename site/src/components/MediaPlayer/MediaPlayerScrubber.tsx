@@ -1,70 +1,125 @@
 // A slider inspired by Winamp’s main position/seek bar.
-// The native thumb is invisible but kept at the same size as our custom handle, so that the handle’s position lines up exactly with where the browser thinks the thumb is.
+// The input is uncontrolled so that dragging only moves the thumb; the new position is reported through `onCommit` once the user lets go (the native `change` event, which React’s `onChange` doesn’t expose).
 import * as React from 'react';
-import styled from 'styled-components';
-
-import { clampedNormalize } from '@/utils';
+import styled, { css } from 'styled-components';
 
 const HANDLE_WIDTH = 29;
 const HANDLE_HEIGHT = 10;
 const TRACK_HEIGHT = 10;
 
-// Must be controlled, since the handle’s position is derived from `value`.
 type Props = Omit<
   React.ComponentPropsWithoutRef<'input'>,
-  'type' | 'value' | 'defaultValue' | 'min' | 'max'
+  'type' | 'value' | 'defaultValue' | 'min' | 'max' | 'onChange'
 > & {
   value: number;
   min?: number;
   max?: number;
+  onCommit: (value: number) => void;
 };
 
 function MediaPlayerScrubber({
   value,
   min = 0,
   max = 100,
-  // If we wrap this element (eg. `styled(MediaPlayerScrubber)`), we'll want the generated className to apply to the parent Wrapper, not the input that should receive all other standard props.
-  className,
+  onCommit,
+  onPointerDown,
   ...delegated
 }: Props) {
-  const progress = min === max ? 0 : clampedNormalize(value, min, max);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const isHeldRef = React.useRef(false);
+
+  // While the thumb is held, `value` keeps ticking along with playback, and applying it would yank the thumb out from under the cursor.
+  React.useEffect(() => {
+    const input = inputRef.current;
+    if (input && !isHeldRef.current) {
+      input.value = String(value);
+    }
+  }, [value, min, max]);
+
+  React.useEffect(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+
+    const handleChange = () => {
+      onCommit(Number(input.value));
+    };
+
+    // The pointer can be released outside the slider, so we listen on the window.
+    function handleRelease() {
+      isHeldRef.current = false;
+    }
+
+    input.addEventListener('change', handleChange);
+    window.addEventListener('pointerup', handleRelease);
+    window.addEventListener('pointercancel', handleRelease);
+
+    return () => {
+      input.removeEventListener('change', handleChange);
+      window.removeEventListener('pointerup', handleRelease);
+      window.removeEventListener('pointercancel', handleRelease);
+    };
+  }, [onCommit]);
 
   return (
-    <Wrapper
-      className={className}
-      style={{
-        '--progress': progress,
+    <Input
+      ref={inputRef}
+      type="range"
+      defaultValue={value}
+      min={min}
+      max={max}
+      onPointerDown={(ev) => {
+        isHeldRef.current = true;
+        onPointerDown?.(ev);
       }}
-    >
-      <Track />
-      <Input type="range" value={value} min={min} max={max} {...delegated} />
-      <Handle>
-        <Grip />
-      </Handle>
-    </Wrapper>
+      {...delegated}
+    />
   );
 }
 
-const Track = styled.div`
-  position: absolute;
-  inset-inline: 0;
-  top: 50%;
-  transform: translateY(-50%);
+// Layered inset shadows draw the beveled edges, from the outermost 1px ring inward. Earlier shadows paint on top, which decides who wins at the corners. The engraved grip in the middle is drawn with background gradients.
+const thumbStyles = css`
+  width: ${HANDLE_WIDTH}px;
+  height: ${HANDLE_HEIGHT}px;
+  border: none;
+  border-radius: 0;
+  background:
+    linear-gradient(
+        hsl(0deg 0% 96%) 0 1px,
+        hsl(42deg 44% 31%) 1px 2px,
+        hsl(44deg 29% 54%) 2px
+      )
+      4px 3px / ${HANDLE_WIDTH - 8}px 3px no-repeat,
+    linear-gradient(hsl(48deg 60% 87%), hsl(48deg 60% 87%)) 3px 2px /
+      ${HANDLE_WIDTH - 6}px 5px no-repeat,
+    hsl(44deg 29% 54%);
+  box-shadow:
+    inset 1px 0px 0px hsl(240deg 6% 42%),
+    inset -1px 0px 0px hsl(0deg 60% 2%),
+    inset 0px -1px 0px hsl(0deg 60% 2%),
+    inset 2px 0px 0px hsl(46deg 40% 74%),
+    inset 0px 1px 0px hsl(46deg 40% 74%),
+    inset -2px 0px 0px hsl(44deg 34% 40%),
+    inset 0px -2px 0px hsl(44deg 34% 40%),
+    inset 3px 0px 0px hsl(42deg 38% 36%),
+    inset 0px 2px 0px hsl(42deg 38% 36%);
+`;
+
+const trackStyles = css`
   height: ${TRACK_HEIGHT}px;
-  background: hsl(240deg 25% 14%);
-  border: 1px solid;
-  border-color: hsl(240deg 25% 6%) hsl(240deg 10% 42%) hsl(240deg 10% 42%)
-    hsl(240deg 25% 6%);
-  border-radius: 1px;
-  box-shadow: inset 0px 1px 2px hsl(0deg 0% 0% / 0.5);
-  pointer-events: none;
+  background: hsl(240deg 21% 24%);
+  box-shadow:
+    inset 0px 2px 0px hsl(240deg 22% 15%),
+    inset 1px 0px 0px hsl(240deg 22% 15%),
+    inset 0px -1px 0px hsl(240deg 8% 50%),
+    inset -1px 0px 0px hsl(240deg 8% 50%);
 `;
 
 const Input = styled.input`
-  position: relative;
   display: block;
   width: 100%;
-  height: ${HANDLE_HEIGHT}px;
+  height: ${TRACK_HEIGHT}px;
   margin: 0;
   appearance: none;
   background: transparent;
@@ -75,60 +130,29 @@ const Input = styled.input`
     cursor: grabbing;
   }
 
+  &::-webkit-slider-runnable-track {
+    ${trackStyles}
+  }
+
+  &::-moz-range-track {
+    ${trackStyles}
+  }
+
   &::-webkit-slider-thumb {
     appearance: none;
-    width: ${HANDLE_WIDTH}px;
-    height: ${HANDLE_HEIGHT}px;
-    opacity: 0;
+    ${thumbStyles}
   }
 
   &::-moz-range-thumb {
-    width: ${HANDLE_WIDTH}px;
-    height: ${HANDLE_HEIGHT}px;
-    border: none;
-    opacity: 0;
-  }
-`;
-
-const Handle = styled.div`
-  --handle-bg: hsl(45deg 55% 72%);
-  --grip-border: hsl(40deg 45% 38%);
-  --grip-highlight: hsl(50deg 80% 90%);
-  position: absolute;
-  top: 0;
-  left: calc(var(--progress) * (100% - ${HANDLE_WIDTH}px));
-  width: ${HANDLE_WIDTH}px;
-  height: ${HANDLE_HEIGHT}px;
-  display: grid;
-  place-items: center;
-  background: var(--handle-bg);
-  border: 1px solid hsl(35deg 50% 18%);
-  border-radius: 2px;
-  box-shadow: inset 0px 1px 0px hsl(50deg 80% 90% / 0.6);
-  pointer-events: none;
-`;
-
-const Grip = styled.div`
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  border: 1px solid var(--grip-border);
-  border-radius: 1px;
-  box-shadow:
-    1px 1px 0px var(--grip-highlight),
-    inset 1px 1px 0px var(--grip-highlight);
-`;
-
-const Wrapper = styled.div`
-  position: relative;
-  isolation: isolate;
-
-  &:has(input:active) ${Handle} {
-    --handle-bg: hsl(45deg 70% 82%);
-    --grip-border: hsl(40deg 50% 45%);
-    --grip-highlight: hsl(50deg 90% 96%);
+    ${thumbStyles}
   }
 
-  &:has(input:focus-visible) ${Handle} {
+  &:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &:focus-visible::-moz-range-thumb {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
