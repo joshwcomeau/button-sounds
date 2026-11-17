@@ -189,8 +189,8 @@ function MediaPlayer({ handleClose }: Props) {
 }
 
 function formatTime(seconds: number) {
-  const wholeSeconds = Math.floor(seconds);
-  const minutes = Math.floor(wholeSeconds / 60);
+  const wholeSeconds = Math.round(seconds);
+  const minutes = Math.round(wholeSeconds / 60);
   return `${minutes}:${String(wholeSeconds % 60).padStart(2, '0')}`;
 }
 

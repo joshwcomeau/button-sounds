@@ -3,18 +3,23 @@ import { Howl } from 'howler';
 
 const INITIAL_VOLUME = 0.25;
 
-// Load the sounds ASAP
 const bgm = new Howl({
   src: ['/sounds/actuator.mp3'],
   loop: true,
   volume: INITIAL_VOLUME,
 });
+
+const bgmIntro = new Howl({
+  src: ['/sounds/actuator-intro.mp3'],
+  volume: INITIAL_VOLUME,
+});
+
 // Calling `play()` without an ID starts a new, overlapping instance, so we hold onto the first one and reuse it.
 let soundId: number | undefined;
 // Set while a fade-out is in progress. Calling it abandons the fade and restores the sound’s volume, so the next `play()` isn’t silent.
 let cancelFadeOut: (() => void) | null = null;
 
-const TIMESTAMP_POLL_INTERVAL_MS = 1000;
+const TIMESTAMP_POLL_INTERVAL_MS = 500;
 
 // With a single argument, Howler treats anything that isn’t a known sound ID as a seek position, so we can’t pass `soundId` through when it’s undefined.
 function getPlaybackPosition() {

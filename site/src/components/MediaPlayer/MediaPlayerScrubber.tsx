@@ -4,8 +4,8 @@ import * as React from 'react';
 import styled, { css } from 'styled-components';
 
 const HANDLE_WIDTH = 29;
-const HANDLE_HEIGHT = 20;
-const TRACK_HEIGHT = 20;
+const HANDLE_HEIGHT = 15;
+const TRACK_HEIGHT = 15;
 
 type Props = Omit<
   React.ComponentPropsWithoutRef<'input'>,
@@ -80,6 +80,11 @@ function MediaPlayerScrubber({
   );
 }
 
+// The thumb artwork was designed at 10px tall. Every measurement below is expressed in pixels of that original design, and scaled to match the actual `HANDLE_HEIGHT`.
+const THUMB_DESIGN_HEIGHT = 10;
+const THUMB_SCALE = HANDLE_HEIGHT / THUMB_DESIGN_HEIGHT;
+const u = (designPx: number) => `${designPx * THUMB_SCALE}px`;
+
 // Winamp's thumb is actually kinda complex-looking, and since this is a native `<input>` element, we can't solve it with child or pseudo-elements. Instead, we'll reconstruct it through gradients and inset shadows.
 const thumbStyles = css`
   width: ${HANDLE_WIDTH}px;
@@ -89,27 +94,27 @@ const thumbStyles = css`
   /* prettier-ignore */
   background:
     linear-gradient(
-      hsl(0deg 0% 96%) 0 1px,
-      hsl(42deg 44% 31%) 1px 2px,
-      hsl(44deg 29% 54%) 2px
-    ) 4px 3px /
-      ${HANDLE_WIDTH - 8}px 3px no-repeat,
+      hsl(0deg 0% 96%) 0 ${u(1)},
+      hsl(42deg 44% 31%) ${u(1)} ${u(2)},
+      hsl(44deg 29% 54%) ${u(2)}
+    ) ${u(4)} ${u(3)} /
+      calc(${HANDLE_WIDTH}px - ${u(8)}) ${u(3)} no-repeat,
     linear-gradient(
       hsl(48deg 60% 87%),
       hsl(48deg 60% 87%)
-    ) 3px 2px /
-      ${HANDLE_WIDTH - 6}px 5px no-repeat,
+    ) ${u(3)} ${u(2)} /
+      calc(${HANDLE_WIDTH}px - ${u(6)}) ${u(5)} no-repeat,
     hsl(44deg 29% 54%);
   box-shadow:
-    inset 1px 0px 0px hsl(240deg 6% 42%),
-    inset -1px 0px 0px hsl(0deg 60% 2%),
-    inset 0px -1px 0px hsl(0deg 60% 2%),
-    inset 2px 0px 0px hsl(46deg 40% 74%),
-    inset 0px 1px 0px hsl(46deg 40% 74%),
-    inset -2px 0px 0px hsl(44deg 34% 40%),
-    inset 0px -2px 0px hsl(44deg 34% 40%),
-    inset 3px 0px 0px hsl(42deg 38% 36%),
-    inset 0px 2px 0px hsl(42deg 38% 36%);
+    inset ${u(1)} 0px 0px hsl(240deg 6% 42%),
+    inset ${u(-1)} 0px 0px hsl(0deg 60% 2%),
+    inset 0px ${u(-1)} 0px hsl(0deg 60% 2%),
+    inset ${u(2)} 0px 0px hsl(46deg 40% 74%),
+    inset 0px ${u(1)} 0px hsl(46deg 40% 74%),
+    inset ${u(-2)} 0px 0px hsl(44deg 34% 40%),
+    inset 0px ${u(-2)} 0px hsl(44deg 34% 40%),
+    inset ${u(3)} 0px 0px hsl(42deg 38% 36%),
+    inset 0px ${u(2)} 0px hsl(42deg 38% 36%);
 `;
 
 const trackStyles = css`
