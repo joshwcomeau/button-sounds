@@ -36,7 +36,7 @@ interface Props {
 }
 
 function MediaPlayer({ handleClose }: Props) {
-  const { volume, panning, timestamp, duration } = useBGMState();
+  const { isPlaying, volume, panning, timestamp, duration } = useBGMState();
   const { play, pause, stop, rewind, seek, setVolume, setPanning } =
     useBGMSetters();
 
@@ -167,6 +167,7 @@ function MediaPlayer({ handleClose }: Props) {
             value={timestamp}
             min={0}
             max={duration}
+            disabled={!isPlaying}
             onCommit={seek}
           />
         </ScrubberWrapper>
@@ -177,6 +178,7 @@ function MediaPlayer({ handleClose }: Props) {
             <MediaBtn icon="pause" onClick={pause} />
             <MediaBtn icon="stop" onClick={stop} />
           </Buttons>
+          <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
         </BottomSection>
       </Wrapper>
       <CloseButton onClick={handleClose}>
@@ -250,7 +252,7 @@ const OuterWrapper = styled.div`
   position: fixed;
   position-anchor: --media-player-anchor;
   position-area: top span-left;
-  width: 25rem;
+  width: 20rem;
   bottom: 10px;
   background: var(--w-primary-900);
   padding: 4px;
@@ -274,7 +276,7 @@ const Wrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   background: linear-gradient(
     0deg,
     var(--w-primary-600),
@@ -427,6 +429,7 @@ const ScrubberWrapper = styled.div``;
 
 const BottomSection = styled.div`
   display: flex;
+  justify-content: space-between;
   gap: 8px;
 `;
 
@@ -434,6 +437,22 @@ const Buttons = styled.div`
   display: flex;
   /* Buttons slide down by 2px when active, and we want to hide the bottom edges when this happens, to produce the illusion that they’re sliding into their cavity */
   overflow: hidden;
+`;
+
+const TimeDisplay = styled(Inset)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  height: 1.5rem;
+  min-width: 3rem;
+  font-family: var(--font-segment);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--w-green);
+  text-shadow:
+    0px 0px 2px var(--w-green-900),
+    0px 0px 3px var(--w-green-700);
 `;
 
 const CloseButton = styled.button`

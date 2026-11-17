@@ -73,6 +73,12 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     timestampRef.current = timestamp;
   }, [timestamp]);
 
+  // Lets `play`/`pause` act as toggles without being recreated on every change. This tracks our state rather than `bgm.playing()`, so a song that’s fading out counts as stopped.
+  const isPlayingRef = React.useRef(isPlaying);
+  React.useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
   React.useEffect(() => {
     if (bgm.state() === 'loaded') {
       return;
@@ -116,7 +122,14 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isPlaying]);
 
+  // Pressing play while already playing restarts the song.
   const play = React.useCallback(() => {
+    if (isPlayingRef.current && soundId !== undefined) {
+      bgm.seek(0, soundId);
+      setTimestamp(0);
+      return;
+    }
+
     cancelFadeOut?.();
     const isFirstPlay = soundId === undefined;
     soundId = bgm.play(soundId);
@@ -126,12 +139,18 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(true);
   }, []);
 
+  // Pressing pause while not playing resumes from the current position.
   const pause = React.useCallback(() => {
+    if (!isPlayingRef.current) {
+      play();
+      return;
+    }
+
     cancelFadeOut?.();
     bgm.pause(soundId);
     setTimestamp(getPlaybackPosition());
     setIsPlaying(false);
-  }, []);
+  }, [play]);
 
   const stop = React.useCallback(() => {
     cancelFadeOut?.();

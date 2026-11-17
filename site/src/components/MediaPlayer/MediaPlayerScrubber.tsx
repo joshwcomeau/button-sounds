@@ -4,8 +4,8 @@ import * as React from 'react';
 import styled, { css } from 'styled-components';
 
 const HANDLE_WIDTH = 29;
-const HANDLE_HEIGHT = 10;
-const TRACK_HEIGHT = 10;
+const HANDLE_HEIGHT = 20;
+const TRACK_HEIGHT = 20;
 
 type Props = Omit<
   React.ComponentPropsWithoutRef<'input'>,
@@ -25,10 +25,12 @@ function MediaPlayerScrubber({
   onPointerDown,
   ...delegated
 }: Props) {
+  // So, annoyingly, React doesn't expose the native `onchange` range behaviour, which is to wait until the user drops the handle before firing. In this case, that's what we want; it's jarring if the song is constantly jumping to a new spot while the user drags the handle, we want to wait until it's released to jump to the new timestamp.
+  // So, our solution is a bit complex. We use an uncontrolled input and manage things via effects.
   const inputRef = React.useRef<HTMLInputElement>(null);
   const isHeldRef = React.useRef(false);
 
-  // While the thumb is held, `value` keeps ticking along with playback, and applying it would yank the thumb out from under the cursor.
+  // Since this is an uncontrolled input, it doesn't automatically update when `value` changes. We manage it here, as long as the input isn't currently being dragged. This is to prevent the thumb from continuing to tick along even if the user is interacting with it.
   React.useEffect(() => {
     const input = inputRef.current;
     if (input && !isHeldRef.current) {
@@ -78,20 +80,24 @@ function MediaPlayerScrubber({
   );
 }
 
-// Layered inset shadows draw the beveled edges, from the outermost 1px ring inward. Earlier shadows paint on top, which decides who wins at the corners. The engraved grip in the middle is drawn with background gradients.
+// Winamp's thumb is actually kinda complex-looking, and since this is a native `<input>` element, we can't solve it with child or pseudo-elements. Instead, we'll reconstruct it through gradients and inset shadows.
 const thumbStyles = css`
   width: ${HANDLE_WIDTH}px;
   height: ${HANDLE_HEIGHT}px;
   border: none;
   border-radius: 0;
+  /* prettier-ignore */
   background:
     linear-gradient(
-        hsl(0deg 0% 96%) 0 1px,
-        hsl(42deg 44% 31%) 1px 2px,
-        hsl(44deg 29% 54%) 2px
-      )
-      4px 3px / ${HANDLE_WIDTH - 8}px 3px no-repeat,
-    linear-gradient(hsl(48deg 60% 87%), hsl(48deg 60% 87%)) 3px 2px /
+      hsl(0deg 0% 96%) 0 1px,
+      hsl(42deg 44% 31%) 1px 2px,
+      hsl(44deg 29% 54%) 2px
+    ) 4px 3px /
+      ${HANDLE_WIDTH - 8}px 3px no-repeat,
+    linear-gradient(
+      hsl(48deg 60% 87%),
+      hsl(48deg 60% 87%)
+    ) 3px 2px /
       ${HANDLE_WIDTH - 6}px 5px no-repeat,
     hsl(44deg 29% 54%);
   box-shadow:
@@ -130,6 +136,10 @@ const Input = styled.input`
     cursor: grabbing;
   }
 
+  &:disabled {
+    cursor: default;
+  }
+
   &::-webkit-slider-runnable-track {
     ${trackStyles}
   }
@@ -145,6 +155,14 @@ const Input = styled.input`
 
   &::-moz-range-thumb {
     ${thumbStyles}
+  }
+
+  &:disabled::-webkit-slider-thumb {
+    visibility: hidden;
+  }
+
+  &:disabled::-moz-range-thumb {
+    visibility: hidden;
   }
 
   &:focus-visible::-webkit-slider-thumb {
