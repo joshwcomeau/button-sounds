@@ -12,8 +12,10 @@ import {
   useBGMState,
   useBGMSetters,
 } from '@/components/BGMProvider/BGMProvider';
+import BevelEdge from '@/components/BevelEdge';
 import VisuallyHidden from '@/components/VisuallyHidden';
 
+import MediaBtn from './MediaBtn';
 import MediaPlayerSmallSlider from './MediaPlayerSmallSlider';
 
 const TITLE = 'Actuator Jam – Josh W. Comeau (1:17)';
@@ -21,17 +23,84 @@ const TITLE = 'Actuator Jam – Josh W. Comeau (1:17)';
 const SCROLLING_TITLE = `${TITLE} *** `;
 const SCROLL_INTERVAL_MS = 250;
 const START_PAUSE_MS = 2000;
+const KEYBOARD_ADJUSTMENT_DISPLAY_MS = 1000;
+// Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
+const OUTER_RADIUS = 8;
+const TOP_RIGHT_CUTOUT_RADIUS = 28;
+
+type Slider = 'volume' | 'panning';
 
 interface Props {
   handleClose: () => void;
 }
 
 function MediaPlayer({ handleClose }: Props) {
-  const { volume } = useBGMState();
-  const { setVolume } = useBGMSetters();
+  const { volume, panning } = useBGMState();
+  const { setVolume, setPanning } = useBGMSetters();
+
+  const [draggingSlider, setDraggingSlider] = React.useState<Slider | null>(
+    null,
+  );
+  const [keyboardAdjustedSlider, setKeyboardAdjustedSlider] =
+    React.useState<Slider | null>(null);
+  const keyboardTimeoutRef = React.useRef<number | undefined>(undefined);
+
+  const displayedSlider = draggingSlider ?? keyboardAdjustedSlider;
+
+  // The pointer can be released outside the slider, so we listen on the window.
+  React.useEffect(() => {
+    if (!draggingSlider) {
+      return;
+    }
+
+    function handleRelease() {
+      setDraggingSlider(null);
+    }
+
+    window.addEventListener('pointerup', handleRelease);
+    window.addEventListener('pointercancel', handleRelease);
+
+    return () => {
+      window.removeEventListener('pointerup', handleRelease);
+      window.removeEventListener('pointercancel', handleRelease);
+    };
+  }, [draggingSlider]);
+
+  React.useEffect(() => {
+    return () => {
+      window.clearTimeout(keyboardTimeoutRef.current);
+    };
+  }, []);
+
+  function handleSliderAdjustment(slider: Slider) {
+    // Pointer changes are covered by the dragging state, so anything else came from the keyboard.
+    if (draggingSlider) {
+      return;
+    }
+
+    setKeyboardAdjustedSlider(slider);
+    window.clearTimeout(keyboardTimeoutRef.current);
+    keyboardTimeoutRef.current = window.setTimeout(() => {
+      setKeyboardAdjustedSlider(null);
+    }, KEYBOARD_ADJUSTMENT_DISPLAY_MS);
+  }
+
   return (
     <OuterWrapper>
+      <BevelEdge
+        side="top"
+        color="var(--w-gray-700)"
+        leftRadius={OUTER_RADIUS}
+        rightRadius={2}
+      />
       <Wrapper>
+        <BevelEdge
+          side="top"
+          color="var(--w-gray-600)"
+          leftRadius={OUTER_RADIUS - 2}
+          rightRadius={TOP_RIGHT_CUTOUT_RADIUS}
+        />
+
         <TopSection>
           <ArtWrapper>
             <AlbumArt
@@ -40,7 +109,15 @@ function MediaPlayer({ handleClose }: Props) {
             />
           </ArtWrapper>
           <TrackInfo>
-            <ScrollingTitle />
+            <Title>
+              {displayedSlider === 'volume' && (
+                <TitleText>Volume: {Math.round(volume * 100)}%</TitleText>
+              )}
+              {displayedSlider === 'panning' && (
+                <TitleText>Balance: {getBalanceLabel(panning)}</TitleText>
+              )}
+              {!displayedSlider && <ScrollingTitle />}
+            </Title>
             <Specs>
               <Spec>
                 <NumInset>192</NumInset> kbps
@@ -54,19 +131,60 @@ function MediaPlayer({ handleClose }: Props) {
               </FinalSpec>
             </Specs>
             <TopSliders>
-              <MediaPlayerSmallSlider
+              <VolumeSlider
+                aria-label="Volume"
                 value={volume}
-                onChange={(ev) => setVolume(ev.target.value)}
+                min={0}
+                max={1}
+                step={0.01}
+                onPointerDown={() => setDraggingSlider('volume')}
+                onChange={(ev) => {
+                  setVolume(Number(ev.target.value));
+                  handleSliderAdjustment('volume');
+                }}
+              />
+              <PanSlider
+                aria-label="Stereo panning"
+                value={panning}
+                min={-1}
+                max={1}
+                step={0.1}
+                onPointerDown={() => setDraggingSlider('panning')}
+                onChange={(ev) => {
+                  setPanning(Number(ev.target.value));
+                  handleSliderAdjustment('panning');
+                }}
               />
             </TopSliders>
           </TrackInfo>
         </TopSection>
+        <ScrubberWrapper>TODO</ScrubberWrapper>
+        <BottomSection>
+          <Buttons>
+            <MediaBtn icon="rewind" onClick={noop} />
+            <MediaBtn icon="play" onClick={noop} />
+            <MediaBtn icon="pause" onClick={noop} />
+            <MediaBtn icon="stop" onClick={noop} />
+          </Buttons>
+        </BottomSection>
       </Wrapper>
       <CloseButton onClick={handleClose}>
-        <X size={16} />
+        <X size={12} strokeWidth={3} />
       </CloseButton>
     </OuterWrapper>
   );
+}
+
+function noop() {}
+
+function getBalanceLabel(panning: number) {
+  const percentage = Math.round(Math.abs(panning) * 100);
+
+  if (percentage === 0) {
+    return 'center';
+  }
+
+  return `${percentage}% ${panning < 0 ? 'left' : 'right'}`;
 }
 
 function ScrollingTitle() {
@@ -94,17 +212,22 @@ function ScrollingTitle() {
   const text = SCROLLING_TITLE.slice(start) + SCROLLING_TITLE.slice(0, start);
 
   return (
-    <Title>
+    <>
       <TitleText aria-hidden="true">{text}</TitleText>
       <VisuallyHidden>{TITLE}</VisuallyHidden>
-    </Title>
+    </>
   );
 }
 
 const OuterWrapper = styled.div`
-  --outer-radius: 16px;
+  --outer-radius: ${OUTER_RADIUS}px;
   --w-green: hsl(140deg 100% 50%);
-  --w-gray-500: hsl(240deg 10% 50%);
+  --w-green-700: hsl(136deg 80% 30%);
+  --w-green-900: hsl(133deg 80% 10%);
+  --w-gray-500: hsl(240deg 10% 52%);
+  --w-gray-600: hsl(240deg 7% 45%);
+  --w-gray-700: hsl(240deg 5% 40%);
+  --w-gray-900: hsl(240deg 5% 20%);
   --w-primary-500: hsl(240deg 25% 30%);
   --w-primary-600: hsl(240deg 25% 20%);
   --w-primary-700: hsl(240deg 25% 14%);
@@ -112,16 +235,17 @@ const OuterWrapper = styled.div`
   position: fixed;
   position-anchor: --media-player-anchor;
   position-area: top span-left;
-  /* Slight reduction from 25rem so that the ScrollingTitle never cuts off a letter, it fits perfectly */
-  width: 24.625rem;
-  bottom: 6px;
-  background: var(--color-gray-300);
+  width: 25rem;
+  bottom: 10px;
+  background: var(--w-primary-900);
   padding: 4px;
-  border-radius: var(--outer-radius);
+  border: 1px solid var(--w-gray-900);
+  border-radius: var(--outer-radius) 2px var(--outer-radius) var(--outer-radius);
   corner-shape: bevel;
 
   @supports (color: oklch(0.7 0.2 260)) {
-    --w-green: oklch(0.85 0.37 145.62);
+    --w-green: oklch(0.85 0.37 145);
+    --w-green-700: oklch(0.65 0.28 140);
   }
 
   @supports not (position-area: top) {
@@ -131,21 +255,48 @@ const OuterWrapper = styled.div`
 `;
 
 const Wrapper = styled.div`
-  background: var(--color-gray-100);
-  border-radius: calc(var(--outer-radius) - 2px);
+  --r: calc(var(--outer-radius) - 2px);
+  position: relative;
+  background: linear-gradient(
+    0deg,
+    var(--w-primary-600),
+    var(--w-primary-500),
+    var(--w-primary-600)
+  );
+  border-radius: var(--r) ${TOP_RIGHT_CUTOUT_RADIUS - 1}px var(--r) var(--r);
   corner-shape: bevel;
   padding: 8px;
   font-size: 0.75rem;
 `;
 
 const Inset = styled.div`
+  position: relative;
   background: var(--color-background);
-  border: 1px solid var(--color-gray-200);
-  border-bottom: 1px solid var(--color-gray-300);
-  border-top: 1px solid black;
   border-radius: 1px;
   padding-inline: 8px;
   color: var(--w-green);
+
+  /* Annoyingly, a Chrome bug means that bottom/top borders overlap in a weird way unless we move them to child elements */
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--w-primary-700);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &::before {
+    border-top: 1px solid var(--w-primary-700);
+  }
+
+  &::after {
+    border-bottom: 1px solid var(--w-gray-500);
+  }
 `;
 
 const NumInset = styled(Inset)`
@@ -156,13 +307,13 @@ const NumInset = styled(Inset)`
 
 const TopSection = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 6px;
 `;
 
 const ArtWrapper = styled.div`
   position: relative;
   width: 100px;
-  aspect-ratio: 1 / 1;
+  height: 64px;
   border-radius: 4px;
   corner-shape: bevel;
   /* Trim corners */
@@ -190,7 +341,7 @@ const AlbumArt = styled.img`
 const TrackInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   /* Let the title be narrower than its text, so it can clip instead of stretching the layout */
   min-width: 0;
@@ -200,6 +351,10 @@ const Title = styled(Inset)`
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  border-radius: 0 16px 0 0;
+  corner-shape: bevel;
+  overflow: hidden;
+  margin-right: 8px;
 `;
 
 /* Clipping happens here rather than on Title, since overflow is clipped at the padding edge, which would let text spill into Title’s right padding */
@@ -208,6 +363,7 @@ const TitleText = styled.span`
   /* "pre" rather than "nowrap" so that spaces rotated to the start/end aren’t collapsed */
   white-space: pre;
   overflow: hidden;
+  margin-right: 10px;
 `;
 
 const Specs = styled.div`
@@ -222,6 +378,8 @@ const Spec = styled.div`
 
 const FinalSpec = styled(Spec)`
   margin-left: auto;
+  font-size: 0.625rem;
+  gap: 8px;
 `;
 
 const Mono = styled.div`
@@ -230,7 +388,9 @@ const Mono = styled.div`
 const Stereo = styled.div`
   color: var(--w-green);
   font-weight: 700;
-  text-shadow: 0px 0px 1px var(--w-green);
+  text-shadow:
+    0px 0px 2px var(--w-green-900),
+    0px 0px 3px var(--w-green-700);
 `;
 
 const TopSliders = styled.div`
@@ -238,10 +398,36 @@ const TopSliders = styled.div`
   gap: 8px;
 `;
 
+const VolumeSlider = styled(MediaPlayerSmallSlider)`
+  flex: 2;
+`;
+const PanSlider = styled(MediaPlayerSmallSlider)`
+  flex: 1;
+`;
+
+const ScrubberWrapper = styled.div``;
+
+const BottomSection = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const Buttons = styled.div`
+  display: flex;
+  /* Buttons slide down by 2px when active, and we want to hide the bottom edges when this happens, to produce the illusion that they’re sliding into their cavity */
+  overflow: hidden;
+`;
+
 const CloseButton = styled.button`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: none;
   border: none;
   cursor: pointer;

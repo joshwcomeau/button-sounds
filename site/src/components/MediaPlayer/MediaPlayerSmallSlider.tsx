@@ -23,16 +23,20 @@ function MediaPlayerSmallSlider({
   value,
   min = 0,
   max = 100,
+  // If we wrap this element (eg. `styled(MediaPlayerSmallSlider)`), we'll want the generated className to apply to the parent Wrapper, not the input that should receive all other standard props.
+  className,
   ...delegated
 }: Props) {
   const progress = min === max ? 0 : clampedNormalize(value, min, max);
 
-  // Shifts from green at the minimum to red at the maximum.
-  const hue = normalize(progress, 0, 1, 120, 0);
-  const lightness = normalize(progress, 0, 1, 30, 48);
+  // Shifts from green at 0 to red at ±1, so that a -1 to 1 slider is red at both ends and green in the middle.
+  const intensity = clampedNormalize(Math.abs(value), 0, 1);
+  const hue = normalize(intensity, 0, 1, 120, 0);
+  const lightness = normalize(intensity, 0, 1, 30, 48);
 
   return (
     <Wrapper
+      className={className}
       style={{
         '--progress': progress,
         '--track-color': `hsl(${hue}deg 100% ${lightness}%)`,
