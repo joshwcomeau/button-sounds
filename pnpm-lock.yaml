@@ -96,6 +96,9 @@ importers:
       button-sounds:
         specifier: workspace:*
         version: link:../package
+      howler:
+        specifier: 2.2.4
+        version: 2.2.4
       lucide-react:
         specifier: ^1.70.0
         version: 1.70.0(@types/react@19.3.0)(react@19.3.0)
