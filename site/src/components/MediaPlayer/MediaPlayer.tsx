@@ -9,6 +9,7 @@ import { TASKBAR_HEIGHT } from '@/constants';
 import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
 
 import {
+  INTRO_DURATION_MS,
   useBGMState,
   useBGMSetters,
 } from '@/components/BGMProvider/BGMProvider';
@@ -28,6 +29,7 @@ const KEYBOARD_ADJUSTMENT_DISPLAY_MS = 1000;
 // Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
 const OUTER_RADIUS = 8;
 const TOP_RIGHT_CUTOUT_RADIUS = 28;
+const ALBUM_ART_FADE_DURATION_MS = 500;
 
 type Slider = 'volume' | 'panning';
 
@@ -36,7 +38,15 @@ interface Props {
 }
 
 function MediaPlayer({ handleClose }: Props) {
-  const { isPlaying, volume, panning, timestamp, duration } = useBGMState();
+  const {
+    isPlaying,
+    hasCompletedIntro,
+    introStartCount,
+    volume,
+    panning,
+    timestamp,
+    duration,
+  } = useBGMState();
   const { play, pause, stop, rewind, seek, setVolume, setPanning } =
     useBGMSetters();
 
@@ -48,6 +58,12 @@ function MediaPlayer({ handleClose }: Props) {
   const keyboardTimeoutRef = React.useRef<number | undefined>(undefined);
 
   const displayedSlider = draggingSlider ?? keyboardAdjustedSlider;
+
+  const introStatus = hasCompletedIntro
+    ? 'completed'
+    : isPlaying
+      ? 'playing'
+      : 'waiting';
 
   // The pointer can be released outside the slider, so we listen on the window.
   React.useEffect(() => {
@@ -106,6 +122,8 @@ function MediaPlayer({ handleClose }: Props) {
         <TopSection>
           <ArtWrapper>
             <AlbumArt
+              key={introStartCount}
+              data-intro-status={introStatus}
               src="/images/actuator-jam-album-art.jpg"
               alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
             />
@@ -167,7 +185,7 @@ function MediaPlayer({ handleClose }: Props) {
             value={timestamp}
             min={0}
             max={duration}
-            disabled={!isPlaying}
+            disabled={!isPlaying || !hasCompletedIntro}
             onCommit={seek}
           />
         </ScrubberWrapper>
@@ -252,7 +270,7 @@ const OuterWrapper = styled.div`
   position: fixed;
   position-anchor: --media-player-anchor;
   position-area: top span-left;
-  width: 20rem;
+  width: 23rem;
   bottom: 10px;
   background: var(--w-primary-900);
   padding: 4px;
@@ -356,6 +374,16 @@ const AlbumArt = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+
+  &[data-intro-status='waiting'] {
+    opacity: 0;
+  }
+
+  /* Finishes right as the song takes over from the intro */
+  &[data-intro-status='playing'] {
+    animation: fadeFromTransparent ${ALBUM_ART_FADE_DURATION_MS}ms
+      ${INTRO_DURATION_MS - ALBUM_ART_FADE_DURATION_MS}ms backwards;
+  }
 `;
 
 const TrackInfo = styled.div`
