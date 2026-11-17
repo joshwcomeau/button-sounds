@@ -4,6 +4,7 @@ import ButtonSounds from 'button-sounds';
 import { highlightAll } from 'microlighter';
 import 'microlighter/themes/tokyo-night.css';
 
+import BGMProvider from '@/components/BGMProvider/BGMProvider';
 import SoundSettingsProvider from '@/components/SoundSettingsProvider';
 import CRTEffect from '@/components/CRTEffect/CRTEffect';
 import CRTControls from '@/components/CRTControls/CRTControls';
@@ -33,40 +34,42 @@ function App() {
   }, []);
 
   return (
-    <SoundSettingsProvider>
-      <CRTControls
-        crtStrength={crtStrength}
-        setCrtStrength={setCrtStrength}
-        // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
-        // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
-        style={{ zIndex: 2 }}
-      />
-      <Container>
-        <Wrapper>
-          <ShapeLayer layer="background" />
-          <Header>
-            <h1>Button Sounds</h1>
-            <p>
-              A <Free>free</Free> collection of 50+ professionally-recorded
-              multi-sampled clicks and toggles. Distributed as an NPM package
-              with optional React bindings.
-            </p>
-            <ProjectByJosh />
-          </Header>
+    <BGMProvider>
+      <SoundSettingsProvider>
+        <CRTControls
+          crtStrength={crtStrength}
+          setCrtStrength={setCrtStrength}
+          // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
+          // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
+          style={{ zIndex: 2 }}
+        />
+        <Container>
+          <Wrapper>
+            <ShapeLayer layer="background" />
+            <Header>
+              <h1>Button Sounds</h1>
+              <p>
+                A <Free>free</Free> collection of 50+ professionally-recorded
+                multi-sampled clicks and toggles. Distributed as an NPM package
+                with optional React bindings.
+              </p>
+              <ProjectByJosh />
+            </Header>
 
-          <MainDemo />
+            <MainDemo />
 
-          <StyledProjectInfo />
+            <StyledProjectInfo />
 
-          <Footer />
+            <Footer />
 
-          <ShaderPortal id="celebratory-shader-wrapper" />
+            <ShaderPortal id="celebratory-shader-wrapper" />
 
-          <CRTEffect strength={crtStrength} />
-        </Wrapper>
-      </Container>
-      <Taskbar />
-    </SoundSettingsProvider>
+            <CRTEffect strength={crtStrength} />
+          </Wrapper>
+        </Container>
+        <Taskbar />
+      </SoundSettingsProvider>
+    </BGMProvider>
   );
 }
 

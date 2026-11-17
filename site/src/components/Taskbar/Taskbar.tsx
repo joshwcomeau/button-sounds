@@ -1,9 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import { GITHUB_URL, NPM_URL } from '@/constants';
-
-import BevelEdge from '@/components/BevelEdge/BevelEdge';
+import { GITHUB_URL, NPM_URL, TASKBAR_HEIGHT } from '@/constants';
 
 import SystemTray from './SystemTray';
 import TaskbarLink from './TaskbarLink';
@@ -34,7 +32,7 @@ const OuterWrapper = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
-  height: 2.5rem;
+  height: ${TASKBAR_HEIGHT}rem;
   background: var(--bg);
   border-radius: 4px 4px 0 0;
   corner-shape: bevel;

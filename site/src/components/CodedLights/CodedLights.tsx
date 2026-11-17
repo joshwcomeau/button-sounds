@@ -13,26 +13,16 @@ type EngineStatus = 'idle' | 'warm' | 'hot' | 'rainbow' | 'complete';
 
 const CORRECT_SEQUENCE = [2, 0, 3, 1];
 
-const BUTTON_NOTES = [
-  { down: 'd#', up: 'f' },
-  { down: 'b', up: 'b#' },
-  { down: 'g0', up: 'c' },
-  { down: 'g', up: 'g#' },
-] as const;
-
 const SPRITE_DATA: SpriteMap = {
-  c: [0, 999],
-  'd#': [1000, 999],
-  f: [2000, 999],
-  g: [3000, 999],
-  'g#': [4000, 999],
-  b: [5000, 999],
-  'b#': [6000, 999],
-  g0: [7000, 999],
-  error1: [8000, 900],
-  error2: [9000, 900],
-  error3: [10000, 900],
-  cancel: [11000, 1000],
+  '1': [0, 999],
+  '2': [1000, 999],
+  '3': [2000, 999],
+  '4': [3000, 999],
+  cancel: [4000, 999],
+  error1: [5000, 490],
+  error2: [5500, 490],
+  error3: [6000, 490],
+  error4: [6500, 490],
 };
 
 const IDLE_STATUSES: Array<ButtonStatus> = ['idle', 'idle', 'idle', 'idle'];
@@ -50,8 +40,9 @@ interface Props {
 }
 
 function CodedLights({ hasWon, onComplete, onInteract }: Props) {
-  const [play] = useSound('/sounds/easter-egg-notes.mp3', {
+  const [play] = useSound('/sounds/easter-egg-notes-final.mp3', {
     sprite: SPRITE_DATA,
+    volume: 0.5,
   });
   const [playWinAudio] = useSound('/sounds/win-arp.mp3', {
     volume: 0.25,
@@ -107,13 +98,6 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
     setStatuses((currentStatuses) =>
       currentStatuses.map((status) => (status === 'error' ? 'idle' : status)),
     );
-
-    const notes = BUTTON_NOTES[index];
-    if (!notes) {
-      return;
-    }
-
-    play({ id: notes.down });
   }
 
   function handleClick(index: number) {
@@ -123,7 +107,6 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
 
     const expected = CORRECT_SEQUENCE[stepRef.current];
     const lastCorrect = CORRECT_SEQUENCE[stepRef.current - 1];
-    const notes = BUTTON_NOTES[index];
 
     if (stepRef.current > 0 && index === lastCorrect) {
       play({ id: 'cancel' });
@@ -138,8 +121,9 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
       return;
     }
 
-    if (index === expected && notes) {
-      play({ id: notes.up });
+    if (index === expected) {
+      const note = `${stepRef.current + 1}`;
+      play({ id: note });
 
       setStatuses((currentStatuses) => {
         const nextStatuses = [...currentStatuses];
@@ -166,8 +150,7 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
       return;
     }
 
-    const errorId =
-      stepRef.current >= 2 ? 'error3' : sampleOne(['error1', 'error2']);
+    const errorId = sampleOne(['error1', 'error2', 'error3', 'error4']);
     play({ id: errorId });
     stepRef.current = 0;
 
@@ -270,11 +253,11 @@ type DiamondButtonProps = React.ComponentProps<'button'>;
 function DiamondButton({ children, ...delegated }: DiamondButtonProps) {
   const btnRef = React.useRef<HTMLButtonElement>(null);
   useButtonSounds(btnRef, 'synth-on', {
-    volume: 0.15,
+    volume: 0.5,
   });
 
   return (
-    <Button ref={btnRef} {...delegated}>
+    <Button {...delegated} ref={btnRef}>
       {children}
     </Button>
   );

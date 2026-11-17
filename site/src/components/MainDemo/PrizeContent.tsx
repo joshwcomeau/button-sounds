@@ -46,15 +46,17 @@ function PrizeContent({ isShown, onRestore }: Props) {
       </p>
       <p>
         This coupon can be applied to{' '}
-        <TextLink href="https://whimsy.joshwcomeau.com/">
+        <TextLink href="https://whimsy.joshwcomeau.com/?couponCode=CLEVER_SLEUTH">
           Whimsical Animations
         </TextLink>
         ,{' '}
-        <TextLink href="https://www.css-for-js.dev/">
+        <TextLink href="https://www.css-for-js.dev/?couponCode=CLEVER_SLEUTH">
           CSS for JavaScript Developers
         </TextLink>
         , and{' '}
-        <TextLink href="https://www.joyofreact.com/">The Joy of React</TextLink>
+        <TextLink href="https://www.joyofreact.com/?coupon=CLEVER_SLEUTH">
+          The Joy of React
+        </TextLink>
         .
       </p>
       <Actions>
