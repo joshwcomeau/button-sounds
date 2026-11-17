@@ -1,4 +1,4 @@
-// A transport button inspired by Winamp’s rewind/play/pause/stop controls.
+// A transport button inspired by Winamp’s rewind/play/pause/stop/fast-forward/eject controls.
 // The icons are drawn as 1px outlines on a pixel grid (hence the half-pixel coordinates), so the viewBox must match the rendered size to keep them crisp.
 import * as React from 'react';
 import styled from 'styled-components';
@@ -8,13 +8,15 @@ import VisuallyHidden from '@/components/VisuallyHidden';
 const ICON_WIDTH = 19;
 const ICON_HEIGHT = 15;
 
-type Icon = 'rewind' | 'play' | 'pause' | 'stop';
+type Icon = 'rewind' | 'play' | 'pause' | 'stop' | 'fast-forward' | 'eject';
 
 const LABELS: Record<Icon, string> = {
   rewind: 'Rewind',
   play: 'Play',
   pause: 'Pause',
   stop: 'Stop',
+  'fast-forward': 'Fast-forward',
+  eject: 'Eject',
 };
 
 type Props = Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
@@ -64,6 +66,26 @@ const ICONS: Record<
     shapes: <rect x={3.5} y={1.5} width={12} height={12} />,
     shadow: 'M3.5 1.5 H15.5',
     highlight: 'M3.5 13.5 H15.5',
+  },
+  'fast-forward': {
+    shapes: (
+      <>
+        <polygon points="3.5,1.5 10.5,7.5 3.5,13.5" />
+        <rect x={13.5} y={1.5} width={2} height={12} />
+      </>
+    ),
+    shadow: 'M3.5 1.5 L10.5 7.5 M13.5 1.5 H15.5',
+    highlight: 'M3.5 13.5 L10.5 7.5 M13.5 13.5 H15.5',
+  },
+  eject: {
+    shapes: (
+      <>
+        <polygon points="3.5,8.5 9.5,1.5 15.5,8.5" />
+        <rect x={3.5} y={11.5} width={12} height={2} />
+      </>
+    ),
+    shadow: 'M3.5 8.5 L9.5 1.5 L15.5 8.5 M3.5 11.5 H15.5',
+    highlight: 'M3.5 8.5 H15.5 M3.5 13.5 H15.5',
   },
 };
 

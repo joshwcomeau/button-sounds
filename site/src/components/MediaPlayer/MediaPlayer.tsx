@@ -2,11 +2,12 @@
 // NOTE: I did not build this in a generic/reusable way, since I know I only have 1 song, but if I ever want to add more music or use this in other projects, it'd be a good idea to pass all the song data in through props.
 // ALSO: It's not responsive. It requires at least 25rem (400px for most people) to display correctly.
 import * as React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
 
 import { TASKBAR_HEIGHT } from '@/constants';
 import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
+import useKeybindings from '@/hooks/use-keybindings';
 
 import {
   INTRO_DURATION_MS,
@@ -47,8 +48,17 @@ function MediaPlayer({ handleClose }: Props) {
     timestamp,
     duration,
   } = useBGMState();
-  const { play, pause, stop, rewind, seek, setVolume, setPanning } =
-    useBGMSetters();
+  const {
+    play,
+    pause,
+    stop,
+    rewind,
+    fastForward,
+    eject,
+    seek,
+    setVolume,
+    setPanning,
+  } = useBGMSetters();
 
   const [draggingSlider, setDraggingSlider] = React.useState<Slider | null>(
     null,
@@ -64,6 +74,10 @@ function MediaPlayer({ handleClose }: Props) {
     : isPlaying
       ? 'playing'
       : 'waiting';
+
+  useKeybindings({
+    Escape: handleClose,
+  });
 
   // The pointer can be released outside the slider, so we listen on the window.
   React.useEffect(() => {
@@ -104,105 +118,116 @@ function MediaPlayer({ handleClose }: Props) {
   }
 
   return (
-    <OuterWrapper>
-      <BevelEdge
-        side="top"
-        color="var(--w-gray-700)"
-        leftRadius={OUTER_RADIUS}
-        rightRadius={2}
-      />
-      <Wrapper>
+    <Container>
+      <BorderWrapper>
         <BevelEdge
           side="top"
-          color="var(--w-gray-600)"
-          leftRadius={OUTER_RADIUS - 2}
-          rightRadius={TOP_RIGHT_CUTOUT_RADIUS}
+          color="var(--w-gray-700)"
+          leftRadius={OUTER_RADIUS}
+          rightRadius={2}
         />
-
-        <TopSection>
-          <ArtWrapper>
-            <AlbumArt
-              key={introStartCount}
-              data-intro-status={introStatus}
-              src="/images/actuator-jam-album-art.jpg"
-              alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
-            />
-          </ArtWrapper>
-          <TrackInfo>
-            <Title>
-              {displayedSlider === 'volume' && (
-                <TitleText>Volume: {Math.round(volume * 100)}%</TitleText>
-              )}
-              {displayedSlider === 'panning' && (
-                <TitleText>Balance: {getBalanceLabel(panning)}</TitleText>
-              )}
-              {!displayedSlider && <ScrollingTitle />}
-            </Title>
-            <Specs>
-              <Spec>
-                <NumInset>192</NumInset> kbps
-              </Spec>
-              <Spec>
-                <NumInset>44.1</NumInset> kHz
-              </Spec>
-              <FinalSpec>
-                <Mono>Mono</Mono>
-                <Stereo>Stereo</Stereo>
-              </FinalSpec>
-            </Specs>
-            <TopSliders>
-              <VolumeSlider
-                aria-label="Volume"
-                value={volume}
-                min={0}
-                max={1}
-                step={0.01}
-                onPointerDown={() => setDraggingSlider('volume')}
-                onChange={(ev) => {
-                  setVolume(Number(ev.target.value));
-                  handleSliderAdjustment('volume');
-                }}
-              />
-              <PanSlider
-                aria-label="Stereo panning"
-                value={panning}
-                min={-1}
-                max={1}
-                step={0.1}
-                onPointerDown={() => setDraggingSlider('panning')}
-                onChange={(ev) => {
-                  setPanning(Number(ev.target.value));
-                  handleSliderAdjustment('panning');
-                }}
-              />
-            </TopSliders>
-          </TrackInfo>
-        </TopSection>
-        <ScrubberWrapper>
-          <MediaPlayerScrubber
-            aria-label="Playback position"
-            aria-valuetext={`${formatTime(timestamp)} of ${formatTime(duration)}`}
-            value={timestamp}
-            min={0}
-            max={duration}
-            disabled={!isPlaying || !hasCompletedIntro}
-            onCommit={seek}
+        <Wrapper>
+          <BevelEdge
+            side="top"
+            color="var(--w-gray-600)"
+            leftRadius={OUTER_RADIUS - 2}
+            rightRadius={TOP_RIGHT_CUTOUT_RADIUS}
           />
-        </ScrubberWrapper>
-        <BottomSection>
-          <Buttons>
-            <MediaBtn icon="rewind" onClick={rewind} />
-            <MediaBtn icon="play" onClick={play} />
-            <MediaBtn icon="pause" onClick={pause} />
-            <MediaBtn icon="stop" onClick={stop} />
-          </Buttons>
-          <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
-        </BottomSection>
-      </Wrapper>
-      <CloseButton onClick={handleClose}>
-        <X size={12} strokeWidth={3} />
-      </CloseButton>
-    </OuterWrapper>
+
+          <TopSection>
+            <ArtWrapper>
+              <AlbumArt
+                key={introStartCount}
+                data-intro-status={introStatus}
+                src="/images/album-art-pixellated.png"
+                alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
+              />
+            </ArtWrapper>
+            <TrackInfo>
+              <Title>
+                {displayedSlider === 'volume' && (
+                  <TitleText>Volume: {Math.round(volume * 100)}%</TitleText>
+                )}
+                {displayedSlider === 'panning' && (
+                  <TitleText>Balance: {getBalanceLabel(panning)}</TitleText>
+                )}
+                {!displayedSlider && <ScrollingTitle />}
+              </Title>
+              <Specs>
+                <Spec>
+                  <NumInset>192</NumInset> kbps
+                </Spec>
+                <Spec>
+                  <NumInset>44.1</NumInset> kHz
+                </Spec>
+                <FinalSpec>
+                  <Mono>Mono</Mono>
+                  <Stereo>Stereo</Stereo>
+                </FinalSpec>
+              </Specs>
+              <TopSliders>
+                <VolumeSlider
+                  aria-label="Volume"
+                  value={volume}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onPointerDown={() => setDraggingSlider('volume')}
+                  onChange={(ev) => {
+                    setVolume(Number(ev.target.value));
+                    handleSliderAdjustment('volume');
+                  }}
+                />
+                <PanSlider
+                  aria-label="Stereo panning"
+                  value={panning}
+                  min={-1}
+                  max={1}
+                  step={0.1}
+                  onPointerDown={() => setDraggingSlider('panning')}
+                  onChange={(ev) => {
+                    setPanning(Number(ev.target.value));
+                    handleSliderAdjustment('panning');
+                  }}
+                />
+              </TopSliders>
+            </TrackInfo>
+          </TopSection>
+          <Divider />
+          <ScrubberWrapper>
+            <MediaPlayerScrubber
+              aria-label="Playback position"
+              aria-valuetext={`${formatTime(timestamp)} of ${formatTime(duration)}`}
+              value={timestamp}
+              min={0}
+              max={duration}
+              disabled={!isPlaying || !hasCompletedIntro}
+              onCommit={seek}
+            />
+          </ScrubberWrapper>
+          <Divider />
+          <BottomSection>
+            <Buttons>
+              <MediaBtn icon="rewind" onClick={rewind} />
+              <MediaBtn icon="play" onClick={play} />
+              <MediaBtn icon="pause" onClick={pause} />
+              <MediaBtn icon="stop" onClick={stop} />
+              <MediaBtn icon="fast-forward" onClick={fastForward} />
+            </Buttons>
+            <EjectBtnWrapper>
+              <MediaBtn icon="eject" onClick={eject} />
+            </EjectBtnWrapper>
+            <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
+          </BottomSection>
+          <Footer>
+            <Stripes />
+          </Footer>
+        </Wrapper>
+        <CloseButton onClick={handleClose}>
+          <X size={12} strokeWidth={3} />
+        </CloseButton>
+      </BorderWrapper>
+    </Container>
   );
 }
 
@@ -254,7 +279,31 @@ function ScrollingTitle() {
   );
 }
 
-const OuterWrapper = styled.div`
+const slideUp = keyframes`
+  from {
+    transform: translateY(20%);
+  }
+  to {
+    transform: translateY(0);
+  }
+`;
+
+const Container = styled.div`
+  position: fixed;
+  position-anchor: --media-player-anchor;
+  position-area: top span-left;
+  bottom: 10px;
+
+  /* The child slides up and we want to clip the part below */
+  overflow: hidden;
+
+  @supports not (position-area: top) {
+    right: 1rem;
+    bottom: ${TASKBAR_HEIGHT}rem;
+  }
+`;
+
+const BorderWrapper = styled.div`
   --outer-radius: ${OUTER_RADIUS}px;
   --w-green: hsl(140deg 100% 50%);
   --w-green-700: hsl(136deg 80% 30%);
@@ -263,29 +312,23 @@ const OuterWrapper = styled.div`
   --w-gray-600: hsl(240deg 7% 45%);
   --w-gray-700: hsl(240deg 5% 40%);
   --w-gray-900: hsl(240deg 5% 20%);
+  --w-primary-300: hsl(240deg 25% 40%);
   --w-primary-500: hsl(240deg 25% 30%);
   --w-primary-600: hsl(240deg 25% 20%);
   --w-primary-700: hsl(240deg 25% 14%);
   --w-primary-900: hsl(240deg 25% 8%);
-  position: fixed;
-  position-anchor: --media-player-anchor;
-  position-area: top span-left;
   width: 23rem;
-  bottom: 10px;
   background: var(--w-primary-900);
   padding: 4px;
   border: 1px solid var(--w-gray-900);
   border-radius: var(--outer-radius) 2px var(--outer-radius) var(--outer-radius);
   corner-shape: bevel;
+  will-change: transform;
+  animation: ${slideUp} 850ms cubic-bezier(0.098, 0.974, 0.04, 0.977);
 
   @supports (color: oklch(0.7 0.2 260)) {
     --w-green: oklch(0.85 0.37 145);
     --w-green-700: oklch(0.65 0.28 140);
-  }
-
-  @supports not (position-area: top) {
-    right: 1rem;
-    bottom: ${TASKBAR_HEIGHT}rem;
   }
 `;
 
@@ -294,7 +337,7 @@ const Wrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   background: linear-gradient(
     0deg,
     var(--w-primary-600),
@@ -354,13 +397,17 @@ const ArtWrapper = styled.div`
   height: 64px;
   border-radius: 4px;
   corner-shape: bevel;
+  isolation: isolate;
   /* Trim corners */
   overflow: hidden;
 
-  &::after {
+  /* Vignette effect */
+  &::before {
     --shadow-opacity: 0.325;
     content: '';
     position: absolute;
+    /* NOTE: Since the AlbumArt child has a fade-in animation, it briefly appears above the vignette by default. We need a z-index to lift it up, but we’ve squashed ArtWrapper with isolation: isolate, so there's no worries */
+    z-index: 2;
     inset: 0;
     box-shadow:
       inset 0px 0px 2px hsl(0deg 0% 0% / var(--shadow-opacity)),
@@ -368,12 +415,28 @@ const ArtWrapper = styled.div`
       inset 0px 0px 16px hsl(0deg 0% 0% / var(--shadow-opacity)),
       inset 0px 0px 32px hsl(0deg 0% 0% / var(--shadow-opacity));
   }
+
+  /* Scanlines */
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      var(--w-primary-700) 0px 1px,
+      transparent 1px 2px
+    );
+    opacity: 0.5;
+  }
 `;
 
 const AlbumArt = styled.img`
+  position: relative;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  image-rendering: pixelated;
 
   &[data-intro-status='waiting'] {
     opacity: 0;
@@ -458,13 +521,23 @@ const ScrubberWrapper = styled.div``;
 const BottomSection = styled.div`
   display: flex;
   justify-content: space-between;
-  gap: 8px;
 `;
 
 const Buttons = styled.div`
   display: flex;
+  border-bottom: 1px solid var(--w-gray-700);
+  border-radius: 6px;
+  corner-shape: bevel;
   /* Buttons slide down by 2px when active, and we want to hide the bottom edges when this happens, to produce the illusion that they’re sliding into their cavity */
   overflow: hidden;
+  /* Allow the buttons to peek over the top without being clipped */
+  padding-top: 4px;
+  margin-top: -4px;
+`;
+
+const EjectBtnWrapper = styled(Buttons)`
+  margin-left: 16px;
+  margin-right: auto;
 `;
 
 const TimeDisplay = styled(Inset)`
@@ -483,6 +556,13 @@ const TimeDisplay = styled(Inset)`
     0px 0px 3px var(--w-green-700);
 `;
 
+const Divider = styled.div`
+  height: 2px;
+  background: var(--w-gray-500);
+  border-top: 1px solid var(--w-primary-700);
+  margin-inline: -8px;
+`;
+
 const CloseButton = styled.button`
   position: absolute;
   top: -2px;
@@ -496,6 +576,24 @@ const CloseButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
+`;
+
+const Footer = styled.div`
+  margin: -8px;
+  margin-top: 0;
+  border-top: 1px solid var(--w-gray-700);
+  padding: 4px;
+`;
+
+const Stripes = styled.div`
+  height: 16px;
+  border-radius: 0 0 4px 4px;
+  corner-shape: bevel;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--w-primary-500) 0px 2px,
+    transparent 2px 4px
+  );
 `;
 
 export default MediaPlayer;

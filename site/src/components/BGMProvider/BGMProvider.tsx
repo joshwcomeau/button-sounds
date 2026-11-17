@@ -1,22 +1,30 @@
 import * as React from 'react';
 import { Howl } from 'howler';
 
+// UI volume, from 0 to 1. Howler receives `scaleVolume(INITIAL_VOLUME)`.
 const INITIAL_VOLUME = 0.25;
 export const INTRO_DURATION_MS = 2400;
+
+// The Howler volume used when the UI volume is at 100%.
+const MAX_VOLUME = 0.7;
+// Higher values give more control over the quiet end of the slider. 1 would be linear.
+const VOLUME_CURVE_EXPONENT = 1.5;
+
+// Perceived loudness isn’t linear with amplitude, so a power curve makes the slider feel more even.
+function scaleVolume(uiVolume: number) {
+  const clamped = Math.min(Math.max(uiVolume, 0), 1);
+  return MAX_VOLUME * clamped ** VOLUME_CURVE_EXPONENT;
+}
 
 const bgm = new Howl({
   src: ['/sounds/actuator.mp3'],
   loop: true,
-  volume: INITIAL_VOLUME,
+  volume: scaleVolume(INITIAL_VOLUME),
 });
 
-// The MP3 is padded with a few milliseconds of encoder silence, which some browsers keep when decoding. Playing it as a sprite clips it to the exact length, so the song starts right on the beat.
 const bgmIntro = new Howl({
   src: ['/sounds/actuator-intro.mp3'],
-  volume: INITIAL_VOLUME,
-  sprite: {
-    intro: [0, INTRO_DURATION_MS],
-  },
+  volume: scaleVolume(INITIAL_VOLUME),
 });
 
 // Calling `play()` without an ID starts a new, overlapping instance, so we hold onto the first one and reuse it.
@@ -26,6 +34,9 @@ let introSoundId: number | undefined;
 let cancelFadeOut: (() => void) | null = null;
 
 const TIMESTAMP_POLL_INTERVAL_MS = 500;
+// This is the point we jump to with the "Fast forward" button. Honestly this button doesn't really make sense in this context, with only 1 song, but it looks wrong without it. If I ever add new songs, this'll be useful.
+const FAST_FORWARD_TIMESTAMP = 76;
+const EJECT_FADE_DURATION_MS = 250;
 
 // With a single argument, Howler treats anything that isn’t a known sound ID as a seek position, so we can’t pass `soundId` through when it’s undefined.
 function getPlaybackPosition() {
@@ -52,6 +63,8 @@ interface BGMContextSetter {
   stop: () => void;
   stopWithFade: (duration: number) => void;
   rewind: () => void;
+  fastForward: () => void;
+  eject: () => void;
   seek: (timestamp: number) => void;
   setVolume: (value: number) => void;
   setPanning: (value: number) => void;
@@ -73,6 +86,8 @@ const BGMSetterContext = React.createContext<BGMContextSetter>({
   stop: () => {},
   stopWithFade: () => {},
   rewind: () => {},
+  fastForward: () => {},
+  eject: () => {},
   seek: () => {},
   setVolume: () => {},
   setPanning: () => {},
@@ -82,7 +97,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [hasCompletedIntro, setHasCompletedIntro] = React.useState(false);
   const [introStartCount, setIntroStartCount] = React.useState(0);
-  const [volume, rawSetVolume] = React.useState(bgm.volume());
+  const [volume, rawSetVolume] = React.useState(INITIAL_VOLUME);
   const [panning, rawSetPanning] = React.useState(0);
   const [timestamp, setTimestamp] = React.useState(0);
   const [duration, setDuration] = React.useState(bgm.duration());
@@ -167,7 +182,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       if (introSoundId !== undefined && bgmIntro.playing(introSoundId)) {
         bgmIntro.seek(0, introSoundId);
       } else {
-        introSoundId = bgmIntro.play(introSoundId ?? 'intro');
+        introSoundId = bgmIntro.play(introSoundId);
       }
       setIntroStartCount((count) => count + 1);
       setIsPlaying(true);
@@ -189,8 +204,8 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(true);
   }, []);
 
-  // Pressing pause while not playing resumes from the current position.
   const pause = React.useCallback(() => {
+    // The intro cannot be paused; it would be too complicated, given the sequence of enter animations that trigger in the media player. It can be stopped, which restarts everything.
     if (!hasCompletedIntroRef.current) {
       return;
     }
@@ -275,20 +290,37 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     setTimestamp(value);
   }, []);
 
+  const fastForward = React.useCallback(() => {
+    if (!hasCompletedIntroRef.current) {
+      return;
+    }
+
+    seek(FAST_FORWARD_TIMESTAMP);
+  }, [seek]);
+
+  // Stops everything so that the next `play()` starts with the intro, without the song still playing underneath it.
+  const eject = React.useCallback(() => {
+    stopWithFade(EJECT_FADE_DURATION_MS);
+    setHasCompletedIntro(false);
+  }, [stopWithFade]);
+
   const setVolume = React.useCallback((value: number) => {
     // Changing the volume would interrupt a fade-out, so finish the stop right away.
     if (cancelFadeOut) {
       cancelFadeOut();
       bgm.stop(soundId);
     }
-    bgm.volume(value);
-    bgmIntro.volume(value);
+    const scaledVolume = scaleVolume(value);
+    bgm.volume(scaledVolume);
+    bgmIntro.volume(scaledVolume);
     rawSetVolume(value);
   }, []);
 
   const setPanning = React.useCallback((value: number) => {
-    bgm.stereo(value);
-    bgmIntro.stereo(value);
+    // Weirdly, Howler uses the opposite of what I'd expect? -1 is full *right* instead of full left
+    const howlerValue = value * -1;
+    bgm.stereo(howlerValue);
+    bgmIntro.stereo(howlerValue);
     rawSetPanning(value);
   }, []);
 
@@ -320,11 +352,24 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       stop,
       stopWithFade,
       rewind,
+      fastForward,
+      eject,
       seek,
       setVolume,
       setPanning,
     }),
-    [play, pause, stop, stopWithFade, rewind, seek, setVolume, setPanning],
+    [
+      play,
+      pause,
+      stop,
+      stopWithFade,
+      rewind,
+      fastForward,
+      eject,
+      seek,
+      setVolume,
+      setPanning,
+    ],
   );
 
   return (

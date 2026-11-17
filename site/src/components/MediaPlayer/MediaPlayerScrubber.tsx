@@ -3,7 +3,7 @@
 import * as React from 'react';
 import styled, { css } from 'styled-components';
 
-const HANDLE_WIDTH = 29;
+const HANDLE_WIDTH = 36;
 const HANDLE_HEIGHT = 15;
 const TRACK_HEIGHT = 15;
 
@@ -91,6 +91,7 @@ const thumbStyles = css`
   height: ${HANDLE_HEIGHT}px;
   border: none;
   border-radius: 0;
+  transition: opacity 300ms;
   /* prettier-ignore */
   background:
     linear-gradient(
@@ -163,11 +164,11 @@ const Input = styled.input`
   }
 
   &:disabled::-webkit-slider-thumb {
-    visibility: hidden;
+    opacity: 0;
   }
 
   &:disabled::-moz-range-thumb {
-    visibility: hidden;
+    opacity: 0;
   }
 
   &:focus-visible::-webkit-slider-thumb {

@@ -5,8 +5,11 @@ import styled from 'styled-components';
 
 import { clampedNormalize, normalize } from '@/utils';
 
+import BevelEdge from '@/components/BevelEdge/BevelEdge';
+
 const HANDLE_WIDTH = 22;
 const HANDLE_HEIGHT = 12;
+const HANDLE_RADIUS = 4;
 const TRACK_HEIGHT = 8;
 
 // Must be controlled, since the handle’s position is derived from `value`.
@@ -45,6 +48,16 @@ function MediaPlayerSmallSlider({
       <Track />
       <Input type="range" value={value} min={min} max={max} {...delegated} />
       <Handle>
+        <BevelEdge
+          side="top"
+          color="var(--bevel-edge-top)"
+          radius={HANDLE_RADIUS}
+        />
+        <BevelEdge
+          side="bottom"
+          color="var(--bevel-edge-bottom)"
+          radius={HANDLE_RADIUS}
+        />
         <Stripe />
         <Stripe />
         <Stripe />
@@ -52,6 +65,11 @@ function MediaPlayerSmallSlider({
     </Wrapper>
   );
 }
+
+const Wrapper = styled.div`
+  position: relative;
+  isolation: isolate;
+`;
 
 const Track = styled.div`
   position: absolute;
@@ -61,7 +79,8 @@ const Track = styled.div`
   height: ${TRACK_HEIGHT}px;
   background: var(--track-color);
   border: 1px solid hsl(240deg 25% 8%);
-  border-radius: 2px;
+  border-radius: 100px;
+  corner-shape: bevel;
   box-shadow:
     inset 0px 1px 0px hsl(0deg 0% 100% / 0.35),
     inset 0px -1px 0px hsl(0deg 0% 0% / 0.3);
@@ -100,7 +119,9 @@ const Input = styled.input`
 
 const Handle = styled.div`
   --handle-bg: hsl(240deg 8% 78%);
-  --stripe-color: hsl(240deg 15% 25%);
+  --stripe-color: hsl(240deg 15% 5%);
+  --bevel-edge-top: hsl(240deg 100% 96%);
+  --bevel-edge-bottom: hsl(240deg 15% 40%);
   position: absolute;
   top: 0;
   left: calc(var(--progress) * (100% - ${HANDLE_WIDTH}px));
@@ -111,12 +132,24 @@ const Handle = styled.div`
   align-items: center;
   gap: 2px;
   background: var(--handle-bg);
-  border: 1px solid;
-  border-color: hsl(0deg 0% 100%) hsl(240deg 15% 30%) hsl(240deg 15% 30%)
-    hsl(0deg 0% 100%);
-  border-radius: 1px;
+  border: 1px solid hsl(240deg 15% 70%);
+  border-radius: 4px;
+  corner-shape: bevel;
   box-shadow: 0px 0px 0px 1px hsl(240deg 25% 8%);
   pointer-events: none;
+
+  ${Wrapper}:has(input:active) & {
+    --handle-bg: hsl(240deg 18% 28%);
+    --stripe-color: hsl(240deg 15% 12%);
+    --bevel-edge-top: hsl(240deg 40% 60%);
+    border-color: hsl(240deg 8% 65%) hsl(240deg 15% 18%) hsl(240deg 15% 18%)
+      hsl(240deg 8% 65%);
+  }
+
+  ${Wrapper}:has(input:focus-visible) & {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 `;
 
 const Stripe = styled.div`
@@ -124,23 +157,6 @@ const Stripe = styled.div`
   height: 6px;
   background: var(--stripe-color);
   box-shadow: 1px 0px 0px hsl(0deg 0% 100% / 0.6);
-`;
-
-const Wrapper = styled.div`
-  position: relative;
-  isolation: isolate;
-
-  &:has(input:active) ${Handle} {
-    --handle-bg: hsl(240deg 8% 48%);
-    --stripe-color: hsl(240deg 15% 12%);
-    border-color: hsl(240deg 8% 65%) hsl(240deg 15% 18%) hsl(240deg 15% 18%)
-      hsl(240deg 8% 65%);
-  }
-
-  &:has(input:focus-visible) ${Handle} {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
 `;
 
 export default MediaPlayerSmallSlider;
