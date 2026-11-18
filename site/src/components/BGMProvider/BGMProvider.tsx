@@ -1,7 +1,9 @@
 import * as React from 'react';
-import { Howl, Howler } from 'howler';
+import { Howl } from 'howler';
 
-export type ChannelMode = 'mono' | 'stereo';
+import { applyChannelMode, type ChannelMode } from './BGMProvider.helpers';
+
+export type { ChannelMode };
 
 // UI volume, from 0 to 1. Howler receives `scaleVolume(INITIAL_VOLUME)`.
 const INITIAL_VOLUME = 0.25;
@@ -45,61 +47,7 @@ function getPlaybackPosition() {
   return soundId === undefined ? 0 : bgm.seek(soundId);
 }
 
-interface HowlSound {
-  _node: GainNode;
-  // Created by the spatial plugin the first time `stereo()` is called on the sound.
-  _panner?: AudioNode;
-}
-
-type HowlWithInternals = Howl & {
-  _soundById: (id: number) => HowlSound | null;
-};
-
 let channelMode: ChannelMode = 'stereo';
-// Downmixing into the panner’s mono path costs 3dB (it spreads the signal with equal-power gains of ~0.707), so mono sounds get boosted back up to match.
-const monoCompensators = new WeakMap<AudioNode, GainNode>();
-
-// Howler has no mono option, but the spatial plugin’s StereoPannerNode can do it: limiting its input to a single channel makes the browser mix left and right together, and the panner then spreads that across both speakers, so the balance slider still works.
-// Howler’s graph is bufferSource → panner → gain, and the buffer source is replaced on every play/seek, so the panner is the earliest node that sticks around.
-function applyChannelMode(howl: Howl, id: number | undefined) {
-  if (id === undefined) {
-    return;
-  }
-
-  if (howl.state() !== 'loaded') {
-    howl.once('load', () => {
-      applyChannelMode(howl, id);
-    });
-    return;
-  }
-
-  // Makes sure the sound has a panner. Until the balance slider is touched, the group’s value is null.
-  const pan = (howl.stereo() as number | null) ?? 0;
-  howl.stereo(pan, id);
-
-  const sound = (howl as HowlWithInternals)._soundById(id);
-  const panner = sound?._panner;
-  if (!sound || !(panner instanceof StereoPannerNode)) {
-    return;
-  }
-
-  let compensator = monoCompensators.get(panner);
-  if (!compensator) {
-    compensator = Howler.ctx.createGain();
-    panner.disconnect();
-    panner.connect(compensator);
-    compensator.connect(sound._node);
-    monoCompensators.set(panner, compensator);
-  }
-
-  const isMono = channelMode === 'mono';
-  panner.channelCount = isMono ? 1 : 2;
-  panner.channelCountMode = isMono ? 'explicit' : 'clamped-max';
-  compensator.gain.setValueAtTime(
-    isMono ? Math.SQRT2 : 1,
-    Howler.ctx.currentTime,
-  );
-}
 
 interface BGMContextType {
   // True during the intro as well as the song.
@@ -189,7 +137,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     function handleIntroEnd() {
       soundId = bgm.play(soundId);
-      applyChannelMode(bgm, soundId);
+      applyChannelMode(bgm, soundId, channelMode);
       setTimestamp(0);
       setHasCompletedIntro(true);
     }
@@ -251,7 +199,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
         bgmIntro.seek(0, introSoundId);
       } else {
         introSoundId = bgmIntro.play(introSoundId);
-        applyChannelMode(bgmIntro, introSoundId);
+        applyChannelMode(bgmIntro, introSoundId, channelMode);
       }
       setIntroStartCount((count) => count + 1);
       setIsPlaying(true);
@@ -267,7 +215,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     cancelFadeOut?.();
     const isFirstPlay = soundId === undefined;
     soundId = bgm.play(soundId);
-    applyChannelMode(bgm, soundId);
+    applyChannelMode(bgm, soundId, channelMode);
     if (isFirstPlay && timestampRef.current > 0) {
       bgm.seek(timestampRef.current, soundId);
     }
@@ -396,8 +344,8 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
 
   const setChannelMode = React.useCallback((value: ChannelMode) => {
     channelMode = value;
-    applyChannelMode(bgm, soundId);
-    applyChannelMode(bgmIntro, introSoundId);
+    applyChannelMode(bgm, soundId, channelMode);
+    applyChannelMode(bgmIntro, introSoundId, channelMode);
     rawSetChannelMode(value);
   }, []);
 
