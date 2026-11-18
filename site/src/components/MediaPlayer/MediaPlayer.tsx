@@ -16,13 +16,14 @@ import {
 } from '@/components/BGMProvider/BGMProvider';
 import BevelEdge from '@/components/BevelEdge';
 import ClimbingNumber from '@/components/ClimbingNumber';
-import Spinner from '@/components/Spinner';
 
+import AlbumArt from './AlbumArt';
 import FrequencyVisualizer from './FrequencyVisualizer';
 import MediaBtn from './MediaBtn';
 import MediaPlayerSmallSlider from './MediaPlayerSmallSlider';
 import MediaPlayerScrubber from './MediaPlayerScrubber';
 import ScrollingTitle, { TitleText, type IntroStatus } from './ScrollingTitle';
+import Scanlines from './Scanlines';
 
 const KEYBOARD_ADJUSTMENT_DISPLAY_MS = 1000;
 const KBPS = 192;
@@ -35,7 +36,6 @@ const KHZ_CLIMB_DURATION_MS = INTRO_DURATION_MS - KHZ_CLIMB_DELAY_MS;
 // Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
 const OUTER_RADIUS = 8;
 const TOP_RIGHT_CUTOUT_RADIUS = 28;
-const ALBUM_ART_FADE_DURATION_MS = 500;
 const CHANNEL_MODE_TRANSITION_MS = 300;
 const CHANNEL_MODES: Array<{ value: ChannelMode; label: string }> = [
   { value: 'mono', label: 'Mono' },
@@ -147,22 +147,17 @@ function MediaPlayer({ handleClose }: Props) {
             leftRadius={OUTER_RADIUS - 2}
             rightRadius={TOP_RIGHT_CUTOUT_RADIUS}
           />
+          <BevelEdge
+            side="bottom"
+            color="var(--w-primary-900)"
+            radius={OUTER_RADIUS - 2}
+          />
 
           <TopSection>
-            <ArtWrapper>
-              {introStatus === 'playing' && (
-                <SpinnerWrapper>
-                  <Spinner size={20} color="var(--w-green)" />
-                </SpinnerWrapper>
-              )}
-              <AlbumArt
-                key={introStartCount}
-                data-intro-status={introStatus}
-                src="/images/album-art-3.png"
-                alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
-              />
-              <Scanlines />
-            </ArtWrapper>
+            <AlbumArt
+              introStatus={introStatus}
+              introStartCount={introStartCount}
+            />
             <TrackInfo>
               <Title>
                 {displayedSlider === 'volume' && (
@@ -290,18 +285,24 @@ function MediaPlayer({ handleClose }: Props) {
           <Divider />
           <BottomSection>
             <Buttons>
-              <MediaBtn icon="rewind" onClick={rewind} />
-              <MediaBtn icon="play" onClick={play} />
-              <MediaBtn icon="pause" onClick={pause} />
-              <MediaBtn icon="stop" onClick={stop} />
-              <MediaBtn icon="fast-forward" onClick={fastForward} />
+              <ButtonShaft />
+              <Row>
+                <MediaBtn icon="rewind" onClick={rewind} />
+                <MediaBtn icon="play" onClick={play} />
+                <MediaBtn icon="pause" onClick={pause} />
+                <MediaBtn icon="stop" onClick={stop} />
+                <MediaBtn icon="fast-forward" onClick={fastForward} />
+              </Row>
             </Buttons>
             <EjectBtnWrapper>
-              <MediaBtn icon="eject" onClick={eject} />
+              <ButtonShaft />
+              <Row>
+                <MediaBtn icon="eject" onClick={eject} />
+              </Row>
             </EjectBtnWrapper>
             <VisualizerInset>
               <FrequencyVisualizer />
-              <Scanlines style={{ opacity: 0.25 }} />
+              <Scanlines opacity={0.25} />
             </VisualizerInset>
             <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
           </BottomSection>
@@ -369,7 +370,6 @@ const Container = styled.div`
     0px -8px 16px hsl(210deg 15% 6% / var(--shadow-opacity));
 
   /* The child slides up and we want to clip the part below */
-  overflow: hidden;
 
   @supports not (position-area: top) {
     right: 1rem;
@@ -418,6 +418,7 @@ const Wrapper = styled.div`
     var(--w-primary-600)
   );
   border-radius: var(--r) ${TOP_RIGHT_CUTOUT_RADIUS - 1}px var(--r) var(--r);
+  border: 1px solid var(--w-primary-700);
   corner-shape: bevel;
   padding: 8px;
   font-size: 0.75rem;
@@ -478,70 +479,6 @@ const NumInset = styled(Inset)`
 const TopSection = styled.div`
   display: flex;
   gap: 6px;
-`;
-
-const Scanlines = styled.div`
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    var(--w-primary-700) 0px 1px,
-    transparent 1px 2px
-  );
-  opacity: 0.5;
-`;
-
-const ArtWrapper = styled.div`
-  position: relative;
-  width: 100px;
-  height: 64px;
-  border-radius: 4px;
-  corner-shape: bevel;
-  padding: 1px;
-  /* Trim corners */
-  overflow: hidden;
-
-  /* Vignette effect */
-  &::after {
-    --shadow-opacity: 0.325;
-    content: '';
-    position: absolute;
-    inset: 0;
-    box-shadow:
-      inset 0px 0px 2px hsl(0deg 0% 0% / var(--shadow-opacity)),
-      inset 0px 0px 8px hsl(0deg 0% 0% / var(--shadow-opacity)),
-      inset 0px 0px 16px hsl(0deg 0% 0% / var(--shadow-opacity)),
-      inset 0px 0px 32px hsl(0deg 0% 0% / var(--shadow-opacity));
-  }
-`;
-
-/* Sits underneath the album art, so it’s covered as the art fades in */
-const SpinnerWrapper = styled.div`
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-`;
-
-const AlbumArt = styled.img`
-  position: relative;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  image-rendering: pixelated;
-  border-radius: 3px;
-  corner-shape: bevel;
-  border-top: 1px solid white;
-
-  &[data-intro-status='waiting'] {
-    opacity: 0;
-  }
-
-  /* Finishes right as the song takes over from the intro */
-  &[data-intro-status='playing'] {
-    animation: fadeFromTransparent ${ALBUM_ART_FADE_DURATION_MS}ms
-      ${INTRO_DURATION_MS - ALBUM_ART_FADE_DURATION_MS}ms backwards;
-  }
 `;
 
 const TrackInfo = styled.div`
@@ -649,9 +586,11 @@ const BottomSection = styled.div`
 `;
 
 const Buttons = styled.div`
+  --corner-radius: 4px;
+  position: relative;
   display: flex;
   border-bottom: 1px solid var(--w-gray-700);
-  border-radius: 6px;
+  border-radius: var(--corner-radius);
   corner-shape: bevel;
   /* Buttons slide down by 2px when active, and we want to hide the bottom edges when this happens, to produce the illusion that they’re sliding into their cavity */
   overflow: hidden;
@@ -660,8 +599,23 @@ const Buttons = styled.div`
   margin-top: -4px;
 `;
 
+const ButtonShaft = styled.div`
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  corner-shape: inherit;
+  background: var(--color-background);
+`;
+
 const EjectBtnWrapper = styled(Buttons)`
   margin-right: auto;
+`;
+
+const Row = styled.div`
+  display: flex;
 `;
 
 const VisualizerInset = styled(Inset)`

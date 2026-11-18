@@ -89,7 +89,11 @@ function MainDemo() {
   // The minigame can be reset, and the simplest way to accomplish this is to swap out the key. So, this is an ever-incrementing number used to remount the CodedLights component:
   const [minigameRound, setMinigameRound] = React.useState(0);
   const { usingLofi, pitchVariation } = useSoundSettings();
-  const { stopWithFade: stopBGMWithFade } = useBGMSetters();
+  const {
+    stopWithFade: stopBGMWithFade,
+    closeMediaPlayer,
+    playFromIntro,
+  } = useBGMSetters();
 
   const hasWonMinigameRef = useSyncedRef(hasWonMinigame);
   const wasShowingPrizeRef = React.useRef(false);
@@ -98,7 +102,8 @@ function MainDemo() {
     setHasWonMinigame(false);
     setIsCelebrating(false);
     setMinigameRound((currentRound) => currentRound + 1);
-  }, []);
+    playFromIntro();
+  }, [playFromIntro]);
 
   const handleCelebrationComplete = React.useCallback(() => {
     setIsCelebrating(false);
@@ -414,6 +419,7 @@ function MainDemo() {
               hasWon={hasWonMinigame}
               onComplete={() => {
                 stopBGMWithFade(1000);
+                closeMediaPlayer();
                 setHasWonMinigame(true);
                 setIsCelebrating(true);
               }}

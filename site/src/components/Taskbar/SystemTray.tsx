@@ -1,12 +1,12 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { Zap } from 'lucide-react';
 
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
-import MediaPlayer from '@/components/MediaPlayer/MediaPlayer';
+import { useBGMSetters } from '@/components/BGMProvider';
+import WinampIcon from '@/components/WinampIcon';
 
 function SystemTray() {
-  const [isMediaPlayerOpen, setIsMediaPlayerOpen] = React.useState(false);
+  const { toggleMediaPlayer } = useBGMSetters();
   const [currentTime, setCurrentTime] = React.useState(new Date());
 
   React.useEffect(() => {
@@ -21,10 +21,6 @@ function SystemTray() {
     minute: '2-digit',
   });
 
-  const handleCloseMediaPlayer = React.useCallback(() => {
-    setIsMediaPlayerOpen(false);
-  }, []);
-
   return (
     <>
       <Wrapper>
@@ -32,15 +28,10 @@ function SystemTray() {
         <BevelEdge side="bottom" color="var(--color-gray-300)" radius={4} />
         <Clock>{formattedTime}</Clock>
         <Divider />
-        <MediaPlayerButton
-          onClick={() => setIsMediaPlayerOpen(!isMediaPlayerOpen)}
-        >
-          <MediaPlayerIcon size={16} />
+        <MediaPlayerButton onClick={toggleMediaPlayer}>
+          <WinampIcon />
         </MediaPlayerButton>
       </Wrapper>
-      {isMediaPlayerOpen && (
-        <MediaPlayer handleClose={handleCloseMediaPlayer} />
-      )}
     </>
   );
 }
@@ -64,7 +55,7 @@ const Clock = styled.div`
 `;
 
 const MediaPlayerButton = styled.button`
-  width: 1.75rem;
+  width: 1.5rem;
   aspect-ratio: 1;
   display: grid;
   place-content: center;
@@ -72,6 +63,7 @@ const MediaPlayerButton = styled.button`
   border: none;
   border: 1px solid var(--color-gray-100);
   border-radius: 4px;
+  padding: 0;
   color: var(--color-primary);
   corner-shape: bevel;
   cursor: pointer;
@@ -86,8 +78,6 @@ const MediaPlayerButton = styled.button`
     display: none;
   }
 `;
-
-const MediaPlayerIcon = styled(Zap)``;
 
 const Divider = styled.div`
   align-self: stretch;

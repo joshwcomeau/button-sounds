@@ -63,6 +63,7 @@ interface BGMContextType {
   timestamp: number;
   // Seconds. 0 until the file has loaded.
   duration: number;
+  isMediaPlayerOpen: boolean;
 }
 interface BGMContextSetter {
   play: () => void;
@@ -72,12 +73,16 @@ interface BGMContextSetter {
   rewind: () => void;
   fastForward: () => void;
   eject: () => void;
+  // Stops whatever is playing and starts the intro, even if the song was paused or had never been started.
+  playFromIntro: () => void;
   seek: (timestamp: number) => void;
   setVolume: (value: number) => void;
   setPanning: (value: number) => void;
   setChannelMode: (value: ChannelMode) => void;
   // Reads the exact position straight from Howler, for the frequency visualizer, which needs more accurate info than `timestamp`
   getPlaybackPosition: () => number;
+  toggleMediaPlayer: () => void;
+  closeMediaPlayer: () => void;
 }
 
 const BGMContext = React.createContext<BGMContextType>({
@@ -90,6 +95,7 @@ const BGMContext = React.createContext<BGMContextType>({
   channelMode: 'stereo',
   timestamp: 0,
   duration: 0,
+  isMediaPlayerOpen: false,
 });
 const BGMSetterContext = React.createContext<BGMContextSetter>({
   play: () => {},
@@ -99,11 +105,14 @@ const BGMSetterContext = React.createContext<BGMContextSetter>({
   rewind: () => {},
   fastForward: () => {},
   eject: () => {},
+  playFromIntro: () => {},
   seek: () => {},
   setVolume: () => {},
   setPanning: () => {},
   setChannelMode: () => {},
   getPlaybackPosition: () => 0,
+  toggleMediaPlayer: () => {},
+  closeMediaPlayer: () => {},
 });
 
 function BGMProvider({ children }: { children: React.ReactNode }) {
@@ -116,6 +125,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     React.useState<ChannelMode>(channelMode);
   const [timestamp, setTimestamp] = React.useState(0);
   const [duration, setDuration] = React.useState(bgm.duration());
+  const [isMediaPlayerOpen, setIsMediaPlayerOpen] = React.useState(false);
 
   // Lets the first `play()` honor a position the user scrubbed to before any sound instance existed.
   const timestampRef = React.useRef(timestamp);
@@ -322,6 +332,25 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     setHasCompletedIntro(false);
   }, [stopWithFade]);
 
+  const playFromIntro = React.useCallback(() => {
+    cancelFadeOut?.();
+    if (soundId !== undefined) {
+      bgm.stop(soundId);
+    }
+    if (introSoundId !== undefined) {
+      bgmIntro.stop(introSoundId);
+    }
+    setTimestamp(0);
+    // `play` reads this ref, which otherwise only updates after render.
+    hasCompletedIntroRef.current = false;
+    setHasCompletedIntro(false);
+
+    introSoundId = bgmIntro.play(introSoundId);
+    applyChannelMode(bgmIntro, introSoundId, channelMode);
+    setIntroStartCount((count) => count + 1);
+    setIsPlaying(true);
+  }, []);
+
   const setVolume = React.useCallback((value: number) => {
     // Changing the volume would interrupt a fade-out, so finish the stop right away.
     if (cancelFadeOut) {
@@ -335,10 +364,8 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setPanning = React.useCallback((value: number) => {
-    // Weirdly, Howler uses the opposite of what I'd expect? -1 is full *right* instead of full left
-    const howlerValue = value * -1;
-    bgm.stereo(howlerValue);
-    bgmIntro.stereo(howlerValue);
+    bgm.stereo(value);
+    bgmIntro.stereo(value);
     rawSetPanning(value);
   }, []);
 
@@ -347,6 +374,14 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     applyChannelMode(bgm, soundId, channelMode);
     applyChannelMode(bgmIntro, introSoundId, channelMode);
     rawSetChannelMode(value);
+  }, []);
+
+  const toggleMediaPlayer = React.useCallback(() => {
+    setIsMediaPlayerOpen((isOpen) => !isOpen);
+  }, []);
+
+  const closeMediaPlayer = React.useCallback(() => {
+    setIsMediaPlayerOpen(false);
   }, []);
 
   const value = React.useMemo(
@@ -359,6 +394,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       channelMode: channelModeState,
       timestamp,
       duration,
+      isMediaPlayerOpen,
     }),
     [
       isPlaying,
@@ -369,6 +405,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       channelModeState,
       timestamp,
       duration,
+      isMediaPlayerOpen,
     ],
   );
 
@@ -381,11 +418,14 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       rewind,
       fastForward,
       eject,
+      playFromIntro,
       seek,
       setVolume,
       setPanning,
       setChannelMode,
       getPlaybackPosition,
+      toggleMediaPlayer,
+      closeMediaPlayer,
     }),
     [
       play,
@@ -395,10 +435,13 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       rewind,
       fastForward,
       eject,
+      playFromIntro,
       seek,
       setVolume,
       setPanning,
       setChannelMode,
+      toggleMediaPlayer,
+      closeMediaPlayer,
     ],
   );
 

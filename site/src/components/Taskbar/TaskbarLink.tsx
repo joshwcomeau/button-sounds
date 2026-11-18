@@ -11,15 +11,22 @@ function TaskbarLink({
   children: React.ReactNode;
 }) {
   return (
-    <Wrapper href={href}>
-      <BevelEdge side="top" color="var(--color-gray-600)" radius={4} />
-      <BevelEdge side="bottom" color="var(--color-gray-75)" radius={4} />
+    <Wrapper
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      draggable={false}
+    >
+      <BevelEdge side="top" color="var(--top-border-color)" radius={4} />
+      <BevelEdge side="bottom" color="var(--bottom-border-color)" radius={4} />
       {children}
     </Wrapper>
   );
 }
 
 const Wrapper = styled.a`
+  --top-border-color: var(--color-gray-600);
+  --bottom-border-color: var(--color-gray-75);
   position: relative;
   display: flex;
   align-items: center;
@@ -30,6 +37,13 @@ const Wrapper = styled.a`
   border-radius: 4px;
   border: 1px solid var(--color-gray-200);
   corner-shape: bevel;
+
+  &:active {
+    --top-border-color: var(--color-gray-50);
+    --bottom-border-color: var(--color-gray-400);
+    background: var(--color-gray-100);
+    transform: translateY(2px);
+  }
 `;
 
 export default TaskbarLink;

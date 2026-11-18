@@ -107,6 +107,7 @@ function MediaIcon({ icon }: { icon: Icon }) {
 }
 
 const Wrapper = styled.button`
+  position: relative;
   display: grid;
   place-items: center;
   width: 32px;
@@ -121,6 +122,17 @@ const Wrapper = styled.button`
     inset 0px -1px 0px hsl(240deg 15% 45%);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+
+  &:first-child {
+    border-top-left-radius: var(--corner-radius);
+    border-bottom-left-radius: var(--corner-radius);
+    corner-shape: bevel;
+  }
+  &:last-child {
+    border-top-right-radius: var(--corner-radius);
+    border-bottom-right-radius: var(--corner-radius);
+    corner-shape: bevel;
+  }
 
   &:active {
     transform: translateY(2px);

@@ -2,25 +2,39 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import { GITHUB_URL, NPM_URL, TASKBAR_HEIGHT } from '@/constants';
+import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
+
+import MediaPlayer from '@/components/MediaPlayer/MediaPlayer';
 
 import SystemTray from './SystemTray';
 import TaskbarLink from './TaskbarLink';
 
 function Taskbar() {
+  const { toggleMediaPlayer, closeMediaPlayer } = useBGMSetters();
+
+  const { isMediaPlayerOpen } = useBGMState();
+
   return (
-    <OuterWrapper>
-      <Wrapper>
-        <Links>
-          <TaskbarLink href={GITHUB_URL}>
-            <GHLogo src="/images/github-logo.svg" alt="GitHub" />
-          </TaskbarLink>
-          <TaskbarLink href={NPM_URL}>
-            <NPMLogo src="/images/npm-logo.svg" alt="NPM" />
-          </TaskbarLink>
-        </Links>
-        <SystemTray />
-      </Wrapper>
-    </OuterWrapper>
+    <>
+      {isMediaPlayerOpen && <MediaPlayer handleClose={closeMediaPlayer} />}
+      <OuterWrapper>
+        <Wrapper>
+          <Links>
+            <TaskbarLink href={GITHUB_URL}>
+              <GHLogo
+                src="/images/github-logo.svg"
+                alt="GitHub"
+                draggable={false}
+              />
+            </TaskbarLink>
+            <TaskbarLink href={NPM_URL}>
+              <NPMLogo src="/images/npm-logo.svg" alt="NPM" draggable={false} />
+            </TaskbarLink>
+          </Links>
+          <SystemTray />
+        </Wrapper>
+      </OuterWrapper>
+    </>
   );
 }
 
