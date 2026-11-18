@@ -161,6 +161,7 @@ function MediaPlayer({ handleClose }: Props) {
                 src="/images/album-art-3.png"
                 alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
               />
+              <Scanlines />
             </ArtWrapper>
             <TrackInfo>
               <Title>
@@ -300,6 +301,7 @@ function MediaPlayer({ handleClose }: Props) {
             </EjectBtnWrapper>
             <VisualizerInset>
               <FrequencyVisualizer />
+              <Scanlines style={{ opacity: 0.25 }} />
             </VisualizerInset>
             <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
           </BottomSection>
@@ -478,6 +480,17 @@ const TopSection = styled.div`
   gap: 6px;
 `;
 
+const Scanlines = styled.div`
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--w-primary-700) 0px 1px,
+    transparent 1px 2px
+  );
+  opacity: 0.5;
+`;
+
 const ArtWrapper = styled.div`
   position: relative;
   width: 100px;
@@ -485,37 +498,20 @@ const ArtWrapper = styled.div`
   border-radius: 4px;
   corner-shape: bevel;
   padding: 1px;
-  isolation: isolate;
   /* Trim corners */
   overflow: hidden;
 
   /* Vignette effect */
-  &::before {
+  &::after {
     --shadow-opacity: 0.325;
     content: '';
     position: absolute;
-    /* NOTE: Since the AlbumArt child has a fade-in animation, it briefly appears above the vignette by default. We need a z-index to lift it up, but we’ve squashed ArtWrapper with isolation: isolate, so there's no worries */
-    z-index: 2;
     inset: 0;
     box-shadow:
       inset 0px 0px 2px hsl(0deg 0% 0% / var(--shadow-opacity)),
       inset 0px 0px 8px hsl(0deg 0% 0% / var(--shadow-opacity)),
       inset 0px 0px 16px hsl(0deg 0% 0% / var(--shadow-opacity)),
       inset 0px 0px 32px hsl(0deg 0% 0% / var(--shadow-opacity));
-  }
-
-  /* Scanlines */
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      var(--w-primary-700) 0px 1px,
-      transparent 1px 2px
-    );
-    opacity: 0.5;
   }
 `;
 
@@ -669,6 +665,7 @@ const EjectBtnWrapper = styled(Buttons)`
 `;
 
 const VisualizerInset = styled(Inset)`
+  position: relative;
   display: flex;
   align-items: center;
   height: 1.5rem;

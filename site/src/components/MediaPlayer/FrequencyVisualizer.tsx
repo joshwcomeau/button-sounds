@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Howler } from 'howler';
 
 import {
+  INTRO_DURATION_MS,
   useBGMState,
   useBGMSetters,
 } from '@/components/BGMProvider/BGMProvider';
@@ -30,6 +31,13 @@ const TILT_REFERENCE_FREQ = 1000;
 const DECAY_PER_SECOND = 2.5;
 // Keeps a long gap between frames (e.g. a backgrounded tab) from being treated as one giant step.
 const MAX_FRAME_SECONDS = 0.1;
+
+// During the intro, a wave rises and falls through the bars from left to right, leaving each one resting at 2px until the song takes over.
+const INTRO_WAVE_DURATION_MS = INTRO_DURATION_MS - 400;
+const INTRO_PULSE_MS = 600;
+const INTRO_STAGGER_MS =
+  (INTRO_WAVE_DURATION_MS - INTRO_PULSE_MS) / (NUM_OF_BARS - 1);
+const INTRO_REST_LEVEL = 2 / CANVAS_HEIGHT;
 
 const GRADIENT_STOPS: Array<[number, string]> = [
   [0, 'hsl(140deg 100% 45%)'],
@@ -59,7 +67,7 @@ const real = new Float32Array(FFT_SIZE);
 const imag = new Float32Array(FFT_SIZE);
 
 function FrequencyVisualizer() {
-  const { isPlaying, hasCompletedIntro } = useBGMState();
+  const { isPlaying, hasCompletedIntro, introStartCount } = useBGMState();
   const { getPlaybackPosition } = useBGMSetters();
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -67,15 +75,19 @@ function FrequencyVisualizer() {
   const songRef = React.useRef<DecodedSong | null>(null);
   const levelsRef = React.useRef(new Float32Array(NUM_OF_BARS));
   const lastFrameTimeRef = React.useRef<number | null>(null);
+  const introRef = React.useRef<{ count: number; startTime: number } | null>(
+    null,
+  );
 
   const isActive = isPlaying && hasCompletedIntro;
+  const isIntroPlaying = isPlaying && !hasCompletedIntro;
 
-  // After the song stops, we keep animating until the bars have fallen back to zero.
+  // After the song (or intro) stops, we keep animating until the bars have fallen back to zero.
   const [isSettling, setIsSettling] = React.useState(false);
-  const [wasActive, setWasActive] = React.useState(isActive);
-  if (isActive !== wasActive) {
-    setWasActive(isActive);
-    setIsSettling(!isActive);
+  const [wasPlaying, setWasPlaying] = React.useState(isPlaying);
+  if (isPlaying !== wasPlaying) {
+    setWasPlaying(isPlaying);
+    setIsSettling(!isPlaying);
   }
 
   React.useEffect(() => {
@@ -138,6 +150,21 @@ function FrequencyVisualizer() {
     lastFrameTimeRef.current = now;
 
     const levels = levelsRef.current;
+
+    // Rewinding during the intro bumps the count, which restarts the wave.
+    if (isIntroPlaying && introRef.current?.count !== introStartCount) {
+      introRef.current = { count: introStartCount, startTime: now };
+    } else if (!isIntroPlaying && introRef.current) {
+      introRef.current = null;
+      // The bars snap straight to the song’s levels, rather than falling from their resting height.
+      if (isActive) {
+        levels.fill(0);
+      }
+    }
+    const introElapsedMs = introRef.current
+      ? now - introRef.current.startTime
+      : null;
+
     const song = songRef.current;
     const targets =
       isActive && song ? analyze(song, getPlaybackPosition()) : null;
@@ -146,11 +173,16 @@ function FrequencyVisualizer() {
     context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     for (let i = 0; i < NUM_OF_BARS; i++) {
-      const fallen = Math.max(
-        (levels[i] ?? 0) - DECAY_PER_SECOND * elapsedSeconds,
-        0,
-      );
-      const level = Math.max(targets?.[i] ?? 0, fallen);
+      let level: number;
+      if (introElapsedMs !== null) {
+        level = getIntroLevel(i, introElapsedMs);
+      } else {
+        const fallen = Math.max(
+          (levels[i] ?? 0) - DECAY_PER_SECOND * elapsedSeconds,
+          0,
+        );
+        level = Math.max(targets?.[i] ?? 0, fallen);
+      }
       levels[i] = level;
       if (level > 0) {
         hasEnergy = true;
@@ -166,11 +198,11 @@ function FrequencyVisualizer() {
       );
     }
 
-    if (!isActive && !hasEnergy) {
+    if (!isPlaying && !hasEnergy) {
       lastFrameTimeRef.current = null;
       setIsSettling(false);
     }
-  }, isActive || isSettling);
+  }, isPlaying || isSettling);
 
   return (
     <canvas
@@ -179,6 +211,22 @@ function FrequencyVisualizer() {
       aria-hidden="true"
     />
   );
+}
+
+// Each bar sweeps up to full height and back down, settling at its resting height once the wave has passed.
+function getIntroLevel(barIndex: number, elapsedMs: number) {
+  const progress = (elapsedMs - barIndex * INTRO_STAGGER_MS) / INTRO_PULSE_MS;
+  if (progress <= 0) {
+    return 0;
+  }
+  if (progress >= 1) {
+    return INTRO_REST_LEVEL;
+  }
+
+  const wave = Math.sin(Math.PI * progress);
+  return progress < 0.5
+    ? wave
+    : INTRO_REST_LEVEL + (1 - INTRO_REST_LEVEL) * wave;
 }
 
 // Resizing a canvas resets its context state, so the scale and gradient are applied after.
