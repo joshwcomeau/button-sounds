@@ -40,6 +40,7 @@ export default defineConfig(
       // Conflicts with `no-non-null-assertion`: it would rewrite `x as T` to `x!`.
       '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
     },
   },
   {

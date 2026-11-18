@@ -6,31 +6,41 @@ import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
 
 import { TASKBAR_HEIGHT } from '@/constants';
-import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
 import useKeybindings from '@/hooks/use-keybindings';
 
 import {
   INTRO_DURATION_MS,
   useBGMState,
   useBGMSetters,
+  type ChannelMode,
 } from '@/components/BGMProvider/BGMProvider';
 import BevelEdge from '@/components/BevelEdge';
-import VisuallyHidden from '@/components/VisuallyHidden';
+import ClimbingNumber from '@/components/ClimbingNumber';
+import Spinner from '@/components/Spinner';
 
+import FrequencyVisualizer from './FrequencyVisualizer';
 import MediaBtn from './MediaBtn';
 import MediaPlayerSmallSlider from './MediaPlayerSmallSlider';
 import MediaPlayerScrubber from './MediaPlayerScrubber';
+import ScrollingTitle, { TitleText, type IntroStatus } from './ScrollingTitle';
 
-const TITLE = 'Actuator Jam – Josh W. Comeau (1:17)';
-// The trailing space keeps the end of one loop from butting up against the start of the next.
-const SCROLLING_TITLE = `${TITLE} *** `;
-const SCROLL_INTERVAL_MS = 250;
-const START_PAUSE_MS = 2000;
 const KEYBOARD_ADJUSTMENT_DISPLAY_MS = 1000;
+const KBPS = 192;
+const KHZ = 44.1;
+// kbps finishes a bit before the song starts, while kHz finishes right as it takes over from the intro.
+const KBPS_CLIMB_DELAY_MS = 1000;
+const KBPS_CLIMB_DURATION_MS = INTRO_DURATION_MS - 400 - KBPS_CLIMB_DELAY_MS;
+const KHZ_CLIMB_DELAY_MS = 1400;
+const KHZ_CLIMB_DURATION_MS = INTRO_DURATION_MS - KHZ_CLIMB_DELAY_MS;
 // Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
 const OUTER_RADIUS = 8;
 const TOP_RIGHT_CUTOUT_RADIUS = 28;
 const ALBUM_ART_FADE_DURATION_MS = 500;
+const CHANNEL_MODE_TRANSITION_MS = 300;
+const CHANNEL_MODES: Array<{ value: ChannelMode; label: string }> = [
+  { value: 'mono', label: 'Mono' },
+  { value: 'stereo', label: 'Stereo' },
+];
 
 type Slider = 'volume' | 'panning';
 
@@ -45,6 +55,7 @@ function MediaPlayer({ handleClose }: Props) {
     introStartCount,
     volume,
     panning,
+    channelMode,
     timestamp,
     duration,
   } = useBGMState();
@@ -58,7 +69,10 @@ function MediaPlayer({ handleClose }: Props) {
     seek,
     setVolume,
     setPanning,
+    setChannelMode,
   } = useBGMSetters();
+
+  const channelModeInputName = React.useId();
 
   const [draggingSlider, setDraggingSlider] = React.useState<Slider | null>(
     null,
@@ -69,7 +83,7 @@ function MediaPlayer({ handleClose }: Props) {
 
   const displayedSlider = draggingSlider ?? keyboardAdjustedSlider;
 
-  const introStatus = hasCompletedIntro
+  const introStatus: IntroStatus = hasCompletedIntro
     ? 'completed'
     : isPlaying
       ? 'playing'
@@ -136,10 +150,15 @@ function MediaPlayer({ handleClose }: Props) {
 
           <TopSection>
             <ArtWrapper>
+              {introStatus === 'playing' && (
+                <SpinnerWrapper>
+                  <Spinner size={20} color="var(--w-green)" />
+                </SpinnerWrapper>
+              )}
               <AlbumArt
                 key={introStartCount}
                 data-intro-status={introStatus}
-                src="/images/album-art-pixellated.png"
+                src="/images/album-art-3.png"
                 alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
               />
             </ArtWrapper>
@@ -151,18 +170,80 @@ function MediaPlayer({ handleClose }: Props) {
                 {displayedSlider === 'panning' && (
                   <TitleText>Balance: {getBalanceLabel(panning)}</TitleText>
                 )}
-                {!displayedSlider && <ScrollingTitle />}
+                {!displayedSlider && (
+                  <ScrollingTitle
+                    key={introStartCount}
+                    introStatus={introStatus}
+                  />
+                )}
               </Title>
               <Specs>
                 <Spec>
-                  <NumInset>192</NumInset> kbps
+                  <NumInset
+                    data-intro-status={introStatus}
+                    style={{
+                      '--climb-delay': `${KBPS_CLIMB_DELAY_MS}ms`,
+                      '--climb-duration': `${KBPS_CLIMB_DURATION_MS}ms`,
+                    }}
+                  >
+                    {introStatus === 'playing' && (
+                      <ClimbingNumber
+                        key={introStartCount}
+                        from={0}
+                        to={KBPS}
+                        delay={KBPS_CLIMB_DELAY_MS}
+                        duration={KBPS_CLIMB_DURATION_MS}
+                        decimalPlaces={0}
+                        placeholder=""
+                      />
+                    )}
+                    {introStatus === 'completed' && KBPS}
+                  </NumInset>
+                  kbps
                 </Spec>
                 <Spec>
-                  <NumInset>44.1</NumInset> kHz
+                  <NumInset
+                    data-intro-status={introStatus}
+                    style={{
+                      '--climb-delay': `${KHZ_CLIMB_DELAY_MS}ms`,
+                      '--climb-duration': `${KHZ_CLIMB_DURATION_MS}ms`,
+                    }}
+                  >
+                    {introStatus === 'playing' && (
+                      <ClimbingNumber
+                        key={introStartCount}
+                        from={0}
+                        to={KHZ}
+                        delay={KHZ_CLIMB_DELAY_MS}
+                        duration={KHZ_CLIMB_DURATION_MS}
+                        decimalPlaces={1}
+                        placeholder=""
+                      />
+                    )}
+                    {introStatus === 'completed' && KHZ}
+                  </NumInset>
+                  kHz
                 </Spec>
-                <FinalSpec>
-                  <Mono>Mono</Mono>
-                  <Stereo>Stereo</Stereo>
+                <FinalSpec role="radiogroup" aria-label="Channels">
+                  {CHANNEL_MODES.map(({ value, label }) => (
+                    <ChannelModeOption
+                      key={`${value}-${introStartCount}`}
+                      data-intro-status={introStatus}
+                    >
+                      <ChannelModeInput
+                        type="radio"
+                        name={channelModeInputName}
+                        value={value}
+                        checked={channelMode === value}
+                        // Switching mid-intro would interrupt the glow-in animation, so this only unlocks once the song has started.
+                        disabled={introStatus !== 'completed'}
+                        onChange={() => {
+                          setChannelMode(value);
+                        }}
+                      />
+                      {label}
+                    </ChannelModeOption>
+                  ))}
                 </FinalSpec>
               </Specs>
               <TopSliders>
@@ -217,6 +298,9 @@ function MediaPlayer({ handleClose }: Props) {
             <EjectBtnWrapper>
               <MediaBtn icon="eject" onClick={eject} />
             </EjectBtnWrapper>
+            <VisualizerInset>
+              <FrequencyVisualizer />
+            </VisualizerInset>
             <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
           </BottomSection>
           <Footer>
@@ -247,38 +331,6 @@ function getBalanceLabel(panning: number) {
   return `${percentage}% ${panning < 0 ? 'left' : 'right'}`;
 }
 
-function ScrollingTitle() {
-  const [offset, setOffset] = React.useState(0);
-  const prefersReducedMotion = usePrefersReducedMotion();
-
-  React.useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    const delay = offset === 0 ? START_PAUSE_MS : SCROLL_INTERVAL_MS;
-
-    const timeoutId = window.setTimeout(() => {
-      setOffset((current) => (current + 1) % SCROLLING_TITLE.length);
-    }, delay);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [offset, prefersReducedMotion]);
-
-  // Each tick moves the first character to the end.
-  const start = prefersReducedMotion ? 0 : offset;
-  const text = SCROLLING_TITLE.slice(start) + SCROLLING_TITLE.slice(0, start);
-
-  return (
-    <>
-      <TitleText aria-hidden="true">{text}</TitleText>
-      <VisuallyHidden>{TITLE}</VisuallyHidden>
-    </>
-  );
-}
-
 const slideUp = keyframes`
   from {
     transform: translateY(20%);
@@ -288,11 +340,31 @@ const slideUp = keyframes`
   }
 `;
 
+// Starts out matching an unselected option. The shadows are transparent rather than absent, so they can interpolate.
+const channelModeGlowIn = keyframes`
+  from {
+    color: var(--color-gray-700);
+    font-weight: 400;
+    text-shadow:
+      0px 0px 2px transparent,
+      0px 0px 3px transparent;
+  }
+`;
+
 const Container = styled.div`
+  --shadow-opacity: 0.5;
+  --outer-radius: ${OUTER_RADIUS}px;
   position: fixed;
   position-anchor: --media-player-anchor;
   position-area: top span-left;
   bottom: 10px;
+  border-radius: var(--outer-radius) 2px var(--outer-radius) var(--outer-radius);
+  corner-shape: bevel;
+  box-shadow:
+    0px -1px 2px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px -2px 4px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px -4px 8px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px -8px 16px hsl(210deg 15% 6% / var(--shadow-opacity));
 
   /* The child slides up and we want to clip the part below */
   overflow: hidden;
@@ -304,7 +376,6 @@ const Container = styled.div`
 `;
 
 const BorderWrapper = styled.div`
-  --outer-radius: ${OUTER_RADIUS}px;
   --w-green: hsl(140deg 100% 50%);
   --w-green-700: hsl(136deg 80% 30%);
   --w-green-900: hsl(133deg 80% 10%);
@@ -321,8 +392,8 @@ const BorderWrapper = styled.div`
   background: var(--w-primary-900);
   padding: 4px;
   border: 1px solid var(--w-gray-900);
-  border-radius: var(--outer-radius) 2px var(--outer-radius) var(--outer-radius);
-  corner-shape: bevel;
+  border-radius: inherit;
+  corner-shape: inherit;
   will-change: transform;
   animation: ${slideUp} 850ms cubic-bezier(0.098, 0.974, 0.04, 0.977);
 
@@ -352,10 +423,14 @@ const Wrapper = styled.div`
 
 const Inset = styled.div`
   position: relative;
-  background: var(--color-background);
-  border-radius: 1px;
+  background: hsl(210deg 15% 9%);
+  border-radius: 4px;
+  corner-shape: bevel;
   padding-inline: 8px;
   color: var(--w-green);
+  text-shadow:
+    0px 0px 2px var(--w-green-900),
+    0px 0px 3px var(--w-green-700);
 
   /* Annoyingly, a Chrome bug means that bottom/top borders overlap in a weird way unless we move them to child elements */
 
@@ -366,13 +441,13 @@ const Inset = styled.div`
     inset: 0;
     width: 100%;
     height: 100%;
-    border: 1px solid var(--w-primary-700);
     border-radius: inherit;
+    corner-shape: inherit;
     pointer-events: none;
   }
 
   &::before {
-    border-top: 1px solid var(--w-primary-700);
+    border-top: 1px solid black;
   }
 
   &::after {
@@ -384,6 +459,18 @@ const NumInset = styled(Inset)`
   font-size: 0.75rem;
   font-weight: 700;
   font-family: var(--font-segment);
+  font-variant-numeric: tabular-nums;
+  /* Keeps the specs row from shifting while the numbers climb during the intro */
+  min-width: calc(3ch + 16px);
+  text-align: right;
+
+  &[data-intro-status='waiting'] {
+    color: var(--color-primary);
+  }
+
+  &[data-intro-status='playing'] {
+    transition: color var(--climb-duration) linear var(--climb-delay);
+  }
 `;
 
 const TopSection = styled.div`
@@ -397,6 +484,7 @@ const ArtWrapper = styled.div`
   height: 64px;
   border-radius: 4px;
   corner-shape: bevel;
+  padding: 1px;
   isolation: isolate;
   /* Trim corners */
   overflow: hidden;
@@ -431,12 +519,23 @@ const ArtWrapper = styled.div`
   }
 `;
 
+/* Sits underneath the album art, so it’s covered as the art fades in */
+const SpinnerWrapper = styled.div`
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+`;
+
 const AlbumArt = styled.img`
   position: relative;
   width: 100%;
   height: 100%;
   object-fit: cover;
   image-rendering: pixelated;
+  border-radius: 3px;
+  corner-shape: bevel;
+  border-top: 1px solid white;
 
   &[data-intro-status='waiting'] {
     opacity: 0;
@@ -468,15 +567,6 @@ const Title = styled(Inset)`
   margin-right: 8px;
 `;
 
-/* Clipping happens here rather than on Title, since overflow is clipped at the padding edge, which would let text spill into Title’s right padding */
-const TitleText = styled.span`
-  display: block;
-  /* "pre" rather than "nowrap" so that spaces rotated to the start/end aren’t collapsed */
-  white-space: pre;
-  overflow: hidden;
-  margin-right: 10px;
-`;
-
 const Specs = styled.div`
   display: flex;
   gap: 16px;
@@ -493,15 +583,53 @@ const FinalSpec = styled(Spec)`
   gap: 8px;
 `;
 
-const Mono = styled.div`
+// Nothing is lit while the player is off, the same as the specs beside it.
+const ChannelModeOption = styled.label`
+  position: relative;
   color: var(--color-gray-700);
-`;
-const Stereo = styled.div`
-  color: var(--w-green);
-  font-weight: 700;
+  font-weight: 400;
   text-shadow:
-    0px 0px 2px var(--w-green-900),
-    0px 0px 3px var(--w-green-700);
+    0px 0px 2px transparent,
+    0px 0px 3px transparent;
+  transition-property: color, font-weight, text-shadow;
+  transition-duration: ${CHANNEL_MODE_TRANSITION_MS}ms;
+
+  &:has(:checked):not([data-intro-status='waiting']) {
+    color: var(--w-green);
+    font-weight: 700;
+    text-shadow:
+      0px 0px 2px var(--w-green-900),
+      0px 0px 3px var(--w-green-700);
+  }
+
+  &[data-intro-status='playing']:has(:checked) {
+    animation: ${channelModeGlowIn} ${INTRO_DURATION_MS}ms linear backwards;
+  }
+
+  &:has(:focus-visible) {
+    outline: var(--focus-dot-size, 2px) dotted white;
+    outline-offset: 2px;
+  }
+`;
+
+const ChannelModeInput = styled.input`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  appearance: none;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
 `;
 
 const TopSliders = styled.div`
@@ -520,6 +648,7 @@ const ScrubberWrapper = styled.div``;
 
 const BottomSection = styled.div`
   display: flex;
+  gap: 8px;
   justify-content: space-between;
 `;
 
@@ -536,8 +665,15 @@ const Buttons = styled.div`
 `;
 
 const EjectBtnWrapper = styled(Buttons)`
-  margin-left: 16px;
   margin-right: auto;
+`;
+
+const VisualizerInset = styled(Inset)`
+  display: flex;
+  align-items: center;
+  height: 1.5rem;
+  padding-inline: 4px;
+  margin-left: auto;
 `;
 
 const TimeDisplay = styled(Inset)`
@@ -550,10 +686,6 @@ const TimeDisplay = styled(Inset)`
   font-family: var(--font-segment);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  color: var(--w-green);
-  text-shadow:
-    0px 0px 2px var(--w-green-900),
-    0px 0px 3px var(--w-green-700);
 `;
 
 const Divider = styled.div`

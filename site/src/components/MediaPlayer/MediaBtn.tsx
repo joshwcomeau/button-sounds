@@ -1,4 +1,4 @@
-// A transport button inspired by Winamp’s rewind/play/pause/stop/fast-forward/eject controls.
+// A transport button inspired by Winamp’s main control buttons
 // The icons are drawn as 1px outlines on a pixel grid (hence the half-pixel coordinates), so the viewBox must match the rendered size to keep them crisp.
 import * as React from 'react';
 import styled from 'styled-components';
