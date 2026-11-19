@@ -201,6 +201,8 @@ function MainDemo() {
   const selectedSoundNameRef = useSyncedRef(selectedSoundName);
 
   const { press, release } = useImperativeButtonSounds(selectedSoundName, {
+    // NOTE: in general, I recommend never going above 0.5. Sounds on the web should generally be quieter, to prevent startling people. But the button SFX is the entire point of this website, so I want people to hear them clearly!
+    volume: 1,
     lofi: usingLofi,
     lofiOptions: { bits: 4, downsample: 0.15 },
   });

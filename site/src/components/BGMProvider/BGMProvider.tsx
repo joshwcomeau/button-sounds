@@ -6,7 +6,7 @@ import { applyChannelMode, type ChannelMode } from './BGMProvider.helpers';
 export type { ChannelMode };
 
 // UI volume, from 0 to 1. Howler receives `scaleVolume(INITIAL_VOLUME)`.
-const INITIAL_VOLUME = 0.25;
+const INITIAL_VOLUME = 0.4;
 export const INTRO_DURATION_MS = 2400;
 
 // The Howler volume used when the UI volume is at 100%.
@@ -126,8 +126,6 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   const [timestamp, setTimestamp] = React.useState(0);
   const [duration, setDuration] = React.useState(bgm.duration());
   const [isMediaPlayerOpen, setIsMediaPlayerOpen] = React.useState(false);
-
-  console.log({ timestamp, duration });
 
   // Lets the first `play()` honor a position the user scrubbed to before any sound instance existed.
   const timestampRef = React.useRef(timestamp);

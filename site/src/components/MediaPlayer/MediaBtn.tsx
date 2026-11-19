@@ -36,6 +36,7 @@ function MediaBtn({ icon, ref, ...delegated }: Props) {
       pitchVariation: 0.1,
     },
   );
+
   return (
     <Wrapper ref={actualRef} type="button" {...delegated}>
       <MediaIcon icon={icon} />
@@ -130,8 +131,8 @@ const Wrapper = styled.button`
   position: relative;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 24px;
+  width: 2rem;
+  height: 1.5rem;
   padding: 0;
   margin: 0;
   background: hsl(240deg 30% 78%);

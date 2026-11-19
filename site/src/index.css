@@ -17,7 +17,16 @@
   --color-primary-700: hsl(46deg 100% 65%);
   --color-primary: var(--color-primary-500);
   --font-default: 'Space Mono', monospace;
+  /*
+    Seven-segment font, mimicking old LCD displays
+  */
   --font-segment: 'seven-segment', monospace;
+  /*
+    Another seven-segment font 😅
+    It feels very indulgent to have *two* seven-segment fonts, but "seven-segment" isn't monospace, which feels awkward for numbers that change. So I grabbed this other one for digits.
+    Fortunately, they're both tiny (6kb and 7kb respectively).
+  */
+  --font-segment-digits: 'dseg', monospace;
 
   /* Scrollbar colors. We can override these anywhere in the app if we want other scroll container to use different colors. */
   --scrollbar-size: 14px;
@@ -103,6 +112,13 @@ a {
 @font-face {
   font-family: 'seven-segment';
   src: url('/fonts/seven-segment.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: fallback;
+}
+@font-face {
+  font-family: 'dseg';
+  src: url('/fonts/dseg14-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: fallback;

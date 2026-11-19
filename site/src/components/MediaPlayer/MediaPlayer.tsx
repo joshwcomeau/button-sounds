@@ -203,18 +203,20 @@ function MediaPlayer({ handleClose }: Props) {
                       '--climb-duration': `${KBPS_CLIMB_DURATION_MS}ms`,
                     }}
                   >
-                    {introStatus === 'playing' && (
-                      <ClimbingNumber
-                        key={introStartCount}
-                        from={0}
-                        to={KBPS}
-                        delay={KBPS_CLIMB_DELAY_MS}
-                        duration={KBPS_CLIMB_DURATION_MS}
-                        decimalPlaces={0}
-                        placeholder=""
-                      />
-                    )}
-                    {introStatus === 'completed' && KBPS}
+                    <KbpsOpticalShift>
+                      {introStatus === 'playing' && (
+                        <ClimbingNumber
+                          key={introStartCount}
+                          from={0}
+                          to={KBPS}
+                          delay={KBPS_CLIMB_DELAY_MS}
+                          duration={KBPS_CLIMB_DURATION_MS}
+                          decimalPlaces={0}
+                          placeholder=""
+                        />
+                      )}
+                      {introStatus === 'completed' && KBPS}
+                    </KbpsOpticalShift>
                   </NumInset>
                   kbps
                 </Spec>
@@ -483,13 +485,14 @@ const Inset = styled.div`
 `;
 
 const NumInset = styled(Inset)`
-  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.5625rem;
   font-weight: 700;
-  font-family: var(--font-segment);
+  font-family: var(--font-segment-digits);
   font-variant-numeric: tabular-nums;
   /* Keeps the specs row from shifting while the numbers climb during the intro */
   min-width: calc(3ch + 16px);
-  text-align: right;
 
   &[data-intro-status='waiting'] {
     color: var(--color-primary);
@@ -526,12 +529,19 @@ const Title = styled(Inset)`
 
 const Specs = styled.div`
   display: flex;
+  align-items: baseline;
   gap: 16px;
 `;
 
 const Spec = styled.div`
   display: flex;
   gap: 4px;
+`;
+
+// The kbps displays as "192", and since the dseg font is monospace, "1" has a bunch of empty space on the left (empty segments!). So, it winds up looking off-center. Fix that by reducing left spacing by 2px
+const KbpsOpticalShift = styled.span`
+  display: block;
+  margin-left: -2px;
 `;
 
 const FinalSpec = styled(Spec)`
@@ -663,9 +673,10 @@ const TimeDisplay = styled(Inset)`
   font-size: 1rem;
   height: 1.5rem;
   min-width: 3rem;
-  font-family: var(--font-segment);
-  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
   font-weight: 700;
+  text-rendering: geometricPrecision;
+  font-family: var(--font-segment-digits);
 `;
 
 const Divider = styled.div`

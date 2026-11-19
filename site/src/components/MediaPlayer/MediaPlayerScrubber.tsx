@@ -6,6 +6,8 @@ import useSound from 'use-sound';
 
 import { sampleOne } from '@/utils';
 
+import { useBGMState } from '@/components/BGMProvider';
+
 const HANDLE_WIDTH = 36;
 const HANDLE_HEIGHT = 15;
 const TRACK_HEIGHT = 15;
@@ -39,6 +41,7 @@ function MediaPlayerScrubber({
   onPointerDown,
   ...delegated
 }: Props) {
+  const { isPlaying } = useBGMState();
   const [playTick] = useSound('/sounds/heavier-tick-sprite.mp3', {
     sprite: TICK_SPRITE,
     volume: 0.2,
@@ -95,7 +98,10 @@ function MediaPlayerScrubber({
         onPointerDown?.(ev);
       }}
       onChange={() => {
-        playTick({ id: sampleOne(TICK_IDS) });
+        // Don't play the tick SFX while the song is playing, since it's a bit distracting.
+        if (!isPlaying) {
+          playTick({ id: sampleOne(TICK_IDS) });
+        }
       }}
       {...delegated}
     />
@@ -189,7 +195,7 @@ const Input = styled.input`
     cursor: grabbing;
   }
 
-  /* The handle fades with the control: hidden through the intro and after eject, visible whenever a song is loaded. */
+  /* When the media player is first displayed, the song hasn't been "loaded" yet (I have a fake loading sequence so I can play a 2.4s intro which isn't part of the real song and doesn't loop). During this unloaded state and during the intro, we disable the scrubber and hide the thumb. */
   &:disabled::-webkit-slider-thumb {
     opacity: 0;
   }

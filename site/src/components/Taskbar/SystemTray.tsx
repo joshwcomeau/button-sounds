@@ -45,7 +45,7 @@ const Wrapper = styled.div`
 `;
 
 const Clock = styled.div`
-  font-family: 'seven-segment';
+  font-family: var(--font-segment);
   font-weight: 600;
   white-space: nowrap;
 `;
