@@ -2,8 +2,9 @@
 // The native thumb is invisible but kept at the same size as our custom handle, so that the handle’s position lines up exactly with where the browser thinks the thumb is.
 import * as React from 'react';
 import styled from 'styled-components';
+import useSound from 'use-sound';
 
-import { clampedNormalize, normalize } from '@/utils';
+import { clampedNormalize, normalize, sampleOne } from '@/utils';
 
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
@@ -11,6 +12,15 @@ const HANDLE_WIDTH = 22;
 const HANDLE_HEIGHT = 12;
 const HANDLE_RADIUS = 4;
 const TRACK_HEIGHT = 8;
+const TICK_SPRITE: Record<string, [number, number]> = {
+  a: [88, 40],
+  b: [140, 40],
+  c: [182, 40],
+  d: [224, 40],
+  e: [294, 40],
+  f: [352, 40],
+};
+const TICK_IDS = Object.keys(TICK_SPRITE);
 
 // Must be controlled, since the handle’s position is derived from `value`.
 type Props = Omit<
@@ -28,8 +38,15 @@ function MediaPlayerSmallSlider({
   max = 100,
   // If we wrap this element (eg. `styled(MediaPlayerSmallSlider)`), we'll want the generated className to apply to the parent Wrapper, not the input that should receive all other standard props.
   className,
+  onChange,
   ...delegated
 }: Props) {
+  const [playTick] = useSound('/sounds/tick-sprite.mp3', {
+    sprite: TICK_SPRITE,
+    volume: 0.25,
+    interrupt: true,
+  });
+
   const progress = min === max ? 0 : clampedNormalize(value, min, max);
 
   // Shifts from green at 0 to red at ±1, so that a -1 to 1 slider is red at both ends and green in the middle.
@@ -46,7 +63,17 @@ function MediaPlayerSmallSlider({
       }}
     >
       <Track />
-      <Input type="range" value={value} min={min} max={max} {...delegated} />
+      <Input
+        type="range"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(event) => {
+          playTick({ id: sampleOne(TICK_IDS) });
+          onChange?.(event);
+        }}
+        {...delegated}
+      />
       <Handle>
         <BevelEdge
           side="top"
@@ -95,7 +122,7 @@ const Input = styled.input`
   margin: 0;
   appearance: none;
   background: transparent;
-  cursor: grab;
+  cursor: pointer;
   outline: none;
 
   &:active {
@@ -107,6 +134,7 @@ const Input = styled.input`
     width: ${HANDLE_WIDTH}px;
     height: ${HANDLE_HEIGHT}px;
     opacity: 0;
+    cursor: grabbing;
   }
 
   &::-moz-range-thumb {
@@ -114,6 +142,14 @@ const Input = styled.input`
     height: ${HANDLE_HEIGHT}px;
     border: none;
     opacity: 0;
+    cursor: grabbing;
+  }
+
+  &:active::-webkit-slider-thumb {
+    cursor: grabbing;
+  }
+  &:active::-moz-range-thumb {
+    cursor: grabbing;
   }
 `;
 
@@ -144,11 +180,6 @@ const Handle = styled.div`
     --bevel-edge-top: hsl(240deg 40% 60%);
     border-color: hsl(240deg 8% 65%) hsl(240deg 15% 18%) hsl(240deg 15% 18%)
       hsl(240deg 8% 65%);
-  }
-
-  ${Wrapper}:has(input:focus-visible) & {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
   }
 `;
 

@@ -71,6 +71,7 @@ function MediaPlayer({ handleClose }: Props) {
     setPanning,
     setChannelMode,
   } = useBGMSetters();
+  const playBtnRef = React.useRef<HTMLButtonElement>(null);
 
   const channelModeInputName = React.useId();
 
@@ -92,6 +93,26 @@ function MediaPlayer({ handleClose }: Props) {
   useKeybindings({
     Escape: handleClose,
   });
+
+  React.useEffect(() => {
+    const playBtn = playBtnRef.current;
+    if (!playBtn) {
+      return;
+    }
+
+    const previouslyFocused = document.activeElement;
+
+    playBtn.focus();
+
+    return () => {
+      if (
+        previouslyFocused instanceof HTMLElement &&
+        previouslyFocused.isConnected
+      ) {
+        previouslyFocused.focus();
+      }
+    };
+  }, []);
 
   // The pointer can be released outside the slider, so we listen on the window.
   React.useEffect(() => {
@@ -278,7 +299,8 @@ function MediaPlayer({ handleClose }: Props) {
               value={timestamp}
               min={0}
               max={duration}
-              disabled={!isPlaying || !hasCompletedIntro}
+              // Loaded songs stay seekable while paused or stopped. The intro and eject are what take the scrubber offline.
+              disabled={!hasCompletedIntro}
               onCommit={seek}
             />
           </ScrubberWrapper>
@@ -286,19 +308,19 @@ function MediaPlayer({ handleClose }: Props) {
           <BottomSection>
             <Buttons>
               <ButtonShaft />
-              <Row>
+              <ButtonRow>
                 <MediaBtn icon="rewind" onClick={rewind} />
-                <MediaBtn icon="play" onClick={play} />
+                <MediaBtn icon="play" onClick={play} ref={playBtnRef} />
                 <MediaBtn icon="pause" onClick={pause} />
                 <MediaBtn icon="stop" onClick={stop} />
                 <MediaBtn icon="fast-forward" onClick={fastForward} />
-              </Row>
+              </ButtonRow>
             </Buttons>
             <EjectBtnWrapper>
               <ButtonShaft />
-              <Row>
+              <ButtonRow>
                 <MediaBtn icon="eject" onClick={eject} />
-              </Row>
+              </ButtonRow>
             </EjectBtnWrapper>
             <VisualizerInset>
               <FrequencyVisualizer />
@@ -355,7 +377,6 @@ const channelModeGlowIn = keyframes`
 `;
 
 const Container = styled.div`
-  --shadow-opacity: 0.5;
   --outer-radius: ${OUTER_RADIUS}px;
   position: fixed;
   position-anchor: --media-player-anchor;
@@ -363,13 +384,6 @@ const Container = styled.div`
   bottom: 10px;
   border-radius: var(--outer-radius) 2px var(--outer-radius) var(--outer-radius);
   corner-shape: bevel;
-  box-shadow:
-    0px -1px 2px hsl(210deg 15% 6% / var(--shadow-opacity)),
-    0px -2px 4px hsl(210deg 15% 6% / var(--shadow-opacity)),
-    0px -4px 8px hsl(210deg 15% 6% / var(--shadow-opacity)),
-    0px -8px 16px hsl(210deg 15% 6% / var(--shadow-opacity));
-
-  /* The child slides up and we want to clip the part below */
 
   @supports not (position-area: top) {
     right: 1rem;
@@ -385,11 +399,13 @@ const BorderWrapper = styled.div`
   --w-gray-600: hsl(240deg 7% 45%);
   --w-gray-700: hsl(240deg 5% 40%);
   --w-gray-900: hsl(240deg 5% 20%);
+  --w-primary-100: hsl(240deg 35% 70%);
   --w-primary-300: hsl(240deg 25% 40%);
   --w-primary-500: hsl(240deg 25% 30%);
   --w-primary-600: hsl(240deg 25% 20%);
   --w-primary-700: hsl(240deg 25% 14%);
   --w-primary-900: hsl(240deg 25% 8%);
+  --shadow-opacity: 0.35;
   width: 23rem;
   background: var(--w-primary-900);
   padding: 4px;
@@ -398,6 +414,11 @@ const BorderWrapper = styled.div`
   corner-shape: inherit;
   will-change: transform;
   animation: ${slideUp} 850ms cubic-bezier(0.098, 0.974, 0.04, 0.977);
+  box-shadow:
+    0px 0px 2px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px 0px 4px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px 0px 8px hsl(210deg 15% 6% / var(--shadow-opacity)),
+    0px 0px 16px hsl(210deg 15% 6% / var(--shadow-opacity));
 
   @supports (color: oklch(0.7 0.2 260)) {
     --w-green: oklch(0.85 0.37 145);
@@ -425,6 +446,9 @@ const Wrapper = styled.div`
 `;
 
 const Inset = styled.div`
+  --selection-color: black;
+  --selection-bg: var(--w-green);
+
   position: relative;
   background: hsl(210deg 15% 9%);
   border-radius: 4px;
@@ -586,10 +610,9 @@ const BottomSection = styled.div`
 `;
 
 const Buttons = styled.div`
-  --corner-radius: 4px;
+  --corner-radius: 5px;
   position: relative;
-  display: flex;
-  border-bottom: 1px solid var(--w-gray-700);
+  border-bottom: 1px solid var(--w-primary-100);
   border-radius: var(--corner-radius);
   corner-shape: bevel;
   /* Buttons slide down by 2px when active, and we want to hide the bottom edges when this happens, to produce the illusion that they’re sliding into their cavity */
@@ -607,15 +630,21 @@ const ButtonShaft = styled.div`
   height: 100%;
   border-radius: inherit;
   corner-shape: inherit;
-  background: var(--color-background);
+  background: linear-gradient(
+    to bottom,
+    var(--w-primary-600) 0px,
+    var(--color-background) 7px
+  );
 `;
 
 const EjectBtnWrapper = styled(Buttons)`
   margin-right: auto;
 `;
 
-const Row = styled.div`
+const ButtonRow = styled.div`
   display: flex;
+  gap: 1px;
+  padding: 1px;
 `;
 
 const VisualizerInset = styled(Inset)`

@@ -138,3 +138,9 @@ a {
     opacity: 1;
   }
 }
+
+@keyframes translateFromOrigin {
+  from {
+    transform: translate(0, 0);
+  }
+}

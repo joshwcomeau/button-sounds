@@ -10,13 +10,12 @@ import SystemTray from './SystemTray';
 import TaskbarLink from './TaskbarLink';
 
 function Taskbar() {
-  const { toggleMediaPlayer, closeMediaPlayer } = useBGMSetters();
+  const { closeMediaPlayer } = useBGMSetters();
 
   const { isMediaPlayerOpen } = useBGMState();
 
   return (
     <>
-      {isMediaPlayerOpen && <MediaPlayer handleClose={closeMediaPlayer} />}
       <OuterWrapper>
         <Wrapper>
           <Links>
@@ -34,6 +33,8 @@ function Taskbar() {
           <SystemTray />
         </Wrapper>
       </OuterWrapper>
+
+      {isMediaPlayerOpen && <MediaPlayer handleClose={closeMediaPlayer} />}
     </>
   );
 }
@@ -41,6 +42,8 @@ function Taskbar() {
 const OuterWrapper = styled.div`
   --bg: var(--color-gray-100);
   position: fixed;
+  /* Argh, I hate using z-index! But I can't see a way around it here. We need <MediaPlayer> to come after <OuterWrapper> in the DOM structure so that the anchor name is established, but I also need the media player to sit behind the taskbar, so that it pops up from underneath. */
+  z-index: 1;
   bottom: 0;
   left: 0;
   display: flex;

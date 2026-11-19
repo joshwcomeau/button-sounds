@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import { useButtonSounds } from 'button-sounds/react';
 
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
 
@@ -10,12 +11,18 @@ function TaskbarLink({
   href: string;
   children: React.ReactNode;
 }) {
+  const anchorRef = React.useRef<HTMLAnchorElement>(null);
+  useButtonSounds(anchorRef, 'sd-clicky', {
+    volume: 0.5,
+  });
+
   return (
     <Wrapper
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       draggable={false}
+      ref={anchorRef}
     >
       <BevelEdge side="top" color="var(--top-border-color)" radius={4} />
       <BevelEdge side="bottom" color="var(--bottom-border-color)" radius={4} />
@@ -43,6 +50,10 @@ const Wrapper = styled.a`
     --bottom-border-color: var(--color-gray-400);
     background: var(--color-gray-100);
     transform: translateY(2px);
+  }
+
+  &:focus-visible {
+    outline-offset: 1px;
   }
 `;
 

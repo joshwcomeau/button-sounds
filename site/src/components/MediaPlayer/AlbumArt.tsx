@@ -118,8 +118,10 @@ const Art = styled.img`
   border-radius: 3px 7px 7px 7px;
   corner-shape: bevel;
   will-change: transform;
-  animation: ${scaleIn} 1200ms both;
-  animation-delay: ${INTRO_DURATION_MS - ALBUM_ART_FADE_DURATION_MS}ms;
+  ${ArtWrapper}[data-intro-status='playing'] & {
+    animation: ${scaleIn} ${ALBUM_ART_FADE_DURATION_MS}ms both;
+    animation-delay: ${INTRO_DURATION_MS - ALBUM_ART_FADE_DURATION_MS}ms;
+  }
 `;
 
 export default AlbumArt;

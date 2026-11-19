@@ -2,6 +2,7 @@
 // The icons are drawn as 1px outlines on a pixel grid (hence the half-pixel coordinates), so the viewBox must match the rendered size to keep them crisp.
 import * as React from 'react';
 import styled from 'styled-components';
+import { useButtonSounds } from 'button-sounds/react';
 
 import VisuallyHidden from '@/components/VisuallyHidden';
 
@@ -19,13 +20,24 @@ const LABELS: Record<Icon, string> = {
   eject: 'Eject',
 };
 
-type Props = Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
+type Props = Omit<React.ComponentProps<'button'>, 'children'> & {
   icon: Icon;
 };
 
-function MediaBtn({ icon, ...delegated }: Props) {
+function MediaBtn({ icon, ref, ...delegated }: Props) {
+  const internalRef = React.useRef<HTMLButtonElement>(null);
+  const actualRef = ref ?? internalRef;
+
+  useButtonSounds(
+    actualRef as React.RefObject<HTMLButtonElement>,
+    'sd-metallic',
+    {
+      volume: 0.2,
+      pitchVariation: 0.1,
+    },
+  );
   return (
-    <Wrapper type="button" {...delegated}>
+    <Wrapper ref={actualRef} type="button" {...delegated}>
       <MediaIcon icon={icon} />
       <VisuallyHidden>{LABELS[icon]}</VisuallyHidden>
     </Wrapper>
@@ -107,6 +119,14 @@ function MediaIcon({ icon }: { icon: Icon }) {
 }
 
 const Wrapper = styled.button`
+  --adjusted-radius: calc(var(--corner-radius) - 1px);
+  --icon-fill: hsl(240deg 28% 74%);
+  --icon-stroke: hsl(240deg 28% 64%);
+  --icon-shadow: hsl(240deg 15% 20%);
+  --icon-highlight: hsl(0deg 0% 100%);
+  --shadow-color: red;
+  --shift-by: 2px;
+  --reset-duration: 150ms;
   position: relative;
   display: grid;
   place-items: center;
@@ -114,28 +134,58 @@ const Wrapper = styled.button`
   height: 24px;
   padding: 0;
   margin: 0;
-  background: hsl(240deg 8% 78%);
-  border: 1px solid hsl(240deg 25% 8%);
-  border-radius: 1px;
+  background: hsl(240deg 30% 78%);
+  border: none;
+  border-radius: 2px;
+  corner-shape: bevel;
   box-shadow:
     inset 0px 1px 0px hsl(0deg 0% 100%),
     inset 0px -1px 0px hsl(240deg 15% 45%);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: transform var(--reset-duration);
 
   &:first-child {
-    border-top-left-radius: var(--corner-radius);
-    border-bottom-left-radius: var(--corner-radius);
-    corner-shape: bevel;
+    border-top-left-radius: var(--adjusted-radius);
+    border-bottom-left-radius: var(--adjusted-radius);
   }
   &:last-child {
-    border-top-right-radius: var(--corner-radius);
-    border-bottom-right-radius: var(--corner-radius);
-    corner-shape: bevel;
+    border-top-right-radius: var(--adjusted-radius);
+    border-bottom-right-radius: var(--adjusted-radius);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    background: linear-gradient(
+      to top,
+      hsl(240deg 100% 5%) 0px var(--shift-by),
+      transparent
+    );
+
+    opacity: 0.5;
+    transform: translateY(100%);
+    transition: transform var(--reset-duration);
   }
 
   &:active {
-    transform: translateY(2px);
+    --icon-fill: hsl(240deg 24% 55%);
+    --icon-stroke: hsl(240deg 20% 50%);
+    --icon-shadow: hsl(240deg 15% 10%);
+    --icon-highlight: hsl(240deg 50% 80%);
+    transform: translateY(var(--shift-by));
+    transition: none;
+    background: hsl(240deg 20% 60%);
+    box-shadow: none;
+
+    &::after {
+      transform: translateY(calc(var(--shift-by) * -1px));
+      transition: none;
+    }
   }
 
   &:focus-visible {
@@ -151,8 +201,8 @@ const Svg = styled.svg`
 
   & rect,
   & polygon {
-    fill: hsl(240deg 8% 74%);
-    stroke: hsl(240deg 8% 64%);
+    fill: var(--icon-fill);
+    stroke: var(--icon-stroke);
     stroke-width: 1px;
     stroke-linejoin: miter;
   }
@@ -166,11 +216,11 @@ const Edge = styled.path`
 `;
 
 const Shadow = styled(Edge)`
-  stroke: hsl(240deg 15% 30%);
+  stroke: var(--icon-shadow);
 `;
 
 const Highlight = styled(Edge)`
-  stroke: hsl(0deg 0% 100%);
+  stroke: var(--icon-highlight);
 `;
 
 export default MediaBtn;

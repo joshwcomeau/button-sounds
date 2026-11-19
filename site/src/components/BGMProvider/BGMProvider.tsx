@@ -127,6 +127,8 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = React.useState(bgm.duration());
   const [isMediaPlayerOpen, setIsMediaPlayerOpen] = React.useState(false);
 
+  console.log({ timestamp, duration });
+
   // Lets the first `play()` honor a position the user scrubbed to before any sound instance existed.
   const timestampRef = React.useRef(timestamp);
   React.useEffect(() => {

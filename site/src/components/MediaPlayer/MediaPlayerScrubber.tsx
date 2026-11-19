@@ -2,6 +2,9 @@
 // The input is uncontrolled so that dragging only moves the thumb; the new position is reported through `onCommit` once the user lets go (the native `change` event, which React’s `onChange` doesn’t expose).
 import * as React from 'react';
 import styled, { css } from 'styled-components';
+import useSound from 'use-sound';
+
+import { sampleOne } from '@/utils';
 
 const HANDLE_WIDTH = 36;
 const HANDLE_HEIGHT = 15;
@@ -17,6 +20,17 @@ type Props = Omit<
   onCommit: (value: number) => void;
 };
 
+const TICK_SPRITE: Record<string, [number, number]> = {
+  a: [52, 30],
+  b: [88, 30],
+  c: [125, 30],
+  d: [163, 30],
+  e: [198, 30],
+  f: [236, 30],
+  g: [280, 30],
+};
+const TICK_IDS = Object.keys(TICK_SPRITE);
+
 function MediaPlayerScrubber({
   value,
   min = 0,
@@ -25,6 +39,11 @@ function MediaPlayerScrubber({
   onPointerDown,
   ...delegated
 }: Props) {
+  const [playTick] = useSound('/sounds/heavier-tick-sprite.mp3', {
+    sprite: TICK_SPRITE,
+    volume: 0.2,
+    interrupt: true,
+  });
   // So, annoyingly, React doesn't expose the native `onchange` range behaviour, which is to wait until the user drops the handle before firing. In this case, that's what we want; it's jarring if the song is constantly jumping to a new spot while the user drags the handle, we want to wait until it's released to jump to the new timestamp.
   // So, our solution is a bit complex. We use an uncontrolled input and manage things via effects.
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -75,6 +94,9 @@ function MediaPlayerScrubber({
         isHeldRef.current = true;
         onPointerDown?.(ev);
       }}
+      onChange={() => {
+        playTick({ id: sampleOne(TICK_IDS) });
+      }}
       {...delegated}
     />
   );
@@ -116,6 +138,7 @@ const thumbStyles = css`
     inset 0px ${u(-2)} 0px hsl(44deg 34% 40%),
     inset ${u(3)} 0px 0px hsl(42deg 38% 36%),
     inset 0px ${u(2)} 0px hsl(42deg 38% 36%);
+  cursor: grab;
 `;
 
 const trackStyles = css`
@@ -135,12 +158,8 @@ const Input = styled.input`
   margin: 0;
   appearance: none;
   background: transparent;
-  cursor: grab;
+  cursor: pointer;
   outline: none;
-
-  &:active {
-    cursor: grabbing;
-  }
 
   &:disabled {
     cursor: default;
@@ -163,6 +182,14 @@ const Input = styled.input`
     ${thumbStyles}
   }
 
+  &:active::-webkit-slider-thumb {
+    cursor: grabbing;
+  }
+  &:active::-moz-range-thumb {
+    cursor: grabbing;
+  }
+
+  /* The handle fades with the control: hidden through the intro and after eject, visible whenever a song is loaded. */
   &:disabled::-webkit-slider-thumb {
     opacity: 0;
   }
@@ -172,13 +199,11 @@ const Input = styled.input`
   }
 
   &:focus-visible::-webkit-slider-thumb {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    filter: brightness(150%) saturate(1.5);
   }
 
   &:focus-visible::-moz-range-thumb {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    filter: brightness(150%) contrast(1.5);
   }
 `;
 
