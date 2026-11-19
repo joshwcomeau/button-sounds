@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components';
+import { useButtonSounds } from 'button-sounds/react';
 
 import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
 import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
@@ -9,35 +10,44 @@ import NoteParticles from './NoteParticles';
 
 const BPM = 100;
 const QUARTER_NOTE_MS = (60 / BPM) * 1000;
-const BOUNCE_DURATION_MS = QUARTER_NOTE_MS * 2;
+const DIAMOND_BOUNCE_MS = QUARTER_NOTE_MS;
+const LIGHTNING_BOUNCE_MS = QUARTER_NOTE_MS * 2;
+const LIGHTNING_ROTATE_MS = LIGHTNING_BOUNCE_MS * 2;
 
 function WinampButton({ ...delegated }: React.ComponentProps<'button'>) {
+  const btnRef = React.useRef<HTMLButtonElement>(null);
   const { toggleMediaPlayer, getPlaybackPosition } = useBGMSetters();
-  const { isPlaying, hasCompletedIntro } = useBGMState();
+  const { isMediaPlayerOpen, isPlaying, hasCompletedIntro } = useBGMState();
   const prefersReducedMotion = usePrefersReducedMotion();
+
+  useButtonSounds(btnRef, isMediaPlayerOpen ? 'synth-off' : 'synth-on', {
+    volume: 0.35,
+  });
 
   const id = React.useId().replace(/:/g, '');
   const maskId = `stroke-mask-${id}`;
+  const diamondRef = React.useRef<HTMLDivElement>(null);
   const svgRef = React.useRef<SVGSVGElement>(null);
 
   const isBouncing = isPlaying && hasCompletedIntro && !prefersReducedMotion;
 
   const syncBounce = React.useCallback(() => {
-    const animation = svgRef.current
-      ?.getAnimations()
-      .find((entry) => entry instanceof CSSAnimation);
-
-    if (!animation) {
-      return;
-    }
-
-    // The keyframes stay paused. Seeking them to the song’s position each frame keeps the squash and stretch on the beat through seeks and loops.
+    // The keyframes stay paused. Seeking each one to the song’s position keeps it on the beat through seeks and loops.
     const positionMs = getPlaybackPosition() * 1000;
     if (!Number.isFinite(positionMs)) {
       return;
     }
 
-    animation.currentTime = positionMs % BOUNCE_DURATION_MS;
+    for (const element of [diamondRef.current, svgRef.current]) {
+      for (const animation of element?.getAnimations() ?? []) {
+        const duration = animation.effect?.getComputedTiming().duration;
+        if (typeof duration !== 'number' || duration <= 0) {
+          continue;
+        }
+
+        animation.currentTime = positionMs % duration;
+      }
+    }
   }, [getPlaybackPosition]);
 
   React.useLayoutEffect(() => {
@@ -49,9 +59,9 @@ function WinampButton({ ...delegated }: React.ComponentProps<'button'>) {
   useRequestAnimationFrameLoop(syncBounce, isBouncing);
 
   return (
-    <Wrapper {...delegated} onClick={toggleMediaPlayer}>
+    <Wrapper {...delegated} ref={btnRef} onClick={toggleMediaPlayer}>
       <NoteParticles />
-      <Diamond />
+      <Diamond ref={diamondRef} data-is-bouncing={isBouncing || undefined} />
       <Svg
         ref={svgRef}
         data-is-bouncing={isBouncing || undefined}
@@ -105,13 +115,18 @@ const Wrapper = styled.button`
     outline-offset: 0px;
   }
 
-  &:hover {
-    border-color: var(--color-gray-300);
-  }
-
   /* I'm being a bit lazy here… there's no real reason that the media player and background music can't exist on mobile (aside from Safari's frequent refusal to play audio), but I don't feel like doing the work to make the Winamp clone responsive. */
   @media (max-width: 410px) {
     display: none;
+  }
+`;
+
+const diamondBounce = keyframes`
+  0% {
+    scale: 1.2;
+  }
+  25% {
+    scale: 1;
   }
 `;
 
@@ -124,11 +139,29 @@ const Diamond = styled.div`
   transform: rotate(45deg);
   transform-origin: center;
   background: var(--color-gray-800);
+  border-radius: 1px;
+  transition: background 400ms ease-in-out;
+
+  &[data-is-bouncing] {
+    background: var(--color-gray-900);
+    @media (prefers-reduced-motion: no-preference) {
+      animation: ${diamondBounce} ${DIAMOND_BOUNCE_MS}ms ease-in-out infinite;
+      animation-play-state: paused;
+    }
+  }
+
+  ${Wrapper}:hover & {
+    background: white;
+    transition: none;
+  }
+  ${Wrapper}:active & {
+    scale: 0.8;
+  }
 `;
 
-const bounce = keyframes`
+const lightningBounce = keyframes`
   0% {
-    transform: scaleY(0.7);
+    transform: scaleY(0.8);
   }
   10% {
     transform: scaleY(1);
@@ -137,7 +170,7 @@ const bounce = keyframes`
     transform: scaleY(1);
   }
   50% {
-    transform: scaleY(1.28);
+    transform: scaleY(1.3);
   }
   60% {
     transform: scaleY(1);
@@ -146,7 +179,25 @@ const bounce = keyframes`
     transform: scaleY(1);
   }
   100% {
-    transform: scaleY(0.7);
+    transform: scaleY(0.8);
+  }
+`;
+
+const lightningRotate = keyframes`
+  10% {
+    rotate: -20deg;
+  }
+  30% {
+    rotate: -20deg;
+  }
+  50% {
+    rotate: 0deg;
+  }
+  70% {
+    rotate: 0deg;
+  }
+  100% {
+    rotate: -20deg;
   }
 `;
 
@@ -158,10 +209,21 @@ const Svg = styled.svg`
   transform-box: fill-box;
   transform-origin: center;
   overflow: visible;
+  filter: brightness(1) saturate(1);
+  transition: filter 400ms ease-in-out;
+
+  ${Wrapper}:hover & {
+    filter: brightness(1.3);
+    transition: none;
+  }
 
   &[data-is-bouncing] {
+    filter: brightness(1.3) saturate(1.2) contrast(1.2);
+    transition: filter 100ms ease-in-out;
     @media (prefers-reduced-motion: no-preference) {
-      animation: ${bounce} ${BOUNCE_DURATION_MS}ms ease-in-out infinite;
+      animation:
+        ${lightningBounce} ${LIGHTNING_BOUNCE_MS}ms ease-in-out infinite,
+        ${lightningRotate} ${LIGHTNING_ROTATE_MS}ms ease-in-out infinite;
       animation-play-state: paused;
     }
   }

@@ -7,6 +7,7 @@ import {
   useBGMState,
   useBGMSetters,
 } from '@/components/BGMProvider/BGMProvider';
+import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
 import useRequestAnimationFrameLoop from '@/hooks/use-request-animation-frame';
 
 const SONG_SRC = '/sounds/actuator.mp3';
@@ -31,6 +32,8 @@ const TILT_REFERENCE_FREQ = 1000;
 const DECAY_PER_SECOND = 2.5;
 // Keeps a long gap between frames (e.g. a backgrounded tab) from being treated as one giant step.
 const MAX_FRAME_SECONDS = 0.1;
+// Reduced motion still shows the spectrum, but only as a once-per-second snapshot.
+const REDUCED_MOTION_INTERVAL_MS = 1000;
 
 // During the intro, a wave rises and falls through the bars from left to right, leaving each one resting at 2px until the song takes over.
 const INTRO_WAVE_DURATION_MS = INTRO_DURATION_MS - 400;
@@ -69,6 +72,7 @@ const imag = new Float32Array(FFT_SIZE);
 function FrequencyVisualizer() {
   const { isPlaying, hasCompletedIntro, introStartCount } = useBGMState();
   const { getPlaybackPosition } = useBGMSetters();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -143,10 +147,21 @@ function FrequencyVisualizer() {
     }
 
     const now = performance.now();
+    if (
+      prefersReducedMotion &&
+      lastFrameTimeRef.current !== null &&
+      now - lastFrameTimeRef.current < REDUCED_MOTION_INTERVAL_MS
+    ) {
+      return;
+    }
+
+    const maxFrameSeconds = prefersReducedMotion
+      ? REDUCED_MOTION_INTERVAL_MS / 1000
+      : MAX_FRAME_SECONDS;
     const elapsedSeconds =
       lastFrameTimeRef.current === null
         ? 0
-        : Math.min((now - lastFrameTimeRef.current) / 1000, MAX_FRAME_SECONDS);
+        : Math.min((now - lastFrameTimeRef.current) / 1000, maxFrameSeconds);
     lastFrameTimeRef.current = now;
 
     const levels = levelsRef.current;

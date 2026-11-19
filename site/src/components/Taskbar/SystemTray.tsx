@@ -38,14 +38,15 @@ const Wrapper = styled.div`
   align-items: center;
   gap: 16px;
   background: var(--color-gray-50);
-  padding: 4px 16px;
+  padding: 2px 16px;
   border-radius: 4px;
   corner-shape: bevel;
   border: 1px solid var(--color-gray-100);
 `;
 
 const Clock = styled.div`
-  font-family: var(--font-segment);
+  font-size: 0.675rem;
+  font-family: var(--font-segment-digits);
   font-weight: 600;
   white-space: nowrap;
 `;

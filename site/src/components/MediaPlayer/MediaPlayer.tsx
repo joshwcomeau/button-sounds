@@ -4,6 +4,7 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { X } from 'lucide-react';
+import { useButtonSounds } from 'button-sounds/react';
 
 import { TASKBAR_HEIGHT } from '@/constants';
 import useKeybindings from '@/hooks/use-keybindings';
@@ -33,6 +34,8 @@ const KBPS_CLIMB_DELAY_MS = 1000;
 const KBPS_CLIMB_DURATION_MS = INTRO_DURATION_MS - 400 - KBPS_CLIMB_DELAY_MS;
 const KHZ_CLIMB_DELAY_MS = 1400;
 const KHZ_CLIMB_DURATION_MS = INTRO_DURATION_MS - KHZ_CLIMB_DELAY_MS;
+const TIME_FADE_DURATION_MS = 300;
+const TIME_FADE_DELAY_MS = INTRO_DURATION_MS - TIME_FADE_DURATION_MS;
 // Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
 const OUTER_RADIUS = 8;
 const TOP_RIGHT_CUTOUT_RADIUS = 28;
@@ -72,6 +75,12 @@ function MediaPlayer({ handleClose }: Props) {
     setChannelMode,
   } = useBGMSetters();
   const playBtnRef = React.useRef<HTMLButtonElement>(null);
+  const closeBtnRef = React.useRef<HTMLButtonElement>(null);
+
+  useButtonSounds(closeBtnRef, 'synth-off', {
+    volume: 0.35,
+    pitchVariation: 0.1,
+  });
 
   const channelModeInputName = React.useId();
 
@@ -328,13 +337,15 @@ function MediaPlayer({ handleClose }: Props) {
               <FrequencyVisualizer />
               <Scanlines opacity={0.25} />
             </VisualizerInset>
-            <TimeDisplay>{formatTime(timestamp)}</TimeDisplay>
+            <TimeDisplay data-intro-status={introStatus}>
+              <span key={introStartCount}>{formatTime(timestamp)}</span>
+            </TimeDisplay>
           </BottomSection>
           <Footer>
             <Stripes />
           </Footer>
         </Wrapper>
-        <CloseButton onClick={handleClose}>
+        <CloseButton onClick={handleClose} ref={closeBtnRef}>
           <X size={12} strokeWidth={3} />
         </CloseButton>
       </BorderWrapper>
@@ -344,7 +355,7 @@ function MediaPlayer({ handleClose }: Props) {
 
 function formatTime(seconds: number) {
   const wholeSeconds = Math.round(seconds);
-  const minutes = Math.round(wholeSeconds / 60);
+  const minutes = Math.floor(wholeSeconds / 60);
   return `${minutes}:${String(wholeSeconds % 60).padStart(2, '0')}`;
 }
 
@@ -677,6 +688,16 @@ const TimeDisplay = styled(Inset)`
   font-weight: 700;
   text-rendering: geometricPrecision;
   font-family: var(--font-segment-digits);
+
+  &[data-intro-status='waiting'] > span {
+    opacity: 0;
+  }
+
+  /* Finishes 200ms before the song takes over from the intro */
+  &[data-intro-status='playing'] > span {
+    animation: fadeFromTransparent ${TIME_FADE_DURATION_MS}ms
+      ${TIME_FADE_DELAY_MS}ms backwards;
+  }
 `;
 
 const Divider = styled.div`

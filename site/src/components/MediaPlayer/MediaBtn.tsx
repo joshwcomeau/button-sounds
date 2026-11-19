@@ -121,6 +121,8 @@ function MediaIcon({ icon }: { icon: Icon }) {
 
 const Wrapper = styled.button`
   --adjusted-radius: calc(var(--corner-radius) - 1px);
+  --bg-top: hsl(240deg 40% 85%);
+  --bg-bottom: hsl(240deg 30% 72%);
   --icon-fill: hsl(240deg 28% 74%);
   --icon-stroke: hsl(240deg 28% 64%);
   --icon-shadow: hsl(240deg 15% 20%);
@@ -135,7 +137,7 @@ const Wrapper = styled.button`
   height: 1.5rem;
   padding: 0;
   margin: 0;
-  background: hsl(240deg 30% 78%);
+  background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
   border: none;
   border-radius: 2px;
   corner-shape: bevel;
@@ -155,6 +157,7 @@ const Wrapper = styled.button`
     border-bottom-right-radius: var(--adjusted-radius);
   }
 
+  /* A shadow that spreads across the bottom of the keys when pushed in */
   &::after {
     content: '';
     position: absolute;
@@ -168,7 +171,7 @@ const Wrapper = styled.button`
       transparent
     );
 
-    opacity: 0.5;
+    opacity: 0.35;
     transform: translateY(100%);
     transition: transform var(--reset-duration);
   }
@@ -178,6 +181,8 @@ const Wrapper = styled.button`
     --icon-stroke: hsl(240deg 20% 50%);
     --icon-shadow: hsl(240deg 15% 10%);
     --icon-highlight: hsl(240deg 50% 80%);
+    --bg-top: hsl(240deg 30% 75%);
+    --bg-bottom: hsl(240deg 20% 60%);
     transform: translateY(var(--shift-by));
     transition: none;
     background: hsl(240deg 20% 60%);
