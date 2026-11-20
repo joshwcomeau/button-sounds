@@ -7,7 +7,7 @@ This library includes both a high-level and a low-level API. The high-level API 
 ```js
 import { wireUp } from 'button-sounds';
 
-// Grab a reference to the button you want to add sounds to:
+// Grab a reference to the element you want to add sounds to:
 const button = document.querySelector('.my-button');
 
 // Attach pointer event listeners, and specify the sound to play:
@@ -109,7 +109,7 @@ The problem with having a parallel `pointerUp` listener is that it leads to two 
 1. Suppose the user is selecting some text on the page, and they happen to release the cursor while it's hovering over the button. They never actually clicked the button, but since the cursor is resting on top of it, it triggers a `pointerUp` event, which would play the “release” sound.
 2. Suppose the user presses down on the button, but happens to shift a few pixels off of the button before releasing it. The button would visually shift from `:active` back to normal, but the sound wouldn’t play, since technically the `pointerUp` event didn't trigger on the button.
 
-By nesting the `pointerUp` listener, we ensure that the two sounds are linked. We’ll always hear the button pop back up when it’s been depressed, and stray `pointerUp` events will be ignored.
+By registering a _global_ window-level `pointerUp` event listener _within_ the `poinderDown` handler, we ensure that the two sounds are linked. We’ll always hear the button pop back up when it’s been depressed, and stray `pointerUp` events will be ignored.
 
 Alternatively, we could use a variable to keep track of whether the button is pressed or not, and conditionally trigger the “release” sound:
 

@@ -7,7 +7,7 @@ That said, you may want to self-host the audio files. There are a few potential 
 1. You don’t want to rely on a third-party service which could eventually become unavailable or unreliable.
 2. You’re building a desktop application (eg. with Electron) which needs to work offline.
 3. You need all assets to be served from your main origin, to comply with either technical or organizational requirements.
-4. You want to tweak the audio files themselves, or replace them with your own versions!
+4. You want to tweak the audio files themselves, or replace them with your own sounds!
 
 This document shares how you can achieve this.
 
