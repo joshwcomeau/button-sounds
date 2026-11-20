@@ -14,6 +14,7 @@ import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
 import CodedLights from '@/components/CodedLights/CodedLights';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
+import { useBGMSetters } from '@/components/BGMProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
@@ -88,6 +89,11 @@ function MainDemo() {
   // The minigame can be reset, and the simplest way to accomplish this is to swap out the key. So, this is an ever-incrementing number used to remount the CodedLights component:
   const [minigameRound, setMinigameRound] = React.useState(0);
   const { usingLofi, pitchVariation } = useSoundSettings();
+  const {
+    stopWithFade: stopBGMWithFade,
+    closeMediaPlayer,
+    playFromIntro,
+  } = useBGMSetters();
 
   const hasWonMinigameRef = useSyncedRef(hasWonMinigame);
   const wasShowingPrizeRef = React.useRef(false);
@@ -96,7 +102,8 @@ function MainDemo() {
     setHasWonMinigame(false);
     setIsCelebrating(false);
     setMinigameRound((currentRound) => currentRound + 1);
-  }, []);
+    playFromIntro();
+  }, [playFromIntro]);
 
   const handleCelebrationComplete = React.useCallback(() => {
     setIsCelebrating(false);
@@ -194,6 +201,8 @@ function MainDemo() {
   const selectedSoundNameRef = useSyncedRef(selectedSoundName);
 
   const { press, release } = useImperativeButtonSounds(selectedSoundName, {
+    // NOTE: in general, I recommend never going above 0.5. Sounds on the web should generally be quieter, to prevent startling people. But the button SFX is the entire point of this website, so I want people to hear them clearly!
+    volume: 1,
     lofi: usingLofi,
     lofiOptions: { bits: 4, downsample: 0.15 },
   });
@@ -411,6 +420,8 @@ function MainDemo() {
               key={minigameRound}
               hasWon={hasWonMinigame}
               onComplete={() => {
+                stopBGMWithFade(1000);
+                closeMediaPlayer();
                 setHasWonMinigame(true);
                 setIsCelebrating(true);
               }}

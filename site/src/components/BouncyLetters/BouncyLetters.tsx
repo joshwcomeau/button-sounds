@@ -14,7 +14,7 @@ function BouncyLetters({
   as: Wrapper = 'span',
   duration = 3000,
   stagger = 300,
-  offset = 3,
+  offset = 2,
   ...delegated
 }: Props) {
   return (
@@ -23,9 +23,10 @@ function BouncyLetters({
         <Letter
           key={index}
           style={{
-            '--duration': `${duration}ms`,
-            '--delay': `${index * -stagger}ms`,
-            '--offset': `${offset}`,
+            '--bounce-duration': `${duration}ms`,
+            '--bounce-delay': `${index * -stagger}ms`,
+            '--glow-delay': `${index * stagger * 1.5}ms`,
+            '--offset': `${offset}px`,
           }}
         >
           {letter}
@@ -35,17 +36,41 @@ function BouncyLetters({
   );
 }
 
+const glow = keyframes`
+  0% {
+    color: inherit
+  }
+  20% {
+    color: var(--glow-color);
+  }
+  100% {
+    color: inherit;
+  }
+`;
+
 const bounce = keyframes`
-  0%, 100% { transform: translateY(calc(var(--offset) * -1px)); }
-  50% { transform: translateY(var(--offset)); }
+  0%, 100% {
+    transform: translateY(calc(var(--offset) * -1));
+  }
+  50% {
+    transform: translateY(calc(var(--offset)));
+  }
 `;
 
 const Letter = styled.span`
+  --glow-color: hsl(150deg 100% 70%);
+  --c: cubic-bezier(0.5, 0, 0.5, 1);
   display: inline-block;
 
+  @supports (color: oklch(0.86 0.28 153.82)) {
+    --glow-color: oklch(0.86 0.28 153.82);
+  }
+
   @media (prefers-reduced-motion: no-preference) {
-    animation: ${bounce} var(--duration) cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    animation-delay: var(--delay);
+    animation:
+      ${bounce} var(--bounce-duration) var(--c) infinite,
+      ${glow} 2000ms infinite;
+    animation-delay: var(--bounce-delay), var(--glow-delay);
   }
 `;
 

@@ -346,8 +346,8 @@ const Filters = styled.div`
 
 const EdgeSvg = styled.svg`
   display: block;
-  width: 32px;
-  height: 31px;
+  width: 1rem;
+  height: 1.9375rem;
   fill: none;
   overflow: visible;
 `;

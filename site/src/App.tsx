@@ -4,6 +4,10 @@ import ButtonSounds from 'button-sounds';
 import { highlightAll } from 'microlighter';
 import 'microlighter/themes/tokyo-night.css';
 
+import { SALE, SALE_ENDS } from '@/constants';
+import useInterval from '@/hooks/use-interval';
+
+import BGMProvider from '@/components/BGMProvider/BGMProvider';
 import SoundSettingsProvider from '@/components/SoundSettingsProvider';
 import CRTEffect from '@/components/CRTEffect/CRTEffect';
 import CRTControls from '@/components/CRTControls/CRTControls';
@@ -13,13 +17,23 @@ import ProjectInfo from '@/components/ProjectInfo/ProjectInfo';
 import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
 import BouncyLetters from '@/components/BouncyLetters/BouncyLetters';
 import Footer from '@/components/Footer/Footer';
+import Taskbar from '@/components/Taskbar/Taskbar';
+import SaleBanner from '@/components/SaleBanner/SaleBanner';
 
 import { SOUNDS_PATH } from './constants';
 
+// We self-host all of the button sounds rather than use the CDN. Two main reasons for this:
+// 1. The sounds are the whole point of the website, so if the CDN goes down, the website stops making sense. Better to link the two so that the sounds will always be available when the website is up and running.
+// 2. I show a loading spinner while the audio file is loading (see `useSoundResourceLoading.ts`), and we do this using PerformanceObserver. I'm not actually sure if this works with third-party assets, but even if it does today, that feels like something that could change in the future.
 ButtonSounds.setPath(SOUNDS_PATH);
+
+function isSaleRunning() {
+  return SALE && new Date() < SALE_ENDS;
+}
 
 function App() {
   const [crtStrength, setCrtStrength] = React.useState(0.7);
+  const [showSaleBanner, setShowSaleBanner] = React.useState(isSaleRunning);
 
   React.useEffect(() => {
     document.body.dataset.syntaxTheme = 'tokyo-night';
@@ -28,40 +42,56 @@ function App() {
     });
   }, []);
 
+  useInterval(
+    () => {
+      if (!isSaleRunning()) {
+        setShowSaleBanner(false);
+      }
+    },
+    showSaleBanner ? 1000 : null,
+  );
+
   return (
-    <SoundSettingsProvider>
-      <CRTControls
-        crtStrength={crtStrength}
-        setCrtStrength={setCrtStrength}
-        // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
-        // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
-        style={{ zIndex: 2 }}
-      />
-      <Container>
-        <Wrapper>
-          <ShapeLayer layer="background" />
-          <Header>
-            <h1>Button Sounds</h1>
-            <p>
-              A <Free>free</Free> collection of 50+ professionally-recorded
-              multi-sampled clicks and toggles. Distributed as an NPM package
-              with optional React bindings.
-            </p>
-            <ProjectByJosh />
-          </Header>
+    <BGMProvider>
+      <SoundSettingsProvider>
+        {showSaleBanner && (
+          <SaleBanner handleDismiss={() => setShowSaleBanner(false)} />
+        )}
+        <CRTControls
+          crtStrength={crtStrength}
+          setCrtStrength={setCrtStrength}
+          // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
+          // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
+          style={{ zIndex: 2 }}
+          shiftBelowSaleBanner={showSaleBanner}
+        />
+        <Container>
+          <Wrapper>
+            <ShapeLayer layer="background" />
+            <Header>
+              <h1>Button Sounds</h1>
+              <p>
+                A <Free>free</Free> collection of 50+ professionally-recorded
+                multi-sampled clicks and toggles. Distributed as an NPM package
+                with optional React bindings.
+              </p>
+              <ProjectByJosh />
+            </Header>
 
-          <MainDemo />
+            <MainDemo />
 
-          <StyledProjectInfo />
+            <StyledProjectInfo />
 
-          <Footer />
+            <Footer />
 
-          <ShaderPortal id="celebratory-shader-wrapper" />
+            <ShaderPortal id="celebratory-shader-wrapper" />
 
-          <CRTEffect strength={crtStrength} />
-        </Wrapper>
-      </Container>
-    </SoundSettingsProvider>
+            <CRTEffect strength={crtStrength} />
+          </Wrapper>
+        </Container>
+        <Taskbar />
+      </SoundSettingsProvider>
+    </BGMProvider>
   );
 }
 
@@ -69,6 +99,7 @@ function App() {
 const Container = styled.div`
   position: relative;
   reading-order: 2;
+  isolation: isolate;
 `;
 
 const Wrapper = styled.div`
@@ -76,6 +107,8 @@ const Wrapper = styled.div`
   flex-direction: column;
   max-width: 60rem;
   padding-top: 3rem;
+  /* Leave space for the taskbar! */
+  padding-bottom: 2rem;
   margin-inline: auto;
 `;
 

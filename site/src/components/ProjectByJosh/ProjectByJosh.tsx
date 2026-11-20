@@ -1,7 +1,16 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components';
 
+import { QUARTER_NOTE_MS } from '@/constants';
+import { INTRO_DURATION_MS, useBGMState } from '@/components/BGMProvider';
+import useBGMSyncedAnimation from '@/hooks/use-bgm-synced-animation';
+
 type Mood = 'happy' | 'vhappy';
+
+const HEAD_DIP_MS = QUARTER_NOTE_MS;
+const HEAD_DIP_DISTANCE = '6px';
+// The bob starts at the dipped pose, so he slides there before the song begins.
+const HEAD_DIP_LEAD_IN_MS = 400;
 
 const JOSH_SPRITESHEET_SRC = '/images/josh-spritesheet-dumpling.webp';
 
@@ -54,14 +63,7 @@ function TaughtByJosh() {
             <AvatarWrapper>
               <AvatarClipper>
                 <AvatarPlunger>
-                  <Avatar
-                    src={JOSH_SPRITESHEET_SRC}
-                    alt={AVATAR_DATA[mood].alt}
-                    style={{
-                      objectPosition: `${AVATAR_DATA[mood].x}% 0`,
-                      transform: `translateY(${AVATAR_DATA[mood].y}%) rotate(${AVATAR_DATA[mood].angle}deg)`,
-                    }}
-                  />
+                  <BobbingAvatar mood={mood} />
                 </AvatarPlunger>
               </AvatarClipper>
             </AvatarWrapper>
@@ -90,6 +92,50 @@ function TaughtByJosh() {
         </Author>
       )}
     </Wrapper>
+  );
+}
+
+function BobbingAvatar({ mood }: { mood: Mood }) {
+  const avatarRef = React.useRef<HTMLImageElement>(null);
+  const { isPlaying, hasCompletedIntro, introStartCount } = useBGMState();
+  const [isDipped, setIsDipped] = React.useState(false);
+
+  // Seeking to the song’s position keeps the head dip on every beat through seeks and loops.
+  useBGMSyncedAnimation(avatarRef);
+
+  const isIntroPlaying = isPlaying && !hasCompletedIntro;
+
+  React.useEffect(() => {
+    if (!isIntroPlaying) {
+      setIsDipped(false);
+      return;
+    }
+
+    // Rewinding the intro increments `introStartCount`, which restarts this timer.
+    setIsDipped(false);
+    const timeoutId = window.setTimeout(() => {
+      setIsDipped(true);
+    }, INTRO_DURATION_MS - HEAD_DIP_LEAD_IN_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isIntroPlaying, introStartCount]);
+
+  const moodOverride = isPlaying && hasCompletedIntro ? 'vhappy' : mood;
+
+  return (
+    <Avatar
+      ref={avatarRef}
+      src={JOSH_SPRITESHEET_SRC}
+      alt={AVATAR_DATA[moodOverride].alt}
+      data-is-dipped={isDipped}
+      data-is-bobbing={isPlaying && hasCompletedIntro}
+      style={{
+        objectPosition: `${AVATAR_DATA[moodOverride].x}% 0`,
+        transform: `translateY(${AVATAR_DATA[moodOverride].y}%) rotate(${AVATAR_DATA[moodOverride].angle}deg)`,
+      }}
+    />
   );
 }
 
@@ -220,6 +266,21 @@ const riseIn = keyframes`
   }
 `;
 
+const headDip = keyframes`
+  0% {
+    translate: 0 ${HEAD_DIP_DISTANCE};
+  }
+  35% {
+    translate: 0 0;
+  }
+  90% {
+    translate: 0 0;
+  }
+  100% {
+    translate: 0 ${HEAD_DIP_DISTANCE};
+  }
+`;
+
 const Avatar = styled.img`
   display: block;
   width: 75px;
@@ -238,6 +299,18 @@ const Avatar = styled.img`
       opacity 800ms var(--spring) 200ms;
     animation: ${riseIn} 1000ms calc(var(--enter-delay) - 100ms) var(--spring)
       backwards;
+
+    &[data-is-dipped='true'] {
+      translate: 0 ${HEAD_DIP_DISTANCE};
+      transition:
+        transform 500ms var(--spring),
+        opacity 800ms var(--spring) 200ms,
+        translate ${HEAD_DIP_LEAD_IN_MS}ms ease-out;
+    }
+
+    &[data-is-bobbing='true'] {
+      animation: ${headDip} ${HEAD_DIP_MS}ms ease-out infinite;
+    }
   }
 `;
 

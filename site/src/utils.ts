@@ -323,7 +323,6 @@ export const exponentialNormalize = (
   return newScaleMin + (newScaleMax - newScaleMin) * exponentialOutput;
 };
 
-// TODO: Use a single `Point` type!
 type Point = [number, number];
 interface PointObj {
   x: number;

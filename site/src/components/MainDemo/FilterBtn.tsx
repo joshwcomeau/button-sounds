@@ -178,7 +178,7 @@ const IconWrapper = styled.div`
 
 const ActiveIndicator = styled.span`
   position: absolute;
-  inset: 3px;
+  inset: 0.1875rem; /* 3px */
   bottom: unset;
   display: flex;
   gap: 1px;
@@ -195,7 +195,7 @@ const ActiveIndicator = styled.span`
 `;
 const Cell = styled.span`
   position: relative;
-  width: 1.5px;
+  width: 0.09375rem; /* 1.5px */
   background: hsl(0deg 0% 100% / 0.1);
   border-radius: 1px;
   corner-shape: bevel;

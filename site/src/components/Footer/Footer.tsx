@@ -87,9 +87,9 @@ function Footer() {
               <LegalListItem>
                 <LegalLink
                   preventExternalIcon
-                  href="https://courses.joshwcomeau.com/code-of-conduct"
+                  href="https://www.joshwcomeau.com/ai-policy"
                 >
-                  Code of Conduct
+                  AI Policy
                 </LegalLink>
               </LegalListItem>
             </LegalLinksList>

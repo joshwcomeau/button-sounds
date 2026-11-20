@@ -38,6 +38,12 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['microlighter'],
   },
+  build: {
+    // Vite doesn’t transform variable dynamic imports (`import(`./grammars/${language}.js`)`) inside node_modules by default, so the grammars wouldn’t get bundled. We keep the default exclusion for every other package.
+    dynamicImportVarsOptions: {
+      exclude: [/node_modules\/(?!microlighter\/)/],
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

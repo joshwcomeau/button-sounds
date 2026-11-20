@@ -13,8 +13,8 @@ storybook-static
 package/README.md
 package/LICENSE
 
-# Demo sounds copied from the package at dev/build time (see scripts/copy-demo-sounds.mjs)
-site/public/sounds
+# Demo sounds copied from the package at dev/build time (see scripts/copy-demo-sounds.mjs). The same files are already in /package/assets, so there's no use having them duplicated in source control.
+site/public/button-sounds
 
 
 *storybook.log

@@ -85,7 +85,7 @@ const BACKGROUND_SHAPES: Array<Shape> = [
     fadeScale: 0.3,
   },
   {
-    id: 'ps4-triangle',
+    id: 'ps5-triangle',
     x: 1056,
     y: 10,
     translateX: 460,
@@ -165,7 +165,7 @@ const BACKGROUND_SHAPES: Array<Shape> = [
     fadeScale: 0.25,
   },
   {
-    id: 'ps4-square',
+    id: 'ps5-square',
     x: 0,
     y: 464,
     translateX: -340,
