@@ -39,9 +39,15 @@ export default defineConfig({
     exclude: ['microlighter'],
   },
   build: {
-    // Vite doesn’t transform variable dynamic imports (`import(`./grammars/${language}.js`)`) inside node_modules by default, so the grammars wouldn’t get bundled. We keep the default exclusion for every other package.
+    // Vite leaves variable dynamic imports inside node_modules as runtime fetches.
+    // MicroLighter loads grammars with `import(\`./grammars/${language}.js\`)`, so
+    // those files have to be bundled or the browser 404s on `javascript.js`.
+    // pnpm realpaths the package to `node_modules/.pnpm/microlighter@…/node_modules/microlighter`,
+    // and a lookahead that only allows `node_modules/microlighter/` still excludes that path.
     dynamicImportVarsOptions: {
-      exclude: [/node_modules\/(?!microlighter\/)/],
+      exclude: [
+        /node_modules\/(?!\.pnpm\/microlighter@[^/]+\/node_modules\/microlighter\/|microlighter\/)/,
+      ],
     },
   },
   resolve: {
