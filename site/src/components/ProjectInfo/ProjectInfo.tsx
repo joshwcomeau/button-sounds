@@ -267,7 +267,7 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
       </p>
       <Snippet lang="javascript">{REACT_LOW_LEVEL_EXAMPLE}</Snippet>
 
-      <h2>Going deeper</h2>
+      <h3>Going deeper</h3>
       <p>
         This has been a quick introduction to the library. If you want to learn
         more, there’s extensive documentation on Github:
