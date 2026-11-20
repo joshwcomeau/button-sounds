@@ -50,25 +50,26 @@ function SoundSelectSidebar({
   handleDecrementSound,
   ...delegated
 }: Props) {
-  const listRef = React.useRef<HTMLUListElement>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [canScroll, setCanScroll] = React.useState(false);
 
   // I have scroll-indicating gradients at the top/bottom of the sound list, and they animate smoothly using animation-timeline (aside from Firefox). The trouble is that sometimes, when filtering, all of the sounds fit within the container, so there's no overflow to scroll through.
   // This tracks whether the list is scrollable or not, so that we can hide the gradients when all of the sounds fit in the container.
   // NOTE: In the future, I can use @container scroll-state for this! But it's not available in Safari yet, so we need to do it in JS.
   const updateCanScroll = React.useCallback(() => {
-    const scrollList = listRef.current;
-    if (!scrollList) {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) {
       return;
     }
 
-    const nextCanScroll = scrollList.scrollHeight - scrollList.clientHeight > 1;
+    const nextCanScroll =
+      scrollContainer.scrollHeight - scrollContainer.clientHeight > 1;
     setCanScroll((current) =>
       current === nextCanScroll ? current : nextCanScroll,
     );
   }, []);
 
-  useResizeObserver(listRef, updateCanScroll);
+  useResizeObserver(scrollContainerRef, updateCanScroll);
 
   // When changing the filter, we need to check whether we should still display the top/bottom <EdgeFade> scroll indicators. Otherwise, when enabling a filter with a small # of sounds, the scroll indicators will still show even though there's nothing to scroll.
   // This isn’t caught automatically by ResizeObserver since the container itself doesn’t change size.
@@ -83,7 +84,10 @@ function SoundSelectSidebar({
       <DownBtn direction="down" handleClick={handleDecrementSound} />
 
       <ListFrame>
-        <List ref={listRef} data-can-scroll={canScroll}>
+        <ListScrollContainer
+          ref={scrollContainerRef}
+          data-can-scroll={canScroll}
+        >
           <EdgeFade data-edge="top" aria-hidden="true" />
           {/*
             There's 50+ sounds and it's a lot to tab through for keyboard users. This focusable button allows them to skip to the next section
@@ -99,22 +103,24 @@ function SoundSelectSidebar({
           >
             Skip to filters
           </SkipContent>
-          {relevantSounds.map((name) => {
-            const isSelected = selectedSoundName === name;
-            return (
-              <ListItem key={name}>
-                <SoundSelectBtn
-                  name={name}
-                  isSelected={isSelected}
-                  triggerPress={triggerPress}
-                  triggerRelease={triggerRelease}
-                  setSelectedSoundName={setSelectedSoundName}
-                />
-              </ListItem>
-            );
-          })}
+          <List>
+            {relevantSounds.map((name) => {
+              const isSelected = selectedSoundName === name;
+              return (
+                <ListItem key={name}>
+                  <SoundSelectBtn
+                    name={name}
+                    isSelected={isSelected}
+                    triggerPress={triggerPress}
+                    triggerRelease={triggerRelease}
+                    setSelectedSoundName={setSelectedSoundName}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
           <EdgeFade data-edge="bottom" aria-hidden="true" />
-        </List>
+        </ListScrollContainer>
       </ListFrame>
       <Divider />
       <BottomHeader>
@@ -188,7 +194,7 @@ const ListFrame = styled.div`
   will-change: transform;
 `;
 
-const List = styled.ul`
+const ListScrollContainer = styled.div`
   --list-gap: 2px;
   --list-padding: 4px;
 
@@ -196,12 +202,19 @@ const List = styled.ul`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  list-style: none;
   padding: var(--list-padding);
-  margin: 0;
   gap: var(--list-gap);
   scroll-timeline-name: --sound-list;
   scroll-timeline-axis: block;
+`;
+
+const List = styled.ul`
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: var(--list-gap);
 `;
 
 const SkipContent = styled.button`
@@ -225,7 +238,7 @@ const SkipContent = styled.button`
   }
 `;
 
-const EdgeFade = styled.li`
+const EdgeFade = styled.div`
   --fade-size: 100px;
 
   position: sticky;
@@ -266,7 +279,7 @@ const EdgeFade = styled.li`
       animation-range: calc(100% - 150px) 100%;
     }
 
-    ${List}[data-can-scroll='false'] & {
+    ${ListScrollContainer}[data-can-scroll='false'] & {
       animation: none;
       opacity: 0;
     }

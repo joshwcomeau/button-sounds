@@ -7,6 +7,8 @@ import { useButtonSounds } from 'button-sounds/react';
 
 import { range, sampleOne } from '@/utils';
 
+import VisuallyHidden from '@/components/VisuallyHidden/VisuallyHidden';
+
 type SpriteMap = Record<string, [number, number]>;
 type ButtonStatus = 'idle' | 'correct' | 'error';
 type EngineStatus = 'idle' | 'warm' | 'hot' | 'rainbow' | 'complete';
@@ -227,6 +229,7 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
                 <TopEdge />
                 <BottomEdge />
               </DecorativeDiamond>
+              <VisuallyHidden>Toggle button {index + 1}</VisuallyHidden>
             </DiamondButton>
           </ButtonWrapper>
         ))}

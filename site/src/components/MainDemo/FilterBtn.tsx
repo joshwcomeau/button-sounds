@@ -6,6 +6,7 @@ import type { LucideIcon } from 'lucide-react';
 import { range } from '@/utils';
 
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
+import VisuallyHidden from '@/components/VisuallyHidden/VisuallyHidden';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
 const MAIN_RADIUS = 5;
@@ -81,8 +82,9 @@ function FilterBtn({
           fill="hsl(45deg 100% 50% / 0.5)"
           stroke="hsl(45deg 100% 50% / 0.5)"
         />
-        <Icon size={16} style={{ position: 'relative' }} />
+        <Icon size={16} style={{ position: 'relative' }} aria-hidden="true" />
       </IconWrapper>
+      <VisuallyHidden>Filter by {filterId} sounds</VisuallyHidden>
       <OverlayWrapper>
         <Blur>
           <Overlay />

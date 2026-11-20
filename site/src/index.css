@@ -108,6 +108,10 @@ a:focus-visible,
 a {
   color: var(--color-primary);
 }
+button {
+  /* iOS buttons are blue by default, which always catches me by surprise */
+  color: white;
+}
 
 @font-face {
   font-family: 'seven-segment';
@@ -128,7 +132,7 @@ a {
   src: url('/fonts/wotfard-medium.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }
 
 @keyframes spin {
