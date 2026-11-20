@@ -33,6 +33,7 @@ function SaleBanner({ handleDismiss, ...delegated }: Props) {
     <Wrapper {...delegated}>
       <Box>
         <Content>
+          <Spacer />
           <DesktopText>
             My flagship course,{' '}
             <TextLink href={COURSE_HREF} preventExternalIcon>
@@ -130,9 +131,20 @@ const Content = styled.div`
   }
 `;
 
+const Spacer = styled.div`
+  flex-shrink: 0;
+  width: 32px;
+
+  /* On smaller screens, the symmetry is less important than fitting everything comfortably */
+  @media (max-width: 40rem) {
+    display: none;
+  }
+`;
+
 const Text = styled.p`
   flex: 1;
   margin: 0;
+  text-align: center;
 `;
 
 const DesktopText = styled(Text)`
@@ -153,9 +165,15 @@ const TabletText = styled(Text)`
 const MobileText = styled(Text)`
   display: none;
   line-height: 1;
+  /* On most modern mobile devices, we hide the left-side spacer but keep the close button, so center alignment feels lopsided. Switch to left align. */
+  text-align: left;
 
   @media (max-width: 40rem) {
     display: block;
+  }
+  @media (max-width: 24.5rem) {
+    /* On *very* small screens, there just isn't enough space for the close button. Since we've removed the spacing on both sides, we can go back to center alignment */
+    text-align: center;
   }
 `;
 
@@ -177,7 +195,18 @@ const CloseButton = styled.button`
   }
   &:active > svg {
     display: block;
-    transform: scale(0.8);
+    width: 16px;
+    height: 16px;
+  }
+
+  svg * {
+    vector-effect: non-scaling-stroke;
+    stroke-width: 5px;
+  }
+
+  /* On very small mobile devices, there just isn't enough space for the close button */
+  @media (max-width: 24.5rem) {
+    display: none;
   }
 `;
 

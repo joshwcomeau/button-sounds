@@ -273,7 +273,7 @@ const headDip = keyframes`
   35% {
     translate: 0 0;
   }
-  80% {
+  90% {
     translate: 0 0;
   }
   100% {

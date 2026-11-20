@@ -66,4 +66,5 @@ const Divider = styled.div`
 const StyledWinampButton = styled(WinampButton)`
   margin-inline: -6px;
 `;
+
 export default SystemTray;

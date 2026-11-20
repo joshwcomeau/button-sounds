@@ -44,12 +44,20 @@ const Wrapper = styled.a`
   border-radius: 4px;
   border: 1px solid var(--color-gray-200);
   corner-shape: bevel;
+  transition: filter 200ms;
+
+  &:hover {
+    filter: brightness(1.2);
+    transition: filter 100ms;
+  }
 
   &:active {
     --top-border-color: var(--color-gray-50);
     --bottom-border-color: var(--color-gray-400);
     background: var(--color-gray-100);
     transform: translateY(2px);
+    transition: none;
+    filter: brightness(1);
   }
 
   &:focus-visible {
