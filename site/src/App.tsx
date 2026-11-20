@@ -102,7 +102,7 @@ const Container = styled.div`
   isolation: isolate;
 `;
 
-const Wrapper = styled.div`
+const Wrapper = styled.main`
   display: flex;
   flex-direction: column;
   max-width: 60rem;

@@ -564,7 +564,7 @@ const StyledBackgroundPattern = styled(PatternDither)`
   opacity: 0.08;
 `;
 
-const Title = styled.h3`
+const Title = styled.h2`
   --height: 3rem;
   --bw: 5px;
   --hh: calc(var(--height) / 2);
