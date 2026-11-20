@@ -177,12 +177,12 @@ const Wrapper = styled.button`
   }
 
   &:active {
+    --bg-top: hsl(240deg 30% 75%);
+    --bg-bottom: hsl(240deg 20% 60%);
     --icon-fill: hsl(240deg 24% 55%);
     --icon-stroke: hsl(240deg 20% 50%);
     --icon-shadow: hsl(240deg 15% 10%);
     --icon-highlight: hsl(240deg 50% 80%);
-    --bg-top: hsl(240deg 30% 75%);
-    --bg-bottom: hsl(240deg 20% 60%);
     transform: translateY(var(--shift-by));
     transition: none;
     background: hsl(240deg 20% 60%);
@@ -196,8 +196,17 @@ const Wrapper = styled.button`
 
   &:focus-visible {
     /* Drawn inside the button, since the parent clips anything outside it */
-    outline: 2px solid var(--color-primary);
-    outline-offset: -3px;
+    outline-offset: 1px;
+    /* Lift this button up so that its focus outline sits above its siblings */
+    position: relative;
+    z-index: 2;
+    /* The focus outline is partially obscured by 'overflow: hidden', so let's also add a lighter background color for focused elements */
+    --bg-top: hsl(240deg 100% 100%);
+    --bg-bottom: hsl(240deg 50% 90%);
+    --icon-fill: hsl(240deg 38% 90%);
+    --icon-stroke: hsl(240deg 38% 75%);
+    --icon-shadow: hsl(240deg 10% 50%);
+    --icon-highlight: hsl(0deg 0% 100%);
   }
 `;
 

@@ -122,7 +122,7 @@ const Content = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 60rem;
+  width: 67.5rem;
   max-width: 100%;
   padding-inline: 1rem;
 
@@ -189,6 +189,7 @@ const CloseButton = styled.button`
   padding: 0;
   margin: 0;
   cursor: pointer;
+  color: white;
 
   &:hover {
     background: var(--color-gray-100);

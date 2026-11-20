@@ -45,7 +45,7 @@ function CodedLights({ hasWon, onComplete, onInteract }: Props) {
     volume: 0.5,
   });
   const [playWinAudio] = useSound('/sounds/win-arp.mp3', {
-    volume: 0.25,
+    volume: 0.5,
   });
   const [playSparklers] = useSound('/sounds/sparklers.mp3', {
     volume: 0.25,

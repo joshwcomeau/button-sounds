@@ -27,7 +27,7 @@ const START_DISTANCE = 12;
 const TRAVEL_DURATION_MIN_MS = 1200;
 const TRAVEL_DURATION_MAX_MS = 1600;
 const ROCK_DURATION_MIN_MS = 300;
-const ROCK_DURATION_MAX_MS = 300;
+const ROCK_DURATION_MAX_MS = 600;
 
 export interface Particle {
   id: number;

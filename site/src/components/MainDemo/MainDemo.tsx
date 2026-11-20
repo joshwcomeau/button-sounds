@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import type { SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
+import { SALE, SUPERHEADER_HEIGHT } from '@/constants';
 import useSyncedRef from '@/hooks/use-synced-ref';
 import { SOUND_DATA } from '@/data';
 import { random, sampleIndex, seededShuffle } from '@/utils';
@@ -14,7 +15,7 @@ import Screw from '@/components/Screw';
 import Spinner from '@/components/Spinner/Spinner';
 import CodedLights from '@/components/CodedLights/CodedLights';
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
-import { useBGMSetters } from '@/components/BGMProvider';
+import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
 
 import { getSampleIds } from './MainDemo.helpers';
 import SoundSelectSidebar from './SoundSelectSidebar';
@@ -58,6 +59,7 @@ function orderSounds(
 function MainDemo() {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const titleRef = React.useRef<HTMLHeadingElement>(null);
 
   const [selectedSoundName, setSelectedSoundName] = React.useState<SoundName>(
     DEFAULT_SOUND_ORDER[0] ?? 'hi75-soft',
@@ -94,15 +96,20 @@ function MainDemo() {
     closeMediaPlayer,
     playFromIntro,
   } = useBGMSetters();
+  const { isPlaying } = useBGMState();
 
   const hasWonMinigameRef = useSyncedRef(hasWonMinigame);
   const wasShowingPrizeRef = React.useRef(false);
+  // Winning fades the song out, so this remembers whether it was playing at that moment.
+  const wasPlayingWhenWonRef = React.useRef(false);
 
   const handleRestore = React.useCallback(() => {
     setHasWonMinigame(false);
     setIsCelebrating(false);
     setMinigameRound((currentRound) => currentRound + 1);
-    playFromIntro();
+    if (wasPlayingWhenWonRef.current) {
+      playFromIntro();
+    }
   }, [playFromIntro]);
 
   const handleCelebrationComplete = React.useCallback(() => {
@@ -112,6 +119,16 @@ function MainDemo() {
   React.useEffect(() => {
     if (hasWonMinigame) {
       wasShowingPrizeRef.current = true;
+
+      const prefersReducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+
+      // When winning the minigame, we want to scroll them so that the MainDemo’s Title is right near the top of the viewport. CodedLights is along the bottom of this MainDemo component, which means if they had scrolled so that the minigame was at the top of their screen, they won't see the new content that replaces the main demo.
+      titleRef.current?.scrollIntoView({
+        behavior: prefersReducedMotion ? 'instant' : 'smooth',
+        block: 'start',
+      });
       return;
     }
 
@@ -380,7 +397,9 @@ function MainDemo() {
         <Wrapper data-has-won-minigame={hasWonMinigame}>
           <StyledBackgroundPattern patternId="c" />
 
-          <Title>Sound Playground</Title>
+          <Title ref={titleRef} data-is-on-sale={!!SALE}>
+            Sound Playground
+          </Title>
           <StyledSoundSelectSidebar
             inert={hasWonMinigame}
             selectedSoundName={selectedSoundName}
@@ -420,6 +439,7 @@ function MainDemo() {
               key={minigameRound}
               hasWon={hasWonMinigame}
               onComplete={() => {
+                wasPlayingWhenWonRef.current = isPlaying;
                 stopBGMWithFade(1000);
                 closeMediaPlayer();
                 setHasWonMinigame(true);
@@ -568,12 +588,19 @@ const Title = styled.h3`
   background: var(--color-gray-800);
   corner-shape: bevel;
   border-radius: calc(var(--hh));
+  /* When the user wins the minigame, we scroll them to the correct location. This bit of extra spacing ensures that things look balanced. */
+  scroll-margin-top: 32px;
 
   /* On smaller screens, the center-aligned title overlaps the SoundSelectSidebar in a pretty unpleasant way, so let's lift it up totally above the border. */
   @media (max-width: 55rem) {
     border-radius: var(--hh) var(--hh) 0 0;
     top: calc(var(--height) * -1);
     border-bottom: none;
+  }
+
+  /* During sales, I have a banner along the top of the screen, so we need to add some extra scroll margin */
+  &[data-is-on-sale='true'] {
+    scroll-margin-top: calc(32px + ${SUPERHEADER_HEIGHT}rem);
   }
 `;
 

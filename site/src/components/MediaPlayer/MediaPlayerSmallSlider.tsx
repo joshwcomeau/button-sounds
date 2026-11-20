@@ -124,6 +124,8 @@ const Input = styled.input`
   background: transparent;
   cursor: pointer;
   outline: none;
+  border-radius: 4px;
+  corner-shape: bevel;
 
   &:active {
     cursor: grabbing;

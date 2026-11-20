@@ -30,10 +30,10 @@ const KEYBOARD_ADJUSTMENT_DISPLAY_MS = 1000;
 const KBPS = 192;
 const KHZ = 44.1;
 // kbps finishes a bit before the song starts, while kHz finishes right as it takes over from the intro.
-const KBPS_CLIMB_DELAY_MS = 1000;
-const KBPS_CLIMB_DURATION_MS = INTRO_DURATION_MS - 400 - KBPS_CLIMB_DELAY_MS;
-const KHZ_CLIMB_DELAY_MS = 1400;
-const KHZ_CLIMB_DURATION_MS = INTRO_DURATION_MS - KHZ_CLIMB_DELAY_MS;
+const KBPS_CLIMB_DELAY_MS = 700;
+const KBPS_CLIMB_DURATION_MS = INTRO_DURATION_MS - KBPS_CLIMB_DELAY_MS - 800;
+const KHZ_CLIMB_DELAY_MS = 1000;
+const KHZ_CLIMB_DURATION_MS = INTRO_DURATION_MS - KHZ_CLIMB_DELAY_MS - 400;
 const TIME_FADE_DURATION_MS = 300;
 const TIME_FADE_DELAY_MS = INTRO_DURATION_MS - TIME_FADE_DURATION_MS;
 // Most corners use the same radius, but the top-right corner is special; it has a deep cut within the inner element to accommodate the close button.
@@ -213,6 +213,7 @@ function MediaPlayer({ handleClose }: Props) {
                     }}
                   >
                     <KbpsOpticalShift>
+                      {introStatus === 'waiting' && '--'}
                       {introStatus === 'playing' && (
                         <ClimbingNumber
                           key={introStartCount}
@@ -221,7 +222,7 @@ function MediaPlayer({ handleClose }: Props) {
                           delay={KBPS_CLIMB_DELAY_MS}
                           duration={KBPS_CLIMB_DURATION_MS}
                           decimalPlaces={0}
-                          placeholder=""
+                          placeholder="--"
                         />
                       )}
                       {introStatus === 'completed' && KBPS}
@@ -237,6 +238,7 @@ function MediaPlayer({ handleClose }: Props) {
                       '--climb-duration': `${KHZ_CLIMB_DURATION_MS}ms`,
                     }}
                   >
+                    {introStatus === 'waiting' && '--'}
                     {introStatus === 'playing' && (
                       <ClimbingNumber
                         key={introStartCount}
@@ -245,7 +247,7 @@ function MediaPlayer({ handleClose }: Props) {
                         delay={KHZ_CLIMB_DELAY_MS}
                         duration={KHZ_CLIMB_DURATION_MS}
                         decimalPlaces={1}
-                        placeholder=""
+                        placeholder="--"
                       />
                     )}
                     {introStatus === 'completed' && KHZ}
@@ -497,6 +499,7 @@ const Inset = styled.div`
 
 const NumInset = styled(Inset)`
   display: flex;
+  justify-content: center;
   align-items: center;
   font-size: 0.5625rem;
   font-weight: 700;
@@ -641,6 +644,8 @@ const Buttons = styled.div`
   /* Allow the buttons to peek over the top without being clipped */
   padding-top: 4px;
   margin-top: -4px;
+  /* The buttons use z-index so that the focus outline always sits above its siblings. Ensure that the z-index doesn't 'leak' beyond this element: */
+  isolation: isolate;
 `;
 
 const ButtonShaft = styled.div`
@@ -719,7 +724,27 @@ const CloseButton = styled.button`
   align-items: center;
   background: none;
   border: none;
+  color: white;
   cursor: pointer;
+  border-radius: 3px 3px 3px 16px;
+  corner-shape: bevel;
+
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+
+  /* The clickable area is a bit tiny for this button, so we extend ti with a pseudo-element */
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+
+  /* On browsers that support bevels, there's plenty of space for the "X". But on other browsers, the rounded corner doesn't leave much room, so we'll pull the close button up beyond the edge */
+  @supports not (corner-shape: bevel) {
+    transform: translateY(-100%);
+  }
 `;
 
 const Footer = styled.div`

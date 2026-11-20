@@ -39,11 +39,8 @@ export default defineConfig({
     exclude: ['microlighter'],
   },
   build: {
-    // Vite leaves variable dynamic imports inside node_modules as runtime fetches.
-    // MicroLighter loads grammars with `import(\`./grammars/${language}.js\`)`, so
-    // those files have to be bundled or the browser 404s on `javascript.js`.
-    // pnpm realpaths the package to `node_modules/.pnpm/microlighter@…/node_modules/microlighter`,
-    // and a lookahead that only allows `node_modules/microlighter/` still excludes that path.
+    // I was running into an issue where the syntax highlighting wasn’t working in production. This is because microlighter, the syntax-highlighter I’m using, uses dynamic `import()` statements and Vite doesn’t know that it should include them.
+    // Honestly I don’t fully understand why such a complex regex is reuqired for this, and there’s undoubtedly a simpler fix, but this is what Claude suggested and it works. 🤷
     dynamicImportVarsOptions: {
       exclude: [
         /node_modules\/(?!\.pnpm\/microlighter@[^/]+\/node_modules\/microlighter\/|microlighter\/)/,

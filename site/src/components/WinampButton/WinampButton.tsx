@@ -179,7 +179,7 @@ const lightningBounce = keyframes`
 `;
 
 const lightningRotate = keyframes`
-  10% {
+  0% {
     rotate: -20deg;
   }
   30% {

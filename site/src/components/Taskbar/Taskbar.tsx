@@ -80,7 +80,7 @@ const OuterWrapper = styled.div`
 `;
 
 const Wrapper = styled.div`
-  width: 1080px;
+  width: 67.5rem;
   max-width: 100%;
   display: flex;
   justify-content: space-between;
