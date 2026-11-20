@@ -7,6 +7,7 @@ import useBGMSyncedAnimation from '@/hooks/use-bgm-synced-animation';
 import useLocalStorageState from '@/hooks/use-local-storage-state';
 
 import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
+import VisuallyHidden from '@/components/VisuallyHidden/VisuallyHidden';
 
 import NoteParticles from './NoteParticles';
 import SolarParticles from './SolarParticles';
@@ -57,6 +58,7 @@ function WinampButton({ ...delegated }: React.ComponentProps<'button'>) {
         data-is-bouncing={hasCompletedIntro || undefined}
         data-is-playing={isPlaying || undefined}
         fill="none"
+        aria-hidden="true"
         viewBox="0 0 32 32"
       >
         <path
@@ -83,6 +85,7 @@ function WinampButton({ ...delegated }: React.ComponentProps<'button'>) {
           mask={`url(#${maskId})`}
         />
       </Svg>
+      <VisuallyHidden>Toggle media player</VisuallyHidden>
     </Wrapper>
   );
 }

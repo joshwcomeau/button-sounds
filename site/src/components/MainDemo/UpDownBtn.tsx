@@ -27,11 +27,14 @@ function UpDownBtn({ direction, handleClick, ...props }: Props) {
       ref={wrapperRef}
       onClick={handleClick}
       data-direction={direction}
+      aria-label={
+        direction === 'up' ? 'Select previous sound' : 'Select next sound'
+      }
       {...props}
     >
       <Border>
         <IconWrapper>
-          <Icon size={16} />
+          <Icon size={16} aria-hidden="true" />
         </IconWrapper>
       </Border>
     </Wrapper>
@@ -90,8 +93,6 @@ const Border = styled.span`
   outline: 2px solid transparent;
   outline-offset: 1px;
   transform-origin: 50% 0%;
-  /* Hide Locked as it slides in and out */
-  overflow: hidden;
   transition:
     outline-color 400ms,
     border-color 600ms,

@@ -7,6 +7,7 @@ import { SUPERHEADER_HEIGHT, BANNER_SHOW_ANIMATION } from '@/constants';
 
 import { useSoundSettings } from '@/components/SoundSettingsProvider';
 
+import VisuallyHidden from '@/components/VisuallyHidden/VisuallyHidden';
 import BevelEdge from '@/components/BevelEdge/BevelEdge';
 import TextLink from '@/components/Link/TextLink';
 
@@ -56,7 +57,8 @@ function SaleBanner({ handleDismiss, ...delegated }: Props) {
             !
           </MobileText>
           <CloseButton ref={closeBtnRef} onClick={handleDismiss}>
-            <X />
+            <X aria-hidden="true" />
+            <VisuallyHidden>Dismiss banner</VisuallyHidden>
           </CloseButton>
         </Content>
         <BevelEdge
