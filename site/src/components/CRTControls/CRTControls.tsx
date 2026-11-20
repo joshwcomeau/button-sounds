@@ -1,5 +1,7 @@
 import * as React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+import { SUPERHEADER_HEIGHT, BANNER_SHOW_ANIMATION } from '@/constants';
 
 import Slider from '@/components/Slider/Slider';
 import Screw from '@/components/Screw/Screw';
@@ -8,15 +10,21 @@ import BevelEdge from '@/components/BevelEdge/BevelEdge';
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   crtStrength: number;
   setCrtStrength: (strength: number) => void;
+  shiftBelowSaleBanner: boolean;
 }
 
 const screwStyles = { opacity: 0.5 };
 
-function CRTControls({ crtStrength, setCrtStrength, ...delegated }: Props) {
+function CRTControls({
+  crtStrength,
+  setCrtStrength,
+  shiftBelowSaleBanner,
+  ...delegated
+}: Props) {
   const sliderId = React.useId().replace(/:/g, '-');
 
   return (
-    <Wrapper {...delegated}>
+    <Wrapper {...delegated} data-shifted-down={shiftBelowSaleBanner}>
       <ScrewWrapper data-side="left">
         <Screw style={screwStyles} />
       </ScrewWrapper>
@@ -48,8 +56,13 @@ function CRTControls({ crtStrength, setCrtStrength, ...delegated }: Props) {
   );
 }
 
+const slideDownDuringSale = keyframes`
+  from {
+    transform: translateY(-${SUPERHEADER_HEIGHT}rem);
+  }
+`;
 const Wrapper = styled.div`
-  --color-outline: hsl(210deg 15% 26%);
+  --color-outline: var(--color-gray-200);
   position: fixed;
   top: 0;
   right: 3rem;
@@ -66,6 +79,14 @@ const Wrapper = styled.div`
     right: 0;
     margin-inline: auto;
     width: fit-content;
+  }
+
+  &[data-shifted-down='true'] {
+    top: ${`calc(${SUPERHEADER_HEIGHT}rem - 2px)`};
+
+    animation: ${slideDownDuringSale} ${BANNER_SHOW_ANIMATION.duration}ms
+      ${BANNER_SHOW_ANIMATION.curve} both;
+    animation-delay: ${BANNER_SHOW_ANIMATION.delay}ms;
   }
 `;
 
@@ -107,6 +128,8 @@ const Main = styled.div`
   background: black;
   border-radius: 0 0 16px 16px;
   corner-shape: bevel;
+  /* Trim the soft glow */
+  overflow: hidden;
 
   /* Soft white glow along the top, giving it a glassy effect */
   &::before {

@@ -4,6 +4,9 @@ import ButtonSounds from 'button-sounds';
 import { highlightAll } from 'microlighter';
 import 'microlighter/themes/tokyo-night.css';
 
+import { SALE, SALE_ENDS } from '@/constants';
+import useInterval from '@/hooks/use-interval';
+
 import BGMProvider from '@/components/BGMProvider/BGMProvider';
 import SoundSettingsProvider from '@/components/SoundSettingsProvider';
 import CRTEffect from '@/components/CRTEffect/CRTEffect';
@@ -15,6 +18,7 @@ import { ShapeLayer } from '@/components/ButtonShapes/ButtonShapes';
 import BouncyLetters from '@/components/BouncyLetters/BouncyLetters';
 import Footer from '@/components/Footer/Footer';
 import Taskbar from '@/components/Taskbar/Taskbar';
+import SaleBanner from '@/components/SaleBanner/SaleBanner';
 
 import { SOUNDS_PATH } from './constants';
 
@@ -23,8 +27,13 @@ import { SOUNDS_PATH } from './constants';
 // 2. I show a loading spinner while the audio file is loading (see `useSoundResourceLoading.ts`), and we do this using PerformanceObserver. I'm not actually sure if this works with third-party assets, but even if it does today, that feels like something that could change in the future.
 ButtonSounds.setPath(SOUNDS_PATH);
 
+function isSaleRunning() {
+  return SALE && new Date() < SALE_ENDS;
+}
+
 function App() {
   const [crtStrength, setCrtStrength] = React.useState(0.7);
+  const [showSaleBanner, setShowSaleBanner] = React.useState(isSaleRunning);
 
   React.useEffect(() => {
     document.body.dataset.syntaxTheme = 'tokyo-night';
@@ -33,15 +42,28 @@ function App() {
     });
   }, []);
 
+  useInterval(
+    () => {
+      if (!isSaleRunning()) {
+        setShowSaleBanner(false);
+      }
+    },
+    showSaleBanner ? 1000 : null,
+  );
+
   return (
     <BGMProvider>
       <SoundSettingsProvider>
+        {showSaleBanner && (
+          <SaleBanner handleDismiss={() => setShowSaleBanner(false)} />
+        )}
         <CRTControls
           crtStrength={crtStrength}
           setCrtStrength={setCrtStrength}
           // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
           // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
           style={{ zIndex: 2 }}
+          shiftBelowSaleBanner={showSaleBanner}
         />
         <Container>
           <Wrapper>

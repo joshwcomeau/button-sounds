@@ -56,6 +56,8 @@ interface BGMContextType {
   hasCompletedIntro: boolean;
   // Increments every time the intro starts from the beginning, so that intro animations can be restarted by using it as a `key`.
   introStartCount: number;
+  // Increments whenever the song’s position jumps (seeks, rewinds, restarts, loops, stops), but not as it plays normally. Lets beat-synced animations resync without polling.
+  playheadEpoch: number;
   volume: number;
   panning: number;
   channelMode: ChannelMode;
@@ -89,6 +91,7 @@ const BGMContext = React.createContext<BGMContextType>({
   isPlaying: false,
   hasCompletedIntro: false,
   introStartCount: 0,
+  playheadEpoch: 0,
   volume: INITIAL_VOLUME,
   // -1 (full left) to 1 (full right)
   panning: 0,
@@ -119,6 +122,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [hasCompletedIntro, setHasCompletedIntro] = React.useState(false);
   const [introStartCount, setIntroStartCount] = React.useState(0);
+  const [playheadEpoch, setPlayheadEpoch] = React.useState(0);
   const [volume, rawSetVolume] = React.useState(INITIAL_VOLUME);
   const [panning, rawSetPanning] = React.useState(0);
   const [channelModeState, rawSetChannelMode] =
@@ -179,6 +183,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     function handleLoop() {
       setTimestamp(0);
+      setPlayheadEpoch((epoch) => epoch + 1);
     }
 
     bgm.on('end', handleLoop);
@@ -219,6 +224,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     if (isPlayingRef.current && soundId !== undefined) {
       bgm.seek(0, soundId);
       setTimestamp(0);
+      setPlayheadEpoch((epoch) => epoch + 1);
       return;
     }
 
@@ -261,6 +267,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     cancelFadeOut?.();
     bgm.stop(soundId);
     setTimestamp(0);
+    setPlayheadEpoch((epoch) => epoch + 1);
     setIsPlaying(false);
   }, []);
 
@@ -280,6 +287,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
         bgm.stop(id);
         bgm.volume(bgm.volume(), id);
         setTimestamp(0);
+        setPlayheadEpoch((epoch) => epoch + 1);
       };
 
       cancelFadeOut = () => {
@@ -309,6 +317,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       bgm.seek(0, soundId);
     }
     setTimestamp(0);
+    setPlayheadEpoch((epoch) => epoch + 1);
   }, []);
 
   const seek = React.useCallback((value: number) => {
@@ -316,6 +325,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       bgm.seek(value, soundId);
     }
     setTimestamp(value);
+    setPlayheadEpoch((epoch) => epoch + 1);
   }, []);
 
   const fastForward = React.useCallback(() => {
@@ -389,6 +399,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       isPlaying,
       hasCompletedIntro,
       introStartCount,
+      playheadEpoch,
       volume,
       panning,
       channelMode: channelModeState,
@@ -400,6 +411,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
       isPlaying,
       hasCompletedIntro,
       introStartCount,
+      playheadEpoch,
       volume,
       panning,
       channelModeState,

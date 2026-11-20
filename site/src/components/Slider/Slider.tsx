@@ -1,7 +1,18 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import useSound from 'use-sound';
 
-import { clamp, range } from '@/utils';
+import { clamp, range, sampleOne } from '@/utils';
+
+const TICK_SPRITE: Record<string, [number, number]> = {
+  a: [88, 40],
+  b: [140, 40],
+  c: [182, 40],
+  d: [224, 40],
+  e: [294, 40],
+  f: [352, 40],
+};
+const TICK_IDS = Object.keys(TICK_SPRITE);
 
 interface Props extends Omit<
   React.ComponentProps<'input'>,
@@ -27,6 +38,12 @@ function Slider({
   id,
   ...delegated
 }: Props) {
+  const [playTick] = useSound('/sounds/tick-sprite.mp3', {
+    sprite: TICK_SPRITE,
+    volume: 0.25,
+    interrupt: true,
+  });
+
   const tickCount = getTickCount(min, max, step);
   const span = max - min;
   const ratio = span === 0 ? 0 : clamp((value - min) / span, 0, 1);
@@ -58,6 +75,7 @@ function Slider({
         value={value}
         style={inputStyles}
         onChange={(event) => {
+          playTick({ id: sampleOne(TICK_IDS) });
           setValue(event.currentTarget.valueAsNumber);
         }}
       />

@@ -41,6 +41,7 @@ export default defineConfig(
       '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {

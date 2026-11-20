@@ -2,69 +2,60 @@ import * as React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useButtonSounds } from 'button-sounds/react';
 
+import { QUARTER_NOTE_MS } from '@/constants';
+import useBGMSyncedAnimation from '@/hooks/use-bgm-synced-animation';
+import useLocalStorageState from '@/hooks/use-local-storage-state';
+
 import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
-import usePrefersReducedMotion from '@/hooks/use-prefers-reduced-motion';
-import useRequestAnimationFrameLoop from '@/hooks/use-request-animation-frame';
 
 import NoteParticles from './NoteParticles';
+import SolarParticles from './SolarParticles';
 
-const BPM = 100;
-const QUARTER_NOTE_MS = (60 / BPM) * 1000;
 const DIAMOND_BOUNCE_MS = QUARTER_NOTE_MS;
 const LIGHTNING_BOUNCE_MS = QUARTER_NOTE_MS * 2;
 const LIGHTNING_ROTATE_MS = LIGHTNING_BOUNCE_MS * 2;
 
 function WinampButton({ ...delegated }: React.ComponentProps<'button'>) {
   const btnRef = React.useRef<HTMLButtonElement>(null);
-  const { toggleMediaPlayer, getPlaybackPosition } = useBGMSetters();
+  const { toggleMediaPlayer } = useBGMSetters();
   const { isMediaPlayerOpen, isPlaying, hasCompletedIntro } = useBGMState();
-  const prefersReducedMotion = usePrefersReducedMotion();
 
   useButtonSounds(btnRef, isMediaPlayerOpen ? 'synth-off' : 'synth-on', {
     volume: 0.35,
   });
 
+  const [hasBeenClicked, setHasBeenClicked] = useLocalStorageState(
+    'winamp-button-clicked',
+    false,
+  );
   const id = React.useId().replace(/:/g, '');
   const maskId = `stroke-mask-${id}`;
   const diamondRef = React.useRef<HTMLDivElement>(null);
   const svgRef = React.useRef<SVGSVGElement>(null);
 
-  const isBouncing = isPlaying && hasCompletedIntro && !prefersReducedMotion;
-
-  const syncBounce = React.useCallback(() => {
-    // The keyframes stay paused. Seeking each one to the song’s position keeps it on the beat through seeks and loops.
-    const positionMs = getPlaybackPosition() * 1000;
-    if (!Number.isFinite(positionMs)) {
-      return;
-    }
-
-    for (const element of [diamondRef.current, svgRef.current]) {
-      for (const animation of element?.getAnimations() ?? []) {
-        const duration = animation.effect?.getComputedTiming().duration;
-        if (typeof duration !== 'number' || duration <= 0) {
-          continue;
-        }
-
-        animation.currentTime = positionMs % duration;
-      }
-    }
-  }, [getPlaybackPosition]);
-
-  React.useLayoutEffect(() => {
-    if (isBouncing) {
-      syncBounce();
-    }
-  }, [isBouncing, syncBounce]);
-
-  useRequestAnimationFrameLoop(syncBounce, isBouncing);
+  // Seeking each animation to the song’s position keeps it on the beat through seeks and loops.
+  useBGMSyncedAnimation(diamondRef, svgRef);
 
   return (
-    <Wrapper {...delegated} ref={btnRef} onClick={toggleMediaPlayer}>
+    <Wrapper
+      {...delegated}
+      ref={btnRef}
+      onClick={() => {
+        setHasBeenClicked(true);
+        toggleMediaPlayer();
+      }}
+    >
+      <SolarParticles enabled={!hasBeenClicked} />
       <NoteParticles />
-      <Diamond ref={diamondRef} data-is-bouncing={isBouncing || undefined} />
+      <Diamond
+        ref={diamondRef}
+        data-is-bouncing={hasCompletedIntro || undefined}
+        data-is-playing={isPlaying || undefined}
+      />
       <Svg
         ref={svgRef}
-        data-is-bouncing={isBouncing || undefined}
+        data-is-bouncing={hasCompletedIntro || undefined}
+        data-is-playing={isPlaying || undefined}
         fill="none"
         viewBox="0 0 32 32"
       >
@@ -150,6 +141,10 @@ const Diamond = styled.div`
     }
   }
 
+  &[data-is-bouncing][data-is-playing] {
+    animation-play-state: running;
+  }
+
   ${Wrapper}:hover & {
     background: white;
     transition: none;
@@ -226,6 +221,10 @@ const Svg = styled.svg`
         ${lightningRotate} ${LIGHTNING_ROTATE_MS}ms ease-in-out infinite;
       animation-play-state: paused;
     }
+  }
+
+  &[data-is-bouncing][data-is-playing] {
+    animation-play-state: running;
   }
 `;
 

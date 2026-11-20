@@ -1,18 +1,34 @@
 import * as React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
-import { GITHUB_URL, NPM_URL, TASKBAR_HEIGHT } from '@/constants';
+import {
+  GITHUB_URL,
+  NPM_URL,
+  TASKBAR_HEIGHT,
+  QUARTER_NOTE_MS,
+} from '@/constants';
 import { useBGMSetters, useBGMState } from '@/components/BGMProvider';
+import useBGMSyncedAnimation from '@/hooks/use-bgm-synced-animation';
 
 import MediaPlayer from '@/components/MediaPlayer/MediaPlayer';
 
 import SystemTray from './SystemTray';
 import TaskbarLink from './TaskbarLink';
 
+const GH_ANIMATION_DURATION_MS = QUARTER_NOTE_MS * 2;
+const NPM_BOUNCE_MS = QUARTER_NOTE_MS;
+
 function Taskbar() {
   const { closeMediaPlayer } = useBGMSetters();
+  const { isMediaPlayerOpen, isPlaying, hasCompletedIntro } = useBGMState();
+  const ghLogoRef = React.useRef<HTMLImageElement>(null);
+  const npmLogoRef = React.useRef<HTMLImageElement>(null);
 
-  const { isMediaPlayerOpen } = useBGMState();
+  // Seeking to the song’s position keeps the tilt on beats 2 and 4 through seeks and loops.
+  useBGMSyncedAnimation(ghLogoRef);
+  useBGMSyncedAnimation(npmLogoRef);
+
+  const animateIcons = isPlaying && hasCompletedIntro;
 
   return (
     <>
@@ -21,13 +37,20 @@ function Taskbar() {
           <Links>
             <TaskbarLink href={GITHUB_URL}>
               <GHLogo
+                ref={ghLogoRef}
                 src="/images/github-logo.svg"
                 alt="GitHub"
                 draggable={false}
+                data-is-rocking={animateIcons}
               />
             </TaskbarLink>
             <TaskbarLink href={NPM_URL}>
-              <NPMLogo src="/images/npm-logo.svg" alt="NPM" draggable={false} />
+              <NPMLogo
+                src="/images/npm-logo.svg"
+                alt="NPM"
+                draggable={false}
+                data-is-bouncing={animateIcons}
+              />
             </TaskbarLink>
           </Links>
           <SystemTray />
@@ -76,13 +99,64 @@ const Logo = styled.img`
   display: block;
 `;
 
+const ghRock = keyframes`
+  0% {
+    rotate: -30deg;
+  }
+  17%, 40% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: 30deg;
+  }
+  67%, 85% {
+    rotate: 0deg;
+  }
+  100% {
+    rotate: -30deg;
+  }
+`;
+
 const GHLogo = styled(Logo)`
   width: 1.5rem;
   height: 1.5rem;
+  transform-origin: center;
+  animation-play-state: paused;
+
+  @media (prefers-reduced-motion: no-preference) {
+    &[data-is-rocking='true'] {
+      animation: ${ghRock} ${GH_ANIMATION_DURATION_MS}ms ease-in-out infinite;
+      animation-play-state: running;
+    }
+  }
+`;
+
+const npmBounce = keyframes`
+  0% {
+    translate: 0 2px;
+  }
+  35% {
+    translate: 0 0;
+  }
+  80% {
+    translate: 0 0;
+  }
+  90% {
+    translate: 0 2px;
+  }
+  100% {
+    translate: 0 2px;
+  }
 `;
 
 const NPMLogo = styled(Logo)`
   width: 2rem;
+
+  @media (prefers-reduced-motion: no-preference) {
+    &[data-is-bouncing='true'] {
+      animation: ${npmBounce} ${NPM_BOUNCE_MS}ms ease-out infinite;
+    }
+  }
 `;
 
 export default Taskbar;
