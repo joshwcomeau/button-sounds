@@ -29,7 +29,13 @@ function AlbumArt({ introStatus, introStartCount }: Props) {
             src="/images/album-art-3.png"
             alt="Album art - a complex machine with lots of buttons and switches and knobs, lit in purple and pink"
           />
-          <BevelEdge side="top" color="white" leftRadius={3} rightRadius={7} />
+          <BevelEdge
+            side="top"
+            color="white"
+            leftRadius={3}
+            rightRadius={7}
+            showEvenWhenUnsupported
+          />
         </ArtWrapper>
         <Scanlines />
       </Clipper>

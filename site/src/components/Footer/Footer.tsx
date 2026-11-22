@@ -249,11 +249,14 @@ const Copyright = styled.p`
 `;
 const LegalLinksList = styled.ul`
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0;
   list-style-type: none;
+
+  @media (max-width: 45rem) {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 `;
 const LegalListItem = styled.li`
   position: relative;

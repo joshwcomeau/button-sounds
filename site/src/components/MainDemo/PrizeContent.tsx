@@ -41,7 +41,7 @@ function PrizeContent({ isShown, onRestore }: Props) {
       <p>
         As a reward, you can use the top-secret coupon code{' '}
         <code>CLEVER_SLEUTH</code> to <em>get {DISCOUNT_AMOUNT}% off</em> any of
-        my courses.{' '}
+        my interactive online courses.{' '}
         <InfoTooltip content={termsAndConditions}>Terms apply.</InfoTooltip>
       </p>
       <p>
@@ -89,6 +89,9 @@ const Wrapper = styled.div`
     padding: 4px 6px;
     border-radius: 4px;
     corner-shape: bevel;
+
+    --selection-bg: hsl(45deg 100% 60%);
+    --selection-color: black;
   }
 
   a {

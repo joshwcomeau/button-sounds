@@ -11,6 +11,7 @@ import useKeybindings from '@/hooks/use-keybindings';
 
 import {
   INTRO_DURATION_MS,
+  STOP_FADE_DURATION_MS,
   useBGMState,
   useBGMSetters,
   type ChannelMode,
@@ -326,7 +327,10 @@ function MediaPlayer({ handleClose }: Props) {
                 <MediaBtn icon="rewind" onClick={rewind} />
                 <MediaBtn icon="play" onClick={play} ref={playBtnRef} />
                 <MediaBtn icon="pause" onClick={pause} />
-                <MediaBtn icon="stop" onClick={() => stopWithFade(100)} />
+                <MediaBtn
+                  icon="stop"
+                  onClick={() => stopWithFade(STOP_FADE_DURATION_MS)}
+                />
                 <MediaBtn icon="fast-forward" onClick={fastForward} />
               </ButtonRow>
             </Buttons>

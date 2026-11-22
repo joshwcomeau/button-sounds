@@ -40,6 +40,7 @@ let cancelFadeOut: (() => void) | null = null;
 const TIMESTAMP_POLL_INTERVAL_MS = 500;
 // This is the point we jump to with the "Fast forward" button. Honestly this button doesn't really make sense in this context, with only 1 song, but it looks wrong without it. If I ever add new songs, this'll be useful.
 const FAST_FORWARD_TIMESTAMP = 76;
+export const STOP_FADE_DURATION_MS = 100;
 const EJECT_FADE_DURATION_MS = 250;
 
 // With a single argument, Howler treats anything that isn’t a known sound ID as a seek position, so we can’t pass `soundId` through when it’s undefined.
@@ -150,6 +151,11 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     function handleIntroEnd() {
+      // A fade-out can still be in progress when the intro finishes, and that shouldn’t start the song.
+      if (cancelFadeOut) {
+        return;
+      }
+
       soundId = bgm.play(soundId);
       applyChannelMode(bgm, soundId, channelMode);
       setTimestamp(0);
@@ -207,54 +213,6 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isPlaying]);
 
-  // Pressing play while already playing restarts the song (or the intro).
-  const play = React.useCallback(() => {
-    if (!hasCompletedIntroRef.current) {
-      if (introSoundId !== undefined && bgmIntro.playing(introSoundId)) {
-        bgmIntro.seek(0, introSoundId);
-      } else {
-        introSoundId = bgmIntro.play(introSoundId);
-        applyChannelMode(bgmIntro, introSoundId, channelMode);
-      }
-      setIntroStartCount((count) => count + 1);
-      setIsPlaying(true);
-      return;
-    }
-
-    if (isPlayingRef.current && soundId !== undefined) {
-      bgm.seek(0, soundId);
-      setTimestamp(0);
-      setPlayheadEpoch((epoch) => epoch + 1);
-      return;
-    }
-
-    cancelFadeOut?.();
-    const isFirstPlay = soundId === undefined;
-    soundId = bgm.play(soundId);
-    applyChannelMode(bgm, soundId, channelMode);
-    if (isFirstPlay && timestampRef.current > 0) {
-      bgm.seek(timestampRef.current, soundId);
-    }
-    setIsPlaying(true);
-  }, []);
-
-  const pause = React.useCallback(() => {
-    // The intro cannot be paused; it would be too complicated, given the sequence of enter animations that trigger in the media player. It can be stopped, which restarts everything.
-    if (!hasCompletedIntroRef.current) {
-      return;
-    }
-
-    if (!isPlayingRef.current) {
-      play();
-      return;
-    }
-
-    cancelFadeOut?.();
-    bgm.pause(soundId);
-    setTimestamp(getPlaybackPosition());
-    setIsPlaying(false);
-  }, [play]);
-
   const stop = React.useCallback(() => {
     if (!hasCompletedIntroRef.current) {
       if (introSoundId !== undefined) {
@@ -273,36 +231,95 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
 
   const stopWithFade = React.useCallback(
     (duration = 250) => {
+      const fadeOut = (howl: Howl, id: number, onEnd?: () => void) => {
+        cancelFadeOut?.();
+
+        const handleFadeEnd = () => {
+          cancelFadeOut = null;
+          howl.stop(id);
+          howl.volume(howl.volume(), id);
+          onEnd?.();
+        };
+
+        cancelFadeOut = () => {
+          cancelFadeOut = null;
+          howl.off('fade', handleFadeEnd, id);
+          // Setting the volume also halts Howler’s in-progress fade.
+          howl.volume(howl.volume(), id);
+        };
+
+        howl.once('fade', handleFadeEnd, id);
+        howl.fade(howl.volume(), 0, duration, id);
+        setIsPlaying(false);
+      };
+
+      const introId = introSoundId;
+      if (
+        !hasCompletedIntroRef.current &&
+        introId !== undefined &&
+        bgmIntro.playing(introId)
+      ) {
+        fadeOut(bgmIntro, introId);
+        return;
+      }
+
       const id = soundId;
-      // This includes the intro, which doesn’t fade; it’s short enough that cutting it off is fine.
+      // A paused or unloaded song has nothing to fade, so stop it outright.
       if (id === undefined || !bgm.playing(id)) {
         stop();
         return;
       }
 
-      cancelFadeOut?.();
-
-      const handleFadeEnd = () => {
-        cancelFadeOut = null;
-        bgm.stop(id);
-        bgm.volume(bgm.volume(), id);
+      fadeOut(bgm, id, () => {
         setTimestamp(0);
         setPlayheadEpoch((epoch) => epoch + 1);
-      };
-
-      cancelFadeOut = () => {
-        cancelFadeOut = null;
-        bgm.off('fade', handleFadeEnd, id);
-        // Setting the volume also halts Howler’s in-progress fade.
-        bgm.volume(bgm.volume(), id);
-      };
-
-      bgm.once('fade', handleFadeEnd, id);
-      bgm.fade(bgm.volume(), 0, duration, id);
-      setIsPlaying(false);
+      });
     },
     [stop],
   );
+
+  // Pressing play while the intro or the song is already playing fades it out.
+  const play = React.useCallback(() => {
+    if (isPlayingRef.current) {
+      stopWithFade(STOP_FADE_DURATION_MS);
+      return;
+    }
+
+    if (!hasCompletedIntroRef.current) {
+      cancelFadeOut?.();
+      introSoundId = bgmIntro.play(introSoundId);
+      applyChannelMode(bgmIntro, introSoundId, channelMode);
+      setIntroStartCount((count) => count + 1);
+      setIsPlaying(true);
+      return;
+    }
+
+    cancelFadeOut?.();
+    const isFirstPlay = soundId === undefined;
+    soundId = bgm.play(soundId);
+    applyChannelMode(bgm, soundId, channelMode);
+    if (isFirstPlay && timestampRef.current > 0) {
+      bgm.seek(timestampRef.current, soundId);
+    }
+    setIsPlaying(true);
+  }, [stopWithFade]);
+
+  const pause = React.useCallback(() => {
+    // The intro cannot be paused; it would be too complicated, given the sequence of enter animations that trigger in the media player. It can be stopped, which restarts everything.
+    if (!hasCompletedIntroRef.current) {
+      return;
+    }
+
+    if (!isPlayingRef.current) {
+      play();
+      return;
+    }
+
+    cancelFadeOut?.();
+    bgm.pause(soundId);
+    setTimestamp(getPlaybackPosition());
+    setIsPlaying(false);
+  }, [play]);
 
   const rewind = React.useCallback(() => {
     if (!hasCompletedIntroRef.current) {

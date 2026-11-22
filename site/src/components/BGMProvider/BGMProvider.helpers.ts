@@ -2,8 +2,13 @@ import { Howl, Howler } from 'howler';
 
 export type ChannelMode = 'mono' | 'stereo';
 
+interface HowlGainNode extends GainNode {
+  // Howler stores the playing buffer source here and clears it on pause or stop.
+  bufferSource?: AudioBufferSourceNode | null;
+}
+
 interface HowlSound {
-  _node: GainNode;
+  _node: HowlGainNode;
   // Created by the spatial plugin the first time `stereo()` is called on the sound.
   _panner?: AudioNode;
 }
@@ -53,10 +58,43 @@ export function applyChannelMode(
   }
 
   const isMono = channelMode === 'mono';
-  panner.channelCount = isMono ? 1 : 2;
-  panner.channelCountMode = isMono ? 'explicit' : 'clamped-max';
+  const nextCount = isMono ? 1 : 2;
+  const nextMode: ChannelCountMode = isMono ? 'explicit' : 'clamped-max';
+  const source = sound._node.bufferSource ?? null;
+  const channelConfigChanged =
+    panner.channelCount !== nextCount || panner.channelCountMode !== nextMode;
+
+  // Annoyingly, Safari would become muted when switching between mono/stereo. Evidently we need to disconnect and reconnect. I was worried this would lead to a brief audio drop in other browsers, but it seems to run seamlessly.
+  // (I should also say, I delegated this task to Claude and don’t *really* understand it. If there are unintended consequences to this, I can revert to the code in commit 3fecbdaadbfbb6e12289ca2c65ecc837133a4d29, which will mute on Safari but work flawlessly everywhere else.)
+  if (channelConfigChanged && source) {
+    disconnectFrom(source, panner);
+    disconnectFrom(panner, compensator);
+  }
+
+  panner.channelCount = nextCount;
+  panner.channelCountMode = nextMode;
+
+  if (channelConfigChanged && source) {
+    source.connect(panner);
+    panner.connect(compensator);
+  }
+
   compensator.gain.setValueAtTime(
     isMono ? Math.SQRT2 : 1,
     Howler.ctx.currentTime,
   );
+}
+
+// `disconnect(node)` throws InvalidAccessError when that connection isn’t there.
+function disconnectFrom(source: AudioNode, destination: AudioNode) {
+  try {
+    source.disconnect(destination);
+  } catch (error) {
+    if (
+      !(error instanceof DOMException) ||
+      error.name !== 'InvalidAccessError'
+    ) {
+      throw error;
+    }
+  }
 }
