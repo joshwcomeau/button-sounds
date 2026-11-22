@@ -172,6 +172,7 @@ function MediaPlayer({ handleClose }: Props) {
         />
         <Wrapper>
           <BevelEdge
+            showEvenWhenUnsupported
             side="top"
             color="var(--w-gray-600)"
             leftRadius={OUTER_RADIUS - 2}
@@ -348,7 +349,7 @@ function MediaPlayer({ handleClose }: Props) {
           </Footer>
         </Wrapper>
         <CloseButton onClick={handleClose} ref={closeBtnRef}>
-          <X size={12} strokeWidth={3} />
+          <X size="var(--close-icon-size)" strokeWidth={3} />
         </CloseButton>
       </BorderWrapper>
     </Container>
@@ -713,6 +714,7 @@ const Divider = styled.div`
 `;
 
 const CloseButton = styled.button`
+  --close-icon-size: 12px;
   position: absolute;
   top: -2px;
   right: -2px;
@@ -744,6 +746,7 @@ const CloseButton = styled.button`
   /* On browsers that support bevels, there's plenty of space for the "X". But on other browsers, the rounded corner doesn't leave much room, so we'll pull the close button up beyond the edge */
   @supports not (corner-shape: bevel) {
     transform: translateY(-100%);
+    --close-icon-size: 20px;
   }
 `;
 
