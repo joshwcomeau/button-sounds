@@ -6,6 +6,7 @@ import 'microlighter/themes/tokyo-night.css';
 
 import { SALE, SALE_ENDS } from '@/constants';
 import useInterval from '@/hooks/use-interval';
+import useLocalStorageState from '@/hooks/use-local-storage-state';
 
 import BGMProvider from '@/components/BGMProvider/BGMProvider';
 import SoundSettingsProvider from '@/components/SoundSettingsProvider';
@@ -32,7 +33,10 @@ function isSaleRunning() {
 }
 
 function App() {
-  const [crtStrength, setCrtStrength] = React.useState(0.7);
+  const [crtStrength, setCrtStrength] = useLocalStorageState(
+    'crt-strength',
+    0.7,
+  );
   const [showSaleBanner, setShowSaleBanner] = React.useState(isSaleRunning);
 
   React.useEffect(() => {
