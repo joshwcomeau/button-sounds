@@ -113,7 +113,7 @@ const Wrapper = styled.div`
     border-radius: 12px 12px 50% 50%;
     corner-shape: bevel;
     filter: blur(6px);
-    opacity: 0.2;
+    opacity: 0.1;
     mix-blend-mode: hard-light;
   }
 `;
