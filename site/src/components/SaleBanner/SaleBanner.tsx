@@ -40,7 +40,7 @@ function SaleBanner({ handleDismiss, ...delegated }: Props) {
             <TextLink href={COURSE_HREF} preventExternalIcon>
               Whimsical Animations
             </TextLink>
-            , is currently on sale for Black Friday! Save 40%.
+            , is currently on sale for Black Friday! Save 40%. ✨
           </DesktopText>
           <TabletText>
             Save 40% on my flagship course,{' '}
@@ -86,6 +86,8 @@ const slideIn = keyframes`
 `;
 
 const Wrapper = styled.div`
+  --selection-bg: hsl(45deg 100% 70%);
+  --selection-color: black;
   position: fixed;
   top: 0;
   left: 4px;
@@ -127,6 +129,8 @@ const Content = styled.div`
   width: 67.5rem;
   max-width: 100%;
   padding-inline: 1rem;
+  /* Optical alignment */
+  transform: translateY(-1px);
 
   a {
     font-weight: 700;
@@ -152,7 +156,7 @@ const Text = styled.p`
 const DesktopText = styled(Text)`
   display: block;
 
-  @media (max-width: 57rem) {
+  @media (max-width: 58rem) {
     display: none;
   }
 `;
@@ -160,7 +164,7 @@ const DesktopText = styled(Text)`
 const TabletText = styled(Text)`
   display: none;
 
-  @media (max-width: 57rem) and (min-width: 40rem) {
+  @media (max-width: 58rem) and (min-width: 40rem) {
     display: block;
   }
 `;

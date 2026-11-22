@@ -106,7 +106,7 @@ const Wrapper = styled.button`
   width: 2.5rem;
   aspect-ratio: 1 / 1;
   border: none;
-  background: transparent;
+  background: var(--color-gray-50);
   cursor: pointer;
   border: 1px solid var(--color-gray-250);
   border-radius: 5px;

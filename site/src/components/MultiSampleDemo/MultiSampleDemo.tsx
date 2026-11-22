@@ -237,9 +237,10 @@ const Subtitle = styled.div`
   text-transform: uppercase;
 `;
 
-const Title = styled.h1`
+const Title = styled.p`
   font-size: 0.875rem;
   font-weight: 700;
+  margin: 0;
 `;
 
 const WaveformWrapper = styled.div`

@@ -71,7 +71,7 @@ interface BGMContextSetter {
   play: () => void;
   pause: () => void;
   stop: () => void;
-  stopWithFade: (duration: number) => void;
+  stopWithFade: (duration?: number) => void;
   rewind: () => void;
   fastForward: () => void;
   eject: () => void;
@@ -272,7 +272,7 @@ function BGMProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const stopWithFade = React.useCallback(
-    (duration: number) => {
+    (duration = 250) => {
       const id = soundId;
       // This includes the intro, which doesn’t fade; it’s short enough that cutting it off is fine.
       if (id === undefined || !bgm.playing(id)) {

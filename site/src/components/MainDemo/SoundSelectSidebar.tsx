@@ -128,7 +128,12 @@ function SoundSelectSidebar({
         <BottomHeaderEdge />
         <Actions>
           <SortBtnWrapper>
-            <BevelEdge side="top" radius={8} color="var(--color-gray-400)" />
+            <BevelEdge
+              side="top"
+              radius={8}
+              color="var(--color-gray-400)"
+              showEvenWhenUnsupported
+            />
             <SortBtn
               sortOrder={sortOrder}
               handleSortOrderClick={handleSortOrderClick}
@@ -355,6 +360,7 @@ const Filters = styled.div`
   padding: 8px;
   display: flex;
   gap: 4px;
+  background: var(--color-gray-50);
 `;
 
 const EdgeSvg = styled.svg`

@@ -65,7 +65,7 @@ function MediaPlayer({ handleClose }: Props) {
   const {
     play,
     pause,
-    stop,
+    stopWithFade,
     rewind,
     fastForward,
     eject,
@@ -325,7 +325,7 @@ function MediaPlayer({ handleClose }: Props) {
                 <MediaBtn icon="rewind" onClick={rewind} />
                 <MediaBtn icon="play" onClick={play} ref={playBtnRef} />
                 <MediaBtn icon="pause" onClick={pause} />
-                <MediaBtn icon="stop" onClick={stop} />
+                <MediaBtn icon="stop" onClick={() => stopWithFade(100)} />
                 <MediaBtn icon="fast-forward" onClick={fastForward} />
               </ButtonRow>
             </Buttons>

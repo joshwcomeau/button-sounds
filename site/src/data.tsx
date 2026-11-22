@@ -120,7 +120,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
   'ps5-dull': {
-    title: 'PS4 (dull)',
+    title: 'PS5 (dull)',
     category: 'gamepad',
     description: (
       <p>
@@ -131,7 +131,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
   'ps5-paddle': {
-    title: 'PS4 (paddle)',
+    title: 'PS5 (paddle)',
     category: 'gamepad',
     description: (
       <p>
@@ -143,7 +143,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
   'ps5-double': {
-    title: 'PS4 (double)',
+    title: 'PS5 (double)',
     category: 'gamepad',
     description: (
       <>
@@ -160,7 +160,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
   'ps5-clicky': {
-    title: 'PS4 (clicky)',
+    title: 'PS5 (clicky)',
     category: 'gamepad',
     description: (
       <p>
@@ -169,7 +169,7 @@ export const SOUND_DATA: Record<SoundName, SoundData> = {
     ),
   },
   'ps5-snappy': {
-    title: 'PS4 (snappy)',
+    title: 'PS5 (snappy)',
     category: 'gamepad',
     description: (
       <p>

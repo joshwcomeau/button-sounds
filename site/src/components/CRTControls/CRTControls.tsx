@@ -43,8 +43,10 @@ function CRTControls({
           // When focusing, I want the dotted focus outline to follow the diagonal edge of the bottom-right corner
           inputStyles={
             {
+              width: 110,
               borderRadius: '0 0 8px 0',
               cornerShape: 'bevel',
+              // Stupid ESLint doesn't know about `corner-shape` so I have to typecast it:
             } as React.CSSProperties
           }
         />
@@ -155,18 +157,24 @@ const Main = styled.div`
 `;
 
 const InnerEdge = styled.div`
+  --inner-radius: 12px;
   position: absolute;
   inset: 1px;
   top: 0;
   border: 1px solid var(--color-gray-75);
   border-top: none;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--inner-radius) var(--inner-radius);
   corner-shape: inherit;
 
   @media (max-width: 57rem) {
     top: 1px;
     border-top: 1px solid var(--color-gray-75);
-    border-radius: 2px 2px 14px 14px;
+    border-radius: 2px 2px var(--inner-radius) var(--inner-radius);
+  }
+
+  /* For mysterious reasons, a larger inner radius feels better with bevels vs curves */
+  @supports (corner-shape: bevel) {
+    --inner-radius: 14px;
   }
 `;
 

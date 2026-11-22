@@ -17,7 +17,7 @@ function Footer() {
         <BRScrew />
         <Wrapper>
           <LogoWrapper>
-            <span>A project from</span>
+            <LogoPrefix>A project from</LogoPrefix>
             <JoshWComeauLogo />
           </LogoWrapper>
           <ProjectLinks>
@@ -40,7 +40,7 @@ function Footer() {
             <LinkList>
               <li>
                 <Link preventExternalIcon href="https://www.joshwcomeau.com/">
-                  Main Blog
+                  Josh W. Comeau’s Blog
                 </Link>
               </li>
               <li>
@@ -52,7 +52,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link preventExternalIcon href="http://joyofreact.com/">
+                <Link preventExternalIcon href="https://joyofreact.com/">
                   The Joy of React
                 </Link>
               </li>
@@ -167,10 +167,14 @@ const LogoWrapper = styled.div`
   grid-area: logo;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   font-family: 'wotfard';
   text-align: center;
   width: fit-content;
+`;
+const LogoPrefix = styled.span`
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
 `;
 
 const Col = styled.div`
@@ -245,6 +249,8 @@ const Copyright = styled.p`
 `;
 const LegalLinksList = styled.ul`
   display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0;
   list-style-type: none;

@@ -119,7 +119,7 @@ const Wrapper = styled.div`
   }
 `;
 
-const Label = styled.label`
+const Label = styled.p`
   position: relative;
   font-size: 1rem;
   font-weight: 600;

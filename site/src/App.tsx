@@ -143,6 +143,7 @@ const Header = styled.header`
     letter-spacing: -1px;
     /* Smaller line-height because the font size is so big: */
     line-height: 1.1;
+    margin-bottom: 0.25em;
   }
 
   p {

@@ -8,6 +8,7 @@ export function getSampleIds(
   name: SoundName,
   prefix: 'down' | 'up',
 ): Array<string> {
+  console.log(name, SPRITE_DATA);
   return Object.keys(SPRITE_DATA[name])
     .filter((id) => id.startsWith(prefix))
     .sort(

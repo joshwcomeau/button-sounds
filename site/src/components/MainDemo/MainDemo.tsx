@@ -309,6 +309,7 @@ function MainDemo() {
   const triggerPress = React.useCallback(() => {
     let index = selectedDownIndex;
     if (typeof index !== 'number') {
+      console.log(selectedSoundName);
       index = sampleIndex(getSampleIds(selectedSoundName, 'down')) || 0;
     }
 

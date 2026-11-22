@@ -54,7 +54,7 @@ function PrizeContent({ isShown, onRestore }: Props) {
           CSS for JavaScript Developers
         </TextLink>
         , and{' '}
-        <TextLink href="https://www.joyofreact.com/?coupon=CLEVER_SLEUTH">
+        <TextLink href="https://www.joyofreact.com/?couponCode=CLEVER_SLEUTH">
           The Joy of React
         </TextLink>
         .

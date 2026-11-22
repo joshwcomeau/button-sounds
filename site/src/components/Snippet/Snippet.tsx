@@ -1,7 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import BevelEdge from '../BevelEdge';
+import BevelEdge from '@/components/BevelEdge/BevelEdge';
+import PatternDither from '@/components/BackgroundPatterns/PatternDither';
 
 type Language = 'javascript';
 
@@ -12,42 +13,66 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 
 function Snippet({ lang, children, ...props }: Props) {
   return (
-    <OuterWrapper {...props}>
+    <OuterBorder {...props}>
+      <PatternDither
+        patternId="d"
+        pixelScale={1}
+        gradient={{
+          from: 'var(--color-gray-100)',
+          to: 'var(--color-gray-200)',
+          angle: 45,
+        }}
+        style={{ opacity: 0.45 }}
+      />
       <BevelEdge
         side="top"
-        color="var(--color-gray-100)"
+        color="var(--color-gray-200)"
         radius={OUTER_RADIUS}
       />
       <BevelEdge
         side="bottom"
-        color="var(--color-gray-300)"
+        color="var(--color-gray-50)"
         radius={OUTER_RADIUS}
       />
-      <Wrapper>
-        <Pre>
-          <Code className={`language-${lang}`}>{children}</Code>
-        </Pre>
-      </Wrapper>
-    </OuterWrapper>
+      <InnerBorder>
+        <BevelEdge
+          side="top"
+          color="var(--color-gray-100)"
+          radius={INNER_RADIUS}
+        />
+        <BevelEdge
+          side="bottom"
+          color="var(--color-gray-300)"
+          radius={INNER_RADIUS}
+        />
+        <Wrapper>
+          <Pre>
+            <Code className={`language-${lang}`}>{children}</Code>
+          </Pre>
+        </Wrapper>
+      </InnerBorder>
+    </OuterBorder>
   );
 }
 
 const CODE_PADDING = 32;
 const OUTER_RADIUS = 16;
-const PADDING = 2;
-const INNER_RADIUS = OUTER_RADIUS - PADDING;
+const OUTER_PADDING = 8;
+const INNER_PADDING = 2;
+const INNER_RADIUS = OUTER_RADIUS - INNER_PADDING;
 
-const OuterWrapper = styled.div`
+const OuterBorder = styled.div`
   position: relative;
-  padding: ${PADDING}px;
-  margin-inline: calc(${CODE_PADDING + PADDING}px * -1);
+  margin-inline: calc(${CODE_PADDING + INNER_PADDING}px * -1);
   margin-block: 1rem 2rem;
-  border: 1px solid var(--color-gray-200);
+  border: 1px solid var(--color-gray-75);
   border-radius: ${OUTER_RADIUS}px;
-  outline: 8px solid var(--color-background);
+  padding: ${OUTER_PADDING}px;
   corner-shape: bevel;
   background: var(--color-background);
   --selection-bg: black;
+  /* Trim PatternDither corners */
+  overflow: hidden;
 
   @media (max-width: 42.5rem) {
     max-width: 100%;
@@ -56,12 +81,21 @@ const OuterWrapper = styled.div`
   }
 `;
 
+const InnerBorder = styled.div`
+  position: relative;
+  border: 1px solid var(--color-gray-200);
+  border-radius: ${INNER_RADIUS}px;
+  padding: ${INNER_PADDING}px;
+  corner-shape: bevel;
+  background: var(--color-background);
+`;
+
 const Wrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-gray-200);
-  border-radius: ${INNER_RADIUS}px;
+  border-radius: ${INNER_RADIUS - 2}px;
   corner-shape: inherit;
   /* Hide the ::before glow effect that otherwise spills over */
   /* NOTE: If I wind up having some instance that needs to overflow, I can always move the ::before to a separate elem within a <Clipper> */
@@ -85,7 +119,7 @@ const Wrapper = styled.div`
 `;
 
 const Pre = styled.pre`
-  border-radius: ${INNER_RADIUS}px;
+  border-radius: ${INNER_RADIUS - 2}px;
   corner-shape: bevel;
   font-size: 0.875rem;
   padding: ${CODE_PADDING}px;

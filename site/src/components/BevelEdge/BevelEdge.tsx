@@ -9,6 +9,7 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
   rightRadius?: number;
   borderWidth?: number;
   ignoreSide?: 'left' | 'right';
+  showEvenWhenUnsupported?: boolean;
 }
 
 function BevelEdge({
@@ -20,11 +21,13 @@ function BevelEdge({
   borderWidth = 1,
   ignoreSide,
   style = {},
+  showEvenWhenUnsupported = false,
   ...rest
 }: Props) {
   const Component = side === 'top' ? TopEdge : BottomEdge;
   return (
     <Component
+      data-show-even-when-unsupported={!!showEvenWhenUnsupported}
       style={{
         ...style,
         '--border-color': color,
@@ -85,6 +88,17 @@ const TopEdge = styled.span`
       display: none;
     }
   }
+
+  /*
+    On browsers that don’t support beveled corners, the edges just look awkward, since the light/dark corners curves smoothly onto the side and the color changes without any apparent purpose.
+    So, we’ll hide these highlighted edges altogether in these browsers.
+    That said, there are *certain* cases where it looks even worse without it, so I have a boolean I can apply which will show the rounded version on unsupported browsers.
+  */
+  @supports not (corner-shape: bevel) {
+    &[data-show-even-when-unsupported='false'] {
+      display: none;
+    }
+  }
 `;
 const BottomEdge = styled.span`
   position: absolute;
@@ -128,6 +142,11 @@ const BottomEdge = styled.span`
   }
   &[data-ignore-side='right'] {
     &::after {
+      display: none;
+    }
+  }
+  @supports not (corner-shape: bevel) {
+    &[data-show-even-when-unsupported='false'] {
       display: none;
     }
   }
