@@ -259,7 +259,9 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
         Finally, if you use React, I’ve also included a couple of React hooks
         that tackle all of this stuff. Here’s the main high-level API:
       </p>
-      <Snippet lang="javascript">{REACT_EXAMPLE}</Snippet>
+      <Snippet lang="javascript" highlightedLines={[6]}>
+        {REACT_EXAMPLE}
+      </Snippet>
       <p>
         And here’s the lower-level API that exposes{' '}
         <InlineCode>press</InlineCode> and <InlineCode>release</InlineCode>{' '}

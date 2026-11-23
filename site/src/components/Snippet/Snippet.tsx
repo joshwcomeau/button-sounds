@@ -9,9 +9,10 @@ type Language = 'javascript';
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   lang: Language;
   children: React.ReactNode;
+  highlightedLines?: Array<number>;
 }
 
-function Snippet({ lang, children, ...props }: Props) {
+function Snippet({ lang, children, highlightedLines, ...props }: Props) {
   return (
     <OuterBorder {...props}>
       <PatternDither
@@ -47,6 +48,13 @@ function Snippet({ lang, children, ...props }: Props) {
         />
         <Wrapper>
           <Pre>
+            {highlightedLines?.map((line) => (
+              <LineHighlight
+                key={line}
+                style={{ '--line': line } as React.CSSProperties}
+                aria-hidden="true"
+              />
+            ))}
             <Code className={`language-${lang}`}>{children}</Code>
           </Pre>
         </Wrapper>
@@ -119,17 +127,35 @@ const Wrapper = styled.div`
 `;
 
 const Pre = styled.pre`
+  --code-pad: ${CODE_PADDING}px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(100%, max-content);
   border-radius: ${INNER_RADIUS - 2}px;
   corner-shape: bevel;
   font-size: 0.875rem;
-  padding: ${CODE_PADDING}px;
+  padding: var(--code-pad);
   overflow-x: auto;
 
   @media (max-width: 42.5rem) {
-    padding: 1rem;
+    --code-pad: 1rem;
   }
 `;
 
-const Code = styled.code``;
+const Code = styled.code`
+  grid-area: 1 / 1;
+`;
+
+const LineHighlight = styled.span`
+  grid-area: 1 / 1;
+  align-self: start;
+  height: 1lh;
+  position: relative;
+  top: calc((var(--line) - 1) * 1lh);
+  margin-inline: calc(var(--code-pad) * -1);
+  background: white;
+  opacity: 0.07;
+  pointer-events: none;
+`;
 
 export default Snippet;
