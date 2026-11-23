@@ -59,9 +59,11 @@ function Explanation({ isVisible }: { isVisible: boolean }) {
               demo.
             </p>
             <p>
-              I did my best to make this work well on mobile, but the experience
-              truly is better on desktop. So, if you’re near a computer, I’d
-              highly suggest giving it a shot there!
+              <strong>Not hearing anything?</strong> Frustratingly, browsers can
+              decide to block a website from playing any sound. iOS Safari seems
+              particularly strict about this. So, if you’re not hearing a click
+              sound when tapping the big red button, please check out this
+              website on a desktop computer.
             </p>
           </MobileOnly>
         </Wrapper>
