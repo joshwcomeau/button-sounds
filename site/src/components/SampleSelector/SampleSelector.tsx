@@ -152,8 +152,6 @@ const Samples = styled.div`
   margin-inline: auto;
 `;
 
-// const SIZE = 2.5;
-
 const Sample = styled.label`
   --easing: var(--bezier-overshoot-smooth);
   --duration: 1200ms;
@@ -168,6 +166,9 @@ const Sample = styled.label`
   font-size: 1.25rem;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   transition: color 500ms;
 
   &[data-is-last-played='true'] {

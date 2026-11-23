@@ -346,6 +346,8 @@ const ImgWrapper = styled.div`
   transform-origin: top left;
   transform: var(--transform);
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   animation: fadeFromTransparent var(--enter-fade-duration)
     var(--enter-fade-delay) backwards cubic-bezier(0.3, 0, 0.15, 1);
 

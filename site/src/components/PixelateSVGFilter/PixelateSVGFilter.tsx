@@ -130,4 +130,6 @@ const Svg = styled.svg`
   inset: 0;
   pointer-events: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 `;

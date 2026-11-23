@@ -94,6 +94,8 @@ const Wrapper = styled.button`
   corner-shape: bevel;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 
   &:disabled {

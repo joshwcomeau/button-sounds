@@ -131,6 +131,8 @@ const Label = styled.p`
   font-family: var(--font-segment);
   font-weight: 900;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 `;
 
 const StyledDivider = styled(Divider)`
