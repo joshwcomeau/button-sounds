@@ -1,7 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import babel from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+
+const buttonSoundsPackage = JSON.parse(
+  readFileSync(new URL('../package/package.json', import.meta.url), 'utf8'),
+) as { version: string };
 
 // Serve a different favicon on localhost so that I can easily tell whether a tab is development vs. production:
 function devFavicon(): Plugin {
@@ -15,6 +20,10 @@ function devFavicon(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    // In tsdown.config.ts, we inject the button version into the URL, so that different versions can reference different MP3 filenames. I was running into an issue on localhost with outdated filenames, and this appears to be the fix:
+    __BUTTON_SOUNDS_VERSION__: JSON.stringify(buttonSoundsPackage.version),
+  },
   plugins: [
     devFavicon(),
     react(),
@@ -48,8 +57,24 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+    alias: [
+      {
+        find: '@',
+        replacement: fileURLToPath(new URL('./src', import.meta.url)),
+      },
+      // So, I'm using pnpm workspaces in this project which *should* rely on the locally-defined package (workspace:* in site/package.json). When I make changes to the package files, however, they aren't immediately reflected on localhost. We solve this by bundling those files directly:
+      {
+        find: /^button-sounds\/react$/,
+        replacement: fileURLToPath(
+          new URL('../package/src/react.ts', import.meta.url),
+        ),
+      },
+      {
+        find: /^button-sounds$/,
+        replacement: fileURLToPath(
+          new URL('../package/src/index.ts', import.meta.url),
+        ),
+      },
+    ],
   },
 });
