@@ -1,4 +1,4 @@
-// A Winamp-style spectrum analyzer. Rather than tapping into Howler’s audio graph, we decode the song ourselves and analyze whichever slice of it is currently playing, so the bars aren’t affected by the volume slider or the intro.
+// A Winamp-style spectrum analyzer. Rather than tapping into Howler’s audio graph, we decode the song ourselves and analyze whichever slice of it is currently playing, so the spectrum itself isn’t affected by the volume slider or the intro. Drawn bar height still follows the volume slider below 40%.
 import * as React from 'react';
 import { Howler } from 'howler';
 
@@ -30,6 +30,8 @@ const TILT_DB_PER_OCTAVE = 3;
 const TILT_REFERENCE_FREQ = 1000;
 // How much of the canvas height a bar can fall per second. Bars rise instantly.
 const DECAY_PER_SECOND = 2.5;
+// At this volume and above, bars are drawn at their analyzed height. Below it they shrink linearly.
+const FULL_HEIGHT_VOLUME = 0.5;
 // Keeps a long gap between frames (e.g. a backgrounded tab) from being treated as one giant step.
 const MAX_FRAME_SECONDS = 0.1;
 // Reduced motion still shows the spectrum, but only as a once-per-second snapshot.
@@ -70,7 +72,8 @@ const real = new Float32Array(FFT_SIZE);
 const imag = new Float32Array(FFT_SIZE);
 
 function FrequencyVisualizer() {
-  const { isPlaying, hasCompletedIntro, introStartCount } = useBGMState();
+  const { isPlaying, hasCompletedIntro, introStartCount, volume } =
+    useBGMState();
   const { getPlaybackPosition } = useBGMSetters();
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -165,6 +168,7 @@ function FrequencyVisualizer() {
     lastFrameTimeRef.current = now;
 
     const levels = levelsRef.current;
+    const volumeScale = Math.min(volume / FULL_HEIGHT_VOLUME, 1);
 
     // Rewinding during the intro bumps the count, which restarts the wave.
     if (isIntroPlaying && introRef.current?.count !== introStartCount) {
@@ -204,7 +208,7 @@ function FrequencyVisualizer() {
       }
 
       // Whole pixels keep the bars crisp.
-      const height = Math.round(level * CANVAS_HEIGHT);
+      const height = Math.round(level * volumeScale * CANVAS_HEIGHT);
       context.fillRect(
         i * (BAR_WIDTH + BAR_GAP),
         CANVAS_HEIGHT - height,
