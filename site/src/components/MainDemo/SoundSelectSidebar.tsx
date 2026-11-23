@@ -14,6 +14,7 @@ import FilterBtn from './FilterBtn';
 import UpDownBtn from './UpDownBtn';
 import SortBtn from './SortBtn';
 
+const FADE_SCROLL_DISTANCE = 150;
 const FILTER_TYPES = [
   { id: 'keyboard', icon: Keyboard },
   { id: 'mouse', icon: Mouse },
@@ -51,32 +52,39 @@ function SoundSelectSidebar({
   ...delegated
 }: Props) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = React.useState(false);
 
-  // I have scroll-indicating gradients at the top/bottom of the sound list, and they animate smoothly using animation-timeline (aside from Firefox). The trouble is that sometimes, when filtering, all of the sounds fit within the container, so there's no overflow to scroll through.
-  // This tracks whether the list is scrollable or not, so that we can hide the gradients when all of the sounds fit in the container.
-  // NOTE: In the future, I can use @container scroll-state for this! But it's not available in Safari yet, so we need to do it in JS.
-  const updateCanScroll = React.useCallback(() => {
+  // NOTE: I have scroll-indicating gradients at the top/bottom of the container which fade in/out based on scroll distance. Originally, I used a scroll timeline for this, but there was a bug in Safari causing the entire browser to crash when filtering the list (https://bugs.webkit.org/show_bug.cgi?id=328938). So, I migrated to a JS approach for now, which has the bonus of working in Firefox.
+  // The old approach is in commit 62823f95c9970ad34bbd4f7af769182ad7697552. The bug is fixed in Safari Nightly, and so maybe in a few months I can revert to that JS-free approach. Hopefully by then, @scroll-state will also be widely available and we can skip all JS-related stuff!
+  const updateScrollFades = React.useCallback(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) {
       return;
     }
 
-    const nextCanScroll =
-      scrollContainer.scrollHeight - scrollContainer.clientHeight > 1;
-    setCanScroll((current) =>
-      current === nextCanScroll ? current : nextCanScroll,
-    );
+    const maxScroll =
+      scrollContainer.scrollHeight - scrollContainer.clientHeight;
+    const canScroll = maxScroll > 1;
+    const top = canScroll
+      ? Math.min(1, scrollContainer.scrollTop / FADE_SCROLL_DISTANCE)
+      : 0;
+    const bottom = canScroll
+      ? Math.min(
+          1,
+          (maxScroll - scrollContainer.scrollTop) / FADE_SCROLL_DISTANCE,
+        )
+      : 0;
+
+    // `top` and `bottom` are normalized between 0 and 1 over the FADE_SCROLL_DISTANCE. We'll round to 2 decimal places and set it as a CSS variable, used in the styles below.
+    scrollContainer.style.setProperty('--fade-top', top.toFixed(2));
+    scrollContainer.style.setProperty('--fade-bottom', bottom.toFixed(2));
   }, []);
 
-  useResizeObserver(scrollContainerRef, updateCanScroll);
+  useResizeObserver(scrollContainerRef, updateScrollFades);
 
-  // When changing the filter, we need to check whether we should still display the top/bottom <EdgeFade> scroll indicators. Otherwise, when enabling a filter with a small # of sounds, the scroll indicators will still show even though there's nothing to scroll.
-  // This isn’t caught automatically by ResizeObserver since the container itself doesn’t change size.
-  // NOTE: This causes a double-render (first render changes `relevantSounds` when filtering, second render changes `canScroll`). I don't think it’s avoidable, though: we won't know whether to display scroll indicators until *after* the UI has updated and we can tell whether there's room to scroll or not, so we need to sequence it like this. This can all be removed once `@container scroll-state` is widely available!
+  // Filtering doesn’t resize the container, so ResizeObserver misses it. Measure after the new rows commit, before paint, so a short list doesn’t flash the fades.
   React.useLayoutEffect(() => {
-    updateCanScroll();
-  }, [relevantSounds, updateCanScroll]);
+    updateScrollFades();
+  }, [relevantSounds, updateScrollFades]);
 
   return (
     <Wrapper title="Select Sound" {...delegated}>
@@ -86,7 +94,7 @@ function SoundSelectSidebar({
       <ListFrame>
         <ListScrollContainer
           ref={scrollContainerRef}
-          data-can-scroll={canScroll}
+          onScroll={updateScrollFades}
         >
           <EdgeFade data-edge="top" aria-hidden="true" />
           {/*
@@ -209,8 +217,8 @@ const ListScrollContainer = styled.div`
   overflow-y: auto;
   padding: var(--list-padding);
   gap: var(--list-gap);
-  scroll-timeline-name: --sound-list;
-  scroll-timeline-axis: block;
+  --fade-top: 0;
+  --fade-bottom: 0;
 `;
 
 const List = styled.ul`
@@ -251,8 +259,6 @@ const EdgeFade = styled.div`
   flex: none;
   height: var(--fade-size);
   pointer-events: none;
-  /* Browsers without scroll timelines, including Firefox, keep the fades hidden. */
-  opacity: 0;
 
   &[data-edge='top'] {
     /* Sticky insets are inside the padding, so a negative offset covers the padding the rows scroll through. */
@@ -260,34 +266,15 @@ const EdgeFade = styled.div`
     /* Pull the following rows back up so the fade overlays them instead of occupying a slot. */
     margin-bottom: calc(-1 * (var(--fade-size) + var(--list-gap)));
     background: linear-gradient(to bottom, black, transparent);
+    /* --fade-top and --fade-bottom are normalized from 0 to 1, to two decimal places. Cut that opacity in half so that it fades from 0 to 0.5 as the scroll distance increases. I never want it to be *that* opaque. */
+    opacity: calc(var(--fade-top) * 0.5);
   }
 
   &[data-edge='bottom'] {
     bottom: calc(-1 * var(--list-padding));
     margin-top: calc(-1 * (var(--fade-size) + var(--list-gap)));
     background: linear-gradient(to top, black, transparent);
-  }
-
-  @supports (animation-timeline: scroll()) {
-    /* The scroll animations fade toward this opacity. fadeFromTransparent and fadeToTransparent only set one keyframe. */
-    opacity: 0.5;
-
-    &[data-edge='top'] {
-      animation: fadeFromTransparent linear both;
-      animation-timeline: --sound-list;
-      animation-range: 0px 150px;
-    }
-
-    &[data-edge='bottom'] {
-      animation: fadeToTransparent linear both;
-      animation-timeline: --sound-list;
-      animation-range: calc(100% - 150px) 100%;
-    }
-
-    ${ListScrollContainer}[data-can-scroll='false'] & {
-      animation: none;
-      opacity: 0;
-    }
+    opacity: calc(var(--fade-bottom) * 0.5);
   }
 `;
 
