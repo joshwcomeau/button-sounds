@@ -146,7 +146,7 @@ function ProjectInfo(props: React.HTMLAttributes<HTMLDivElement>) {
           H4 recorder, with additional processing to remove noise in Adobe
           Audition. The only exceptions are <InlineCode>synth-on</InlineCode>{' '}
           and <InlineCode>synth-off</InlineCode>, which were created digitally
-          using the <i>Current</i> VST synth.
+          using the <i>Current</i> VST synth. All sounds are stereo.
         </p>
         <p>
           Sounds are available either as{' '}
