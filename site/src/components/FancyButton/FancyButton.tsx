@@ -147,6 +147,7 @@ const OuterWrapper = styled.button`
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
   /* BottomShadow uses mix-blend-mode. Without its own blending group, Safari re-composites the whole demo on every press, which makes the sound sidebar jitter and flicker. */
   isolation: isolate;
 
