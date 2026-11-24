@@ -4,6 +4,7 @@ import type { SoundName } from 'button-sounds';
 import { useImperativeButtonSounds } from 'button-sounds/react';
 
 import { SALE, SUPERHEADER_HEIGHT } from '@/constants';
+import { detectBrowser } from '@/helpers/browser.helpers';
 import useSyncedRef from '@/hooks/use-synced-ref';
 import { SOUND_DATA } from '@/data';
 import { random, sampleIndex, seededShuffle } from '@/utils';
@@ -348,6 +349,16 @@ function MainDemo() {
     }
 
     function handlePointerDown() {
+      // Annoyingly, Safari doesn't automatically focus the button on click, which means the up/down keyboard shortcut we have to easily move between sounds doesn't work; the page just keeps scrolling on up/down.
+      // This does mean that the button gets a focus outline, even for mouse users, which isn't really ideal. So we'll add this behaviour exclusively in Safari.
+      const browser = detectBrowser();
+      // We also weirdly need to wait a frame for the focus to stick.
+      if (browser === 'safari' && btn) {
+        window.requestAnimationFrame(() => {
+          btn.focus({ preventScroll: true });
+        });
+      }
+
       triggerPress();
 
       function handlePointerUp() {
