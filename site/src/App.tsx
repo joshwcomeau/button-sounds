@@ -64,9 +64,6 @@ function App() {
         <CRTControls
           crtStrength={crtStrength}
           setCrtStrength={setCrtStrength}
-          // I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
-          // It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
-          style={{ zIndex: 2 }}
           shiftBelowSaleBanner={showSaleBanner}
         />
         <Container>

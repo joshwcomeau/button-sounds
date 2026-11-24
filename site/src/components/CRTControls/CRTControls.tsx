@@ -24,37 +24,44 @@ function CRTControls({
   const sliderId = React.useId().replace(/:/g, '-');
 
   return (
-    <Wrapper {...delegated} data-shifted-down={shiftBelowSaleBanner}>
-      <ScrewWrapper data-side="left">
-        <Screw style={screwStyles} />
-      </ScrewWrapper>
-      <Main>
-        <InnerEdge>
-          <BevelEdge side="bottom" color="var(--color-gray-250)" radius={14} />
-        </InnerEdge>
-        <Label htmlFor={sliderId}>CRT</Label>
-        <Slider
-          id={sliderId}
-          value={crtStrength}
-          setValue={setCrtStrength}
-          min={0}
-          max={1}
-          step={0.1}
-          // When focusing, I want the dotted focus outline to follow the diagonal edge of the bottom-right corner
-          inputStyles={
-            {
-              width: 110,
-              borderRadius: '0 0 8px 0',
-              cornerShape: 'bevel',
-              // Stupid ESLint doesn't know about `corner-shape` so I have to typecast it:
-            } as React.CSSProperties
-          }
-        />
-      </Main>
-      <ScrewWrapper data-side="right">
-        <Screw style={screwStyles} />
-      </ScrewWrapper>
-    </Wrapper>
+    <>
+      <Wrapper {...delegated} data-shifted-down={shiftBelowSaleBanner}>
+        <ScrewWrapper data-side="left">
+          <Screw style={screwStyles} />
+        </ScrewWrapper>
+        <Main>
+          <InnerEdge>
+            <BevelEdge
+              side="bottom"
+              color="var(--color-gray-250)"
+              radius={14}
+            />
+          </InnerEdge>
+          <Label htmlFor={sliderId}>CRT</Label>
+          <Slider
+            id={sliderId}
+            value={crtStrength}
+            setValue={setCrtStrength}
+            min={0}
+            max={1}
+            step={0.1}
+            // When focusing, I want the dotted focus outline to follow the diagonal edge of the bottom-right corner
+            inputStyles={
+              {
+                width: 110,
+                borderRadius: '0 0 8px 0',
+                cornerShape: 'bevel',
+                // Stupid ESLint doesn't know about `corner-shape` so I have to typecast it:
+              } as React.CSSProperties
+            }
+          />
+        </Main>
+        <ScrewWrapper data-side="right">
+          <Screw style={screwStyles} />
+        </ScrewWrapper>
+      </Wrapper>
+      <WindowEdge style={{ zIndex: 1 }} />
+    </>
   );
 }
 
@@ -63,9 +70,15 @@ const slideDownDuringSale = keyframes`
     transform: translateY(-${SUPERHEADER_HEIGHT}rem);
   }
 `;
+
 const Wrapper = styled.div`
   --color-outline: var(--color-gray-200);
   position: fixed;
+  /*
+    I don't want the CRT slider to be affected by the CRT effect itself; the vignette darkens the corners of the screen, which makes it harder to distinguish the slider! So, the controls exist outside the “Container” stacking context that holds the effect.
+    It also needs to be up here, *before* the main content, for keyboard tab order to make sense.
+  */
+  z-index: 2;
   top: 0;
   right: 3rem;
   display: flex;
@@ -183,6 +196,19 @@ const Label = styled.label`
   font-weight: 600;
   color: #fff;
   font-family: var(--font-segment);
+`;
+
+// On new versions of Safari, the top browser UI tries to match the page background, and it meant the CRTControls Wrapper felt weirdly stranded, like it wasn't anchored to anything. Adding a 2px page-wide border fixes this, and it doesn't look bad on other browsers so I'm fine having it everywhere.
+// I also want it to show up underneath SaleBanner, so it needs a lower z-index, while still sitting above the CRT effect so that the colors match
+const WindowEdge = styled.div`
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-gray-200);
+  height: 2px;
 `;
 
 export default CRTControls;

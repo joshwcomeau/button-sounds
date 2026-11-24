@@ -91,10 +91,6 @@ body {
   margin: 0;
 }
 
-body {
-  min-height: 100svh;
-}
-
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
