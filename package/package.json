@@ -1,6 +1,6 @@
 {
   "name": "button-sounds",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add press/release sound effects to your buttons and interactive elements.",
   "type": "module",
   "license": "MIT",
