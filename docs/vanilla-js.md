@@ -11,7 +11,7 @@ import { wireUp } from 'button-sounds';
 const button = document.querySelector('.my-button');
 
 // Attach pointer event listeners, and specify the sound to play:
-ButtonSounds.wireUp(
+wireUp(
   button,
   'hi75-soft',
   // Optionally provide custom parameters:

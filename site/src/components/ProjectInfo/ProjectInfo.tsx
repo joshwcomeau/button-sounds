@@ -17,7 +17,7 @@ import { wireUp } from 'button-sounds';
 const button = document.querySelector('.my-button');
 
 // Attach pointer event listeners, and specify the sound to play:
-ButtonSounds.wireUp(button, 'hi75-soft');
+wireUp(button, 'hi75-soft');
 `;
 const LOW_LEVEL_EXAMPLE = `\
 import { load, press, release } from 'button-sounds';
@@ -39,7 +39,7 @@ import { wireUp } from 'button-sounds';
 
 const button = document.querySelector('.my-button');
 
-ButtonSounds.wireUp(
+wireUp(
   button,
   'hi75-soft',
   {
