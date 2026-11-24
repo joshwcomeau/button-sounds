@@ -81,8 +81,8 @@ function generateRainbowGradient({
 const Stripe = styled.div`
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 2px;
+  right: 2px;
   height: 4px;
   outline: 2px solid var(--color-background);
   border-radius: 0px 0px 4px 4px;

@@ -99,7 +99,7 @@ const Wrapper = styled.div`
   gap: 1px;
   padding: 1px;
   background-color: var(--color-background);
-  border: 2px solid var(--color-gray-75);
+  border: 2px solid var(--color-gray-200);
   border-top: none;
   border-radius: 0 0 ${BOTTOM_RADIUS}px ${BOTTOM_RADIUS}px;
   corner-shape: bevel;
